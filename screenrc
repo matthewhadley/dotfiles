@@ -1,0 +1,7 @@
+autodetach on # Automatically detach screens on hangup
+startup_message off # You know what screen is, right?
+defutf8 on # Default to UTF-8
+nonblock on # Don't let hung windows bring down the whole session
+defscrollback 5000 # Big buffer
+hardstatus alwayslastline
+hardstatus string '%{= wK}%?%-Lw%?%{B}[%{wK}%n*%f %t%?(%u)%?%{B}]%{wK}%?%+Lw'
