@@ -33,9 +33,18 @@ function copykeys {
 }
 
 # Get the git branch name of current directory
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+function parseGitBranch {
+    git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
-### SHELL APPEARANCE CUSTOMISATION
-PS1="\[\033[1;37m\]\h: \w \$(parse_git_branch) \n$ \[\e[0m\]"
+function tasksDashboard {
+    if [ -f ~/.tasks ]; then
+        db=`cat $HOME/.tasks`
+        echo -e "\n$db"
+    fi
+}
+
+TXTDEF='\[\e[0m\]'          # everything back to defaults
+BLDWHT='\[\033[1;37m\]'     # bold white text
+
+PS1="$BLDWHT\h: \w \$(parseGitBranch)\$(tasksDashboard)$BLDWHT\n\$ $TXTDEF"
