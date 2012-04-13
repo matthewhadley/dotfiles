@@ -3,7 +3,14 @@
 ### SHELL VARS
 
 # Path
-export PATH="$PATH:~/bin"
+function pathadd {
+    if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
+        PATH="$PATH:$1"
+    fi
+}
+
+pathadd '/usr/local/sbin'
+pathadd $HOME'/bin'
 
 ### BEHAVIOURS
 
