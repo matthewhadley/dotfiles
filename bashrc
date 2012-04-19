@@ -21,6 +21,8 @@ export COPYFILE_DISABLE=true
 HISTCONTROL=ignoreboth
 
 ### ALIASES
+alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
+alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
 
 #### Commands
 
