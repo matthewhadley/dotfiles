@@ -1,0 +1,5 @@
+# Prevent tar include "._" file resource forks
+export COPYFILE_DISABLE=true
+
+# Don't add duplicate commands or commands that start with a space to bash history
+HISTCONTROL=ignoreboth

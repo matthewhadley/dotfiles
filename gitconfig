@@ -4,3 +4,5 @@
 [user]
 	name = Matthew Hadley
 	email = matthew.hadley@gmail.com
+[alias]
+	tree = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(blue)<%an>%Creset' --abbrev-commit --date=relative

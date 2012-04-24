@@ -1,0 +1,37 @@
+# Autocomplete for open sublime projects via `sp`
+function _sbp
+ {
+    local DIR=$HOME/.sublp/*.sublime-project
+    local file completes
+
+    for f in $DIR; do
+        file=`echo ${f##*/} | sed "s/\..*//"`
+        completes=(${completes[@]} ${file})
+    done
+
+    local curw
+    COMPREPLY=()
+    curw=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
+    return 0
+}
+complete -F _sbp sbp
+
+function _tp
+ {
+    local DIR=$HOME/tasks/*.taskpaper
+    local file completes
+
+    for f in $DIR; do
+        file=`echo ${f##*/} | sed "s/\..*//"`
+        completes=(${completes[@]} ${file})
+    done
+
+    local curw
+    COMPREPLY=()
+    curw=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
+    return 0
+}
+
+complete -F _tp tp
