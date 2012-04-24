@@ -2,8 +2,8 @@
 alias ls='ls -G'
 
 ## ssh hosts
-alias sss='ssh stephadflier'
-alias ssb='ssh buildingwork'
+alias sshs='ssh stephadflier'
+alias sshb='ssh buildingwork'
 
 ## mutt
 alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
