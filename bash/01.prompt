@@ -2,15 +2,3 @@
 function parseGitBranch {
     git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
-
-function tasksDashboard {
-    if [ -f ~/.tasks ]; then
-        db=`cat $HOME/.tasks`
-        echo -e "\n$db"
-    fi
-}
-
-TXTDEF='\[\e[0m\]'          # everything back to defaults
-BLDWHT='\[\033[1;37m\]'     # bold white text
-
-PS1="$BLDWHT\h: \w \$(parseGitBranch)\$(tasksDashboard)$BLDWHT\n\$ $TXTDEF"

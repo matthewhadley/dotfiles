@@ -2,7 +2,7 @@
 	us = auto
 	ui = true
 [user]
-	name = Matthew Hadley
+	name = diffsky
 	email = matthew.hadley@gmail.com
 [alias]
 	tree = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(blue)<%an>%Creset' --abbrev-commit --date=relative

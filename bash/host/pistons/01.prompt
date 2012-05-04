@@ -1,0 +1,2 @@
+PROMPT_COLOR=$BLDBLU
+PS1="$PROMPT_COLOR\h: \w \$(parseGitBranch)$PROMPT_COLOR\n\$ $TXTDEF"

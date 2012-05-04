@@ -1,0 +1,6 @@
+function tasksDashboard {
+    if [ -f ~/.tasks ]; then
+        db=`cat $HOME/.tasks`
+        echo -e "\n$db"
+    fi
+}

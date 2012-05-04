@@ -1,3 +1,6 @@
+# Use vim
+export EDITOR=vim
+
 # Prevent tar include "._" file resource forks
 export COPYFILE_DISABLE=true
 

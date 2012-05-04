@@ -1,6 +1,15 @@
 ## bash.rc
 export DOTHOME=$HOME/etc/dothome
+export OS=`uname`
 
-for rc_file in $DOTHOME/bash/*; do
-    source $rc_file
-done
+function source_rc() {
+    for rc in $1/*; do
+        if [ -f $rc ]; then
+            source $rc
+        fi
+    done
+}
+
+source_rc $DOTHOME/bash
+source_rc $DOTHOME/bash/os/$OS
+source_rc $DOTHOME/bash/host/$HOSTNAME

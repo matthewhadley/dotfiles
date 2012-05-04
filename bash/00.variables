@@ -1,0 +1,4 @@
+# Define colors
+TXTDEF='\[\e[0m\]'          # defaults
+BLDWHT='\[\033[1;37m\]'     # bold white
+BLDBLU='\[\033[1;36m\]'     # bold blue
