@@ -6,3 +6,6 @@ export COPYFILE_DISABLE=true
 
 # Don't add duplicate commands or commands that start with a space to bash history
 HISTCONTROL=ignoreboth
+
+# Control own PS1 instead of virtualenv
+VIRTUAL_ENV_DISABLE_PROMPT=1
