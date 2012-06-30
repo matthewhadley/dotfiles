@@ -1,7 +1,7 @@
 # Autocomplete for open sublime projects via `sp`
 function _sbp
  {
-    local DIR=$HOME/.sublp/*.sublime-project
+    local DIR=$HOME/.sbp/*.sublime-project
     local file completes
 
     for f in $DIR; do
