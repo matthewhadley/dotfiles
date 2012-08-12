@@ -5,4 +5,6 @@
 	name = diffsky
 	email = matthew.hadley@gmail.com
 [alias]
-	tree = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(blue)<%an>%Creset' --abbrev-commit --date=relative
+	tree = log --graph --pretty=format:'%C(blue bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative
+[core]
+	excludesfile = /Users/mhadley/.gitignore
