@@ -1,6 +1,6 @@
-PROMPT_COLOR=$BLDGRE
 if [ "$(id -u)" == "0" ]; then
   # running as root
-  ROOT_PROMPT="$BLDRED\u@$TXTDEF"
+  PROMPT_COLOR=$TXTDEF
+  ROOT_PROMPT="$BLDRED\u$TXTDEF@"
 fi
 PS1="$ROOT_PROMPT$PROMPT_COLOR\h:$BLDWHT \w\$(parseGitBranch)$PROMPT_COLOR\n\$ $TXTDEF"

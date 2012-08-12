@@ -1,1 +1,2 @@
 alias pacman='pacmatic'
+alias ls='ls --color=auto'
