@@ -1,3 +1,4 @@
+PROMPT_COLOR=$BLDGRE
 if [ "$(id -u)" == "0" ]; then
   # running as root
   PROMPT_COLOR=$TXTDEF
