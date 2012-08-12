@@ -1,2 +1,0 @@
-alias ls='ls -G --color=always'
-alias php='/usr/local/php53/bin/php'
