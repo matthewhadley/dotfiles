@@ -1,0 +1,3 @@
+function keychain-eval {
+    eval $(keychain --eval --agents ssh -Q --quiet $HOME/.ssh/id_dsa)
+}
