@@ -1,3 +1,4 @@
+# activate the default python virtualenv
 BASE_VIRTUAL_ENV="$HOME/.virtualenvs/base/bin/activate"
 if [ -f $BASE_VIRTUAL_ENV ];then
     source $BASE_VIRTUAL_ENV

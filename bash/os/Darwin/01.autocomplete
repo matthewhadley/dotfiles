@@ -1,4 +1,4 @@
-# Autocomplete for open sublime projects via `sp`
+# Autocomplete for sublime projects via `sbp`
 function _sbp
  {
     local DIR=$HOME/.sbp/*.sublime-project
@@ -17,6 +17,7 @@ function _sbp
 }
 complete -F _sbp sbp
 
+# Autocomplete for task paper projects via `tp`
 function _tp
  {
     local DIR=$HOME/tasks/*.taskpaper

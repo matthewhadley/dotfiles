@@ -8,3 +8,6 @@ alias sshb='ssh buildingwork'
 ## mutt
 alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
 alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
+
+## gtasks
+alias 'gtasks-due'='gtasks -L -sdo -dse'

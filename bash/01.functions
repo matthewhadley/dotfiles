@@ -1,5 +1,19 @@
-## Copy ssh keys to another host
+# Copy ssh keys to another host
 function copykeys {
     username=$2
     ssh ${username:=$USER}@${1} "echo `cat ~/.ssh/id_dsa.pub` >> ~/.ssh/authorized_keys"
+}
+
+# Get the git branch name of current directory
+function parseGitBranch {
+    git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+# Determine the active python virtualenv
+# to add to PS1 use \$(parseVirtualEnv)
+function parseVirtualEnv {
+    if [ "$VIRTUAL_ENV" != "" ];then
+        local ENV=`basename $VIRTUAL_ENV`
+        echo " [$ENV]"
+    fi
 }

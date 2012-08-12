@@ -1,4 +1,2 @@
 PROMPT_COLOR=$BLDWHT
-# \$(parseVirtualEnv) # to show active python virtualenv
-# \$(tasksDashboard) # to show gtasks dashboard
 PS1="$PROMPT_COLOR\h: \w\$(parseGitBranch)$PROMPT_COLOR\n\$ $TXTDEF"
