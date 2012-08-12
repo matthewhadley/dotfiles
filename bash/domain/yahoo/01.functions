@@ -1,0 +1,4 @@
+### YROOT AUTOCOMPLETE
+if [ -f /home/y/etc/yroot/yroot.bashrc ]; then
+    . /home/y/etc/yroot/yroot.bashrc;
+fi

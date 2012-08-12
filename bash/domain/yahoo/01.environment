@@ -1,0 +1,14 @@
+export SVN_SSH=yssh
+
+### MAINTAIN SSH
+if [ -x /usr/local/bin/yssh-find-agent ]; then
+    export SSH_AUTH_SOCK=`/usr/local/bin/yssh-find-agent`
+fi
+if [ "$TERM" = "screen" ]; then
+    if [ "$SSH_AUTH_SOCK" != "" ]; then
+        ln -sf $SSH_AUTH_SOCK /tmp/${USER}_ssh_agent_auth
+    elif [ "$SSH_AUTH_SOCK" = "" ]; then
+        SSH_AUTH_SOCK=/tmp/${USER}_ssh_agent_auth
+        export SSH_AUTH_SOCK
+    fi
+fi

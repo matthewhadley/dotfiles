@@ -1,0 +1,8 @@
+#### Commands
+alias ls='ls --color=always'
+alias ssh=yssh
+
+#### Screen sessions
+alias zed='screen -x zed'
+alias scratch='screen -x scratch'
+alias tools='screen -x tools'
