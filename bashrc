@@ -3,7 +3,7 @@ export DOTHOME=$HOME/etc/dothome
 export OS=`uname`
 if [ -d /home/y ]; then
   export DOMAIN='yahoo'
-done
+fi
 
 function source_rc() {
     for rc in $1/*; do
