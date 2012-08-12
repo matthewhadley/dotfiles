@@ -4,3 +4,4 @@ BLDWHT='\[\033[1;37m\]'     # bold white
 BLDBLU='\[\033[1;36m\]'     # bold blue
 BLDPUR='\[\033[1;35m\]'     # bold purple
 BLDGRE='\[\033[1;32m\]'     # bold green
+BLDRED='\[\033[1;31m\]'     # bold red
