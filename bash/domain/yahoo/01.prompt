@@ -1,5 +1,5 @@
 PROMPT_COLOR=$BLDPUR
-PS1="$PROMPT_COLOR\h:$BLDWHT \w \$(parseGitBranch) \n$PROMPT_COLOR$ $TXTDEF"
+PS1="$PROMPT_COLOR\h:$BLDWHT \w\$(parseGitBranch)\n$PROMPT_COLOR$ $TXTDEF"
 if [ ! -z "$YROOT_NAME" ]; then
-    PS1="$PROMPT_COLOR\h [${YROOT_NAME}]:$BLDWHT \w \$(parseGitBranch) \n$PROMPT_COLOR$ $TXTDEF"
+    PS1="$PROMPT_COLOR\h [${YROOT_NAME}]:$BLDWHT \w\$(parseGitBranch)\n$PROMPT_COLOR$ $TXTDEF"
 fi
