@@ -3,6 +3,8 @@ export DOTHOME=$HOME/etc/dothome
 export OS=`uname`
 if [ -d /home/y ]; then
   export DOMAIN='yahoo'
+elif [ -f /etc/arch-release ]; then
+  export DOMAIN='arch'
 fi
 
 function source_rc() {
