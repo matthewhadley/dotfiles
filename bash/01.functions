@@ -1,4 +1,5 @@
 # Copy ssh keys to another host
+# Usage: copykeys example.com diffsky
 function copykeys {
     username=$2
     ssh ${username:=$USER}@${1} "echo `cat ~/.ssh/id_dsa.pub` >> ~/.ssh/authorized_keys"
