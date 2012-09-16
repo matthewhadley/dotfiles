@@ -8,3 +8,9 @@
 	tree = log --graph --pretty=format:'%C(blue bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative
 [core]
 	excludesfile = /Users/mhadley/.gitignore
+[difftool "Kaleidoscope"]
+	cmd = ksdiff-wrapper git \"$LOCAL\" \"$REMOTE\"
+[difftool]
+	prompt = false
+[diff]
+	tool = Kaleidoscope
