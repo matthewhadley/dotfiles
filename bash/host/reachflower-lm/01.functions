@@ -1,0 +1,9 @@
+# Check for tasks
+# 0,30 * * * * source /Users/mhadley/.bashrc; gtasks-dashboard > /Users/mhadley/.gtasks/dashboard
+function parseTasks {
+  if [ -f $HOME/.gtasks/dashboard ]; then
+    cat $HOME/.gtasks/dashboard
+    echo -e "\r\n"
+    rm $HOME/.gtasks/dashboard
+  fi
+}

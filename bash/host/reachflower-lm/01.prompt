@@ -1,2 +1,2 @@
 PROMPT_COLOR=$BLDWHT
-PS1="$PROMPT_COLOR\h: \w\$(parseGitBranch)$PROMPT_COLOR\n\$ $TXTDEF"
+PS1="\$(parseTasks)$PROMPT_COLOR\h: \w\$(parseGitBranch)$PROMPT_COLOR\n\$ $TXTDEF"
