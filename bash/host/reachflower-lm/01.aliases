@@ -1,5 +1,6 @@
-## color output
+## directory listing 
 alias ls='ls -G'
+alias l='ls -lG'
 
 ## ssh hosts
 alias sshs='ssh stephadflier'
