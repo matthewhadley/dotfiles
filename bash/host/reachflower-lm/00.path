@@ -1,0 +1,3 @@
+# required as install node via homebrew
+# https://github.com/yeoman/yeoman/issues/430#issuecomment-8660341
+pathadd '/usr/local/share/npm/bin'
