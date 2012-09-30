@@ -9,6 +9,9 @@
 [core]
 	excludesfile = /Users/mhadley/.gitignore
 [difftool "Kaleidoscope"]
+[difftool]
+[diff]
+[difftool "Kaleidoscope"]
 	cmd = ksdiff-wrapper git \"$LOCAL\" \"$REMOTE\"
 [difftool]
 	prompt = false
