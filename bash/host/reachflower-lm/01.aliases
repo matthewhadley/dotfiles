@@ -1,4 +1,4 @@
-## directory listing 
+## directory listing
 alias ls='ls -G'
 alias l='ls -lG'
 
@@ -12,3 +12,6 @@ alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
 
 ## gtasks
 alias 'gtasks-due'='gtasks -L -sdo -dse'
+
+## git
+alias git='/Users/mhadley/dev/bash/git.corp.identity/git.corp.identity.sh'
