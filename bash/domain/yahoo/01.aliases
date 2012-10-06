@@ -1,5 +1,6 @@
 #### Commands
 alias ls='ls --color=always'
+alias l='ls -l --color=always'
 alias ssh=yssh
 
 #### Screen sessions
