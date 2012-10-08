@@ -1,0 +1,3 @@
+# git
+alias gp='git push origin master'
+alias gl='git pull origin master'
