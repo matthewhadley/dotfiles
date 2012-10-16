@@ -15,3 +15,9 @@ alias 'gtasks-due'='gtasks -L -sdo -dse'
 
 ## git
 alias git='/Users/mhadley/dev/bash/git.corp.identity/git.corp.identity.sh'
+
+# `cat` with beautiful colors. requires Pygments installed.
+alias c='pygmentize -O style=monokai -f console256 -g'
+
+# Recursively delete `.DS_Store` files
+alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
