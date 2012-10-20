@@ -1,3 +1,7 @@
 # git
-alias gp='git push origin master'
-alias gl='git pull origin master'
+alias gp='git push'
+alias gl='git pull'
+alias gpom='git push origin master'
+alias glom='git pull origin master'
+alias gs='git status'
+alias ga='git add'
