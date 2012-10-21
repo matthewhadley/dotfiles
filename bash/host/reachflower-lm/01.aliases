@@ -14,7 +14,7 @@ alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
 alias 'gtasks-due'='gtasks -L -sdo -dse'
 
 ## git
-alias git='~/dev/bash/git.corp.identity/git.corp.identity.sh'
+alias git='~/dev/bash/git.channel/git.channel.sh'
 
 # `cat` with beautiful colors. requires Pygments installed.
 alias c='pygmentize -O style=manni -f console256 -g'
