@@ -1,5 +1,5 @@
 ## bash.rc
-export DOTHOME=$HOME/etc/dothome
+export DOTFILES=$HOME/.dotfiles
 export OS=`uname`
 if [ -d /home/y ]; then
   export DOMAIN='yahoo'
@@ -15,7 +15,7 @@ function source_rc() {
     done
 }
 
-source_rc $DOTHOME/bash
-source_rc $DOTHOME/bash/domain/$DOMAIN
-source_rc $DOTHOME/bash/os/$OS
-source_rc $DOTHOME/bash/host/$HOSTNAME
+source_rc $DOTFILES/bash
+source_rc $DOTFILES/bash/domain/$DOMAIN
+source_rc $DOTFILES/bash/os/$OS
+source_rc $DOTFILES/bash/host/$HOSTNAME

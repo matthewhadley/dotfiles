@@ -1,0 +1,33 @@
+# source the main muttrc, this mailbox should be started by `mutt -F ~/.mutt/accounts/ycorp.muttrc`
+source ~/.mutt/muttrc
+
+# User config
+set from = "mhadley@yahoo-inc.com"
+set realname = "Matthew Hadley"
+
+# IMAP config
+set folder = "imaps://sp1-webmail.corp.yahoo.com"
+set spoolfile = "+INBOX"
+set postponed = "+Drafts"
+set copy=yes # save a copy of sent messages
+set record = "+Sent Items" # where to store sent messages
+set imap_user = "mhadley"
+set imap_pass = "`keychain -g Exchange mhadley@sp1-webmail.corp.yahoo.com`" # note password is stored in, and pulled from, keychain
+
+# Which mailboxes to create TAB shortcuts for
+mailboxes +INBOX +INBOX/archive "+Drafts" "+Sent Items" +INBOX/bugzilla +INBOX/cocktails
+
+# SMTP config
+set smtp_url = "smtp://smarthost.yahoo.com"
+set smtp_pass = "`keychain -g Exchange mhadley@sp1-webmail.corp.yahoo.com`" # note password is stored in, and pulled from, keychain
+
+# Map 'e' key to move message to archive in index and pager view
+macro index,pager e "s=INBOX/archive\r$" "Move message to archive"
+
+# Map folders to function keys
+macro index,pager <f2> "c=INBOX\nOd="	"Switch to Inbox folder"
+macro index,pager <f3> "c=INBOX/archive\nOd=" "Switch to archive folder"
+macro index,pager <f4> "c=Drafts\nOd=" "Switch to Drafts folder"
+macro index,pager <f5> "c=Sent<quote-char> Items\nOd=" "Switch to Sent Items folder" # "<quote-char> " required for whitespace in folder name
+macro index,pager <f6> "c=INBOX/bugzilla\nOd=" "Switch to bugzilla folder"
+macro index,pager <f7> "c=INBOX/cocktails\nOd=" "Switch to cocktails folder"
