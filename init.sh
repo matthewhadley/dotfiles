@@ -1,5 +1,5 @@
 #!/bin/bash
-LINKS=('bash_profile' 'bashrc' 'gitconfig' 'gitignore' 'screenrc' 'vim' 'vimrc' 'mutt')
+LINKS=('bash_profile' 'bashrc' 'gitconfig' 'gitignore' 'screenrc' 'vim' 'vimrc' 'mutt' 'editorconfig')
 
 cd $HOME
 DIR=".dotfiles"
