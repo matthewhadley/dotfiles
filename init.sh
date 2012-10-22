@@ -9,7 +9,9 @@ fi
 for i in "${LINKS[@]}"
 do
   :
-  rm .$i
+  if [ -h .$i ]; then
+    rm .$i
+  fi
   ln -s $DIR/$i .$i
 done
 echo ".dotfiles init'd"
