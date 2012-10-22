@@ -11,7 +11,8 @@ use [homebrew](http://mxcl.github.com/homebrew/) to install mutt
 
 So that you don't have to have your passwords in config files, install [keychain](https://github.com/diffsky/keychain)
 
-    git clone git://github.com/diffsky/dotmutt.git ~/.mutt
+Make a cache directory:
+
     mkdir ~/.mutt/cache
 
 # Usage
