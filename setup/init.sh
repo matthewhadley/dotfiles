@@ -9,7 +9,7 @@ fi
 for i in "${LINKS[@]}"
 do
   :
-  if [ -h .$i ]; then
+    if [ -h .$i ] || [ -f .$i ]; then
     rm .$i
   fi
   ln -s $DIR/$i .$i
