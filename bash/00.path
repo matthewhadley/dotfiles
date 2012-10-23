@@ -5,5 +5,6 @@ function pathadd {
     fi
 }
 
-pathadd '/usr/local/sbin'
-pathadd $HOME'/bin'
+pathadd "/usr/local/sbin"
+pathadd "$HOME/bin"
+pathadd "$HOME/dev/bash/bashbin"
