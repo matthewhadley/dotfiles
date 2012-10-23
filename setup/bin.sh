@@ -24,4 +24,5 @@ ln -s ~/dev/bash/bashbin/sbp sbp
 ln -s ~/dev/bash/spark/spark spark
 ln -s ~/dev/bash/bashbin/toggleyit toggleyit
 ln -s ~/dev/bash/bashbin/tp tp
+ln -s ~/dev/utils/jq/jq jq
 echo "symlinks created"
