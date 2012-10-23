@@ -5,6 +5,8 @@ if [ -d /home/y ]; then
   export DOMAIN='yahoo'
 elif [ -f /etc/arch-release ]; then
   export DOMAIN='arch'
+else
+  export DOMAIN='local'
 fi
 
 function source_rc() {
