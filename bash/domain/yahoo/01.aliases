@@ -9,5 +9,5 @@ alias scratch='screen -x scratch'
 alias tools='screen -x tools'
 
 # npm
-alias ynpm='ynpm --prefix=/home/y --cache=/home/y/tmp'
-alias npm='ynpm --prefix=/home/y --cache=/home/y/tmp --registry https://registry.npmjs.org/'
+alias 'ynpmg'='ynpm --prefix=/home/y --cache=/home/y/tmp'
+alias npm='ynpm --registry https://registry.npmjs.org/'
