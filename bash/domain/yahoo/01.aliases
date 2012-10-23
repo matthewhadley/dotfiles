@@ -7,3 +7,7 @@ alias ssh=yssh
 alias zed='screen -x zed'
 alias scratch='screen -x scratch'
 alias tools='screen -x tools'
+
+# npm
+alias ynpm='ynpm --prefix=/home/y --cache=/home/y/tmp'
+alias npm='ynpm --prefix=/home/y --cache=/home/y/tmp --registry https://registry.npmjs.org/'
