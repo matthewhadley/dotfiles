@@ -1,10 +1,13 @@
 # git
 alias gp='git push'
 alias gl='git pull'
+alias gpo='git push origin'
 alias gpom='git push origin master'
+alias glo='git pull origin'
 alias glom='git pull origin master'
 alias gs='git status'
 alias ga='git add'
 alias gc='git commit -m'
 alias gd='git diff'
 alias gdt='git difftool'
+alias gch='git checkout'
