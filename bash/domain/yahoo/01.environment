@@ -1,4 +1,5 @@
 export SVN_SSH=yssh
+export SRCZIP=git
 
 ### MAINTAIN SSH
 if [ -x /usr/local/bin/yssh-find-agent ]; then
