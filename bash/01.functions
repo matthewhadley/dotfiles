@@ -20,11 +20,21 @@ function parseVirtualEnv {
 }
 
 # Repeat a command mulitple times
-repeat() {
+function repeat() {
     n=$1
     shift
     while [ $(( n -= 1 )) -ge 0 ]
     do
         "$@"
     done
+}
+
+# Update and source .dotfiles
+function dotfiles() {
+  if [ "$1" != "local" ];then
+    cd $HOME/.dotfiles
+    git pull origin master
+  fi
+  . $HOME/.dotfiles/bashrc
+  echo "sourced .dotfiles"
 }
