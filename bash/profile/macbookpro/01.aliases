@@ -5,6 +5,8 @@ alias l='ls -lG'
 ## ssh hosts
 alias sshs='ssh stephadflier'
 alias sshb='ssh buildingwork'
+alias sshc='ssh cumulus'
+alias sshvc='ssh virtualbox-archlinux-linode'
 
 ## mutt
 alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
