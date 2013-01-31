@@ -1,10 +1,13 @@
 # Path
 function pathadd {
-    if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
-        PATH="$PATH:$1"
-    fi
+  if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
+    PATH="$1:$PATH"
+  fi
 }
 
-pathadd "/usr/local/sbin"
 pathadd "$HOME/bin"
 pathadd "$HOME/dev/bash/bashbin"
+pathadd "/usr/local/sbin"
+
+# Note, edit /etc/paths to put local paths before global
+# http://stackoverflow.com/questions/5364614/
