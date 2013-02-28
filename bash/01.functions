@@ -38,3 +38,9 @@ function dotfiles() {
   . $HOME/.dotfiles/bashrc
   echo "sourced .dotfiles"
 }
+
+# cd to parent directory of symlinked file
+function cds() {
+  realpath=$(readlink $1)
+  cd $(dirname $realpath)
+}
