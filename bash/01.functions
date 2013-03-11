@@ -31,7 +31,8 @@ function repeat() {
 
 # Update and source .dotfiles
 function dotfiles() {
-  if [ "$1" != "local" ];then
+  if [ "$1" == "remote" ];then
+    echo "attempting to pull from remote..."
     cd $HOME/.dotfiles
     git pull origin master
   fi
