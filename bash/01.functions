@@ -44,3 +44,8 @@ function cds() {
   realpath=$(readlink $1)
   cd $(dirname $realpath)
 }
+
+# make a directory and cd into it
+function md () {
+  mkdir -p "$@" && cd "$@";
+}
