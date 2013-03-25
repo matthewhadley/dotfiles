@@ -21,3 +21,6 @@ source_rc $DOTFILES/bash
 source_rc $DOTFILES/bash/domain/$DOMAIN
 source_rc $DOTFILES/bash/os/$OS
 source_rc $DOTFILES/bash/host/$HOSTNAME
+
+# nvm https://github.com/creationix/nvm
+source $DOTFILES/nvm/nvm.sh
