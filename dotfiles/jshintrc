@@ -36,6 +36,10 @@
   "multistr":     false,
   "onecase":      false,
   "proto":        false,
+  "predef": [
+      "it",
+      "describe"
+    ],
   "regexdash":    false,
   "scripturl":    false,
   "shadow":       false,
