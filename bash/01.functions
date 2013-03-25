@@ -36,7 +36,7 @@ function dotfiles() {
     cd $HOME/.dotfiles
     git pull origin master
   fi
-  . $HOME/.dotfiles/bashrc
+  . $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
 }
 
