@@ -1,17 +1,14 @@
 #!/bin/bash
-LINKS=('bash_profile' 'bashrc' 'gitconfig' 'gitignore' 'screenrc' 'vim' 'vimrc' 'mutt' 'editorconfig')
 
+DIR=".dotfiles/dotfiles"
 cd $HOME
-DIR=".dotfiles"
-if [ ! -d $DIR ]; then
-  mkdir $DIR
-fi
-for i in "${LINKS[@]}"
-do
-  :
-    if [ -h .$i ] || [ -f .$i ]; then
-    rm .$i
+for i in $DIR/*
+do :
+  FILE=`basename "$i"`
+  LINK="$i"
+  if [ -h .$FILE ] || [ -f .$FILE ]; then
+    rm .$FILE
   fi
-  ln -s $DIR/$i .$i
+  ln -s "$LINK" ".$FILE"
 done
 echo ".dotfiles init'd"
