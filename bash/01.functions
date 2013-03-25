@@ -35,6 +35,8 @@ function dotfiles() {
     echo "attempting to pull from remote..."
     cd $HOME/.dotfiles
     git pull origin master
+  elif [ "$1" == "init" ];then
+    $HOME/.dotfiles/setup/init.sh
   fi
   . $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
