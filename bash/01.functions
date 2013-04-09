@@ -5,9 +5,28 @@ function copykeys {
     ssh ${username:=$USER}@${1} "echo `cat ~/.ssh/id_dsa.pub` >> ~/.ssh/authorized_keys"
 }
 
-# Get the git branch name of current directory
+function parseGitDirty {
+  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
+}
+
+# Get the git branch name of current directory and wrap in parens if exists (for PS1)
 function parseGitBranch {
-    git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ (\1$(parseGitDirty))/"
+}
+
+# echo git branch of current directory
+function getGitBranch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
+}
+
+# git push origin branch
+function gpob {
+  git push origin $(getGitBranch)
+}
+
+# git pull origin branch
+function glob {
+  git pull origin $(getGitBranch)
 }
 
 # Determine the active python virtualenv

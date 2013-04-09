@@ -17,3 +17,6 @@ alias gd='git diff'
 alias gdt='git difftool'
 alias gch='git checkout'
 alias gm='git merge'
+
+# yahoo
+alias ynpm='npm --registry http://ynpm-registry.corp.yahoo.com:4080/'
