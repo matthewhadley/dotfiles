@@ -4,13 +4,11 @@
 [user]
 	name = diffsky
 	email = matthew.hadley@gmail.com
-[alias]
-	tree = log --graph --pretty=format:'%C(blue bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative
 [core]
 	excludesfile = /Users/mhadley/.gitignore
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+	path =
 [mergetool "sourcetree"]
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
