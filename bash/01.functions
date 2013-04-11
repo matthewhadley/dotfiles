@@ -31,7 +31,7 @@ function glob {
 
 # rebase remote
 function glr {
-  git fetch origin && git rebase -p origin/$(getGitBranch)
+  git fetch origin && git rebase --preserve-merges origin/$(getGitBranch)
 }
 
 # Determine the active python virtualenv
