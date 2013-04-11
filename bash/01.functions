@@ -29,6 +29,11 @@ function glob {
   git pull origin $(getGitBranch)
 }
 
+# rebase remote
+function glr {
+  git fetch origin && git rebase -p origin/$(getGitBranch)
+}
+
 # Determine the active python virtualenv
 # to add to PS1 use \$(parseVirtualEnv)
 function parseVirtualEnv {
