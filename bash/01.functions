@@ -56,10 +56,10 @@ function repeat() {
 # Update and source .dotfiles
 function dotfiles() {
   if [ "$1" == "remote" ];then
-    echo "attempting to pull from remote..."
+    echo "attempting to merge from remote origin..."
     cd $HOME/.dotfiles
     git fetch origin
-    git reset --hard origin/master
+    git merge --ff-only origin master
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/setup/init.sh
   fi
