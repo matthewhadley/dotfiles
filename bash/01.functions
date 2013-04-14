@@ -58,6 +58,7 @@ function dotfiles() {
   if [ "$1" == "remote" ];then
     echo "attempting to pull from remote..."
     cd $HOME/.dotfiles
+    git fetch origin
     git pull origin master
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/setup/init.sh
