@@ -5,6 +5,8 @@ if [ -d /home/y ]; then
   export DOMAIN='yahoo'
 elif [ -f /etc/arch-release ]; then
   export DOMAIN='arch'
+elif [ -f /etc/debian_version ]; then
+  export DOMAIN='debian'
 else
   export DOMAIN='local'
 fi
@@ -21,6 +23,3 @@ source_rc $DOTFILES/bash
 source_rc $DOTFILES/bash/domain/$DOMAIN
 source_rc $DOTFILES/bash/os/$OS
 source_rc $DOTFILES/bash/host/$HOSTNAME
-
-# nvm https://github.com/creationix/nvm
-source $DOTFILES/nvm/nvm.sh
