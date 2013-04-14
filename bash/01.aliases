@@ -17,7 +17,8 @@ alias gd='git diff'
 alias gdt='git difftool'
 alias gch='git checkout'
 alias gm='git merge'
-alias gmb='git merge --no-ff'  # git merge branch - use this for local merging of feature branches into master
+# git merge branch - for local merging of feature branches into master, creates a merge commit even for a fast forward
+alias gmb='git merge --no-ff'
 alias gt="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 
