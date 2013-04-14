@@ -59,7 +59,7 @@ function dotfiles() {
     echo "attempting to pull from remote..."
     cd $HOME/.dotfiles
     git fetch origin
-    git pull origin master
+    git reset --hard origin/master
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/setup/init.sh
   fi
