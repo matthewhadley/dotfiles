@@ -11,4 +11,6 @@ do :
   fi
   ln -s "$LINK" ".$FILE"
 done
+
+source $HOME/.bashrc
 echo ".dotfiles init'd"
