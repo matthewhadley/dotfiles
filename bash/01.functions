@@ -59,7 +59,7 @@ function dotfiles() {
     echo "attempting to merge from remote origin..."
     cd $HOME/.dotfiles
     git fetch origin
-    git merge --ff-only origin master
+    git merge origin/master --ff-only
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/setup/init.sh
   fi
