@@ -27,7 +27,7 @@ macro index,pager	I		"WN$" "Mark message as read"
 macro index,pager	U		"N$" "Mark message as unread"
 
 # colors
-color normal		black   	default	
+color normal		black   	default
 color indicator		white		blue
 color index             black           default ~R # Read
 color index 		brightblue	default ~N # New

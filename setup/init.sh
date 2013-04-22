@@ -12,5 +12,8 @@ do :
   ln -s "$LINK" ".$FILE"
 done
 
+# setup mutt
+ln -s ~/.dotfiles/mutt .mutt
+
 source $HOME/.bashrc
 echo ".dotfiles init'd"

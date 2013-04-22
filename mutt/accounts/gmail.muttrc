@@ -13,14 +13,14 @@ set postponed = "+[Google Mail]/Drafts"
 set copy=no
 #set record = "+[Google Mail]/Sent Mail" # where to store sent items
 set imap_user = "matthew.hadley@gmail.com"
-set imap_pass = "`keychain -g gmail`"
+set imap_pass = "`keychain -g gmail matthew.hadley@gmail.com`"
 
 # Which mailboxes to create TAB shortcuts for
 mailboxes +INBOX "+[Google Mail]/Starred" "+[Google Mail]/Drafts" "+[Google Mail]/Sent Mail" "+[Google Mail]/All Mail"
 
 # SMTP config
 set smtp_url = "smtp://matthew.hadley@smtp.gmail.com:587/"
-set smtp_pass = "`keychain -g gmail`"
+set smtp_pass = "`keychain -g gmail matthew.hadley@gmail.com`"
 
 # Map 'e' key to move message to archive in index and pager view
 # "<quote-char> " required for whitespace in folder name
