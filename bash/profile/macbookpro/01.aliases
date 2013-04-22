@@ -13,6 +13,9 @@ alias sshva='ssh virtualbox-archlinux'
 alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
 alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
 
+## email
+alias gu='~/dev/bash/gmail-notifier/gmail-notifier/gmail-notifier.sh -c'
+
 ## gtasks
 alias 'gtasks-due'='gtasks -L -sdo -dse'
 
