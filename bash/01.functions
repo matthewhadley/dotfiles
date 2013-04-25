@@ -65,7 +65,6 @@ function dotfiles() {
     $HOME/.dotfiles/init.sh
   fi
   source $HOME/.dotfiles/dotfiles/bashrc
-  echo "sourced .dotfiles"
 }
 
 # cd to parent directory of symlinked file
