@@ -1,11 +1,4 @@
-# Copy ssh keys to another host
-# Usage: copykeys example.com [diffsky] [port]
-function copykeys {
-    username=$2
-    port=$3
-    ssh -p${port:=22} ${username:=$USER}@${1} "mkdir -p ~/.ssh;echo `cat ~/.ssh/id_rsa.pub` >> ~/.ssh/authorized_keys"
-}
-
+# Determine if a git repo has uncomitted changes in it
 function parseGitDirty {
   [[ "$(git status 2> /dev/null | tail -n1 | cut -c 1-17)" != "nothing to commit" ]] && echo "*"
 }
