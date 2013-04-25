@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# setup git submodules
+cd $HOME/.dotfiles
+git submodule init
+git submodule update
+
 DIR=".dotfiles/dotfiles"
 cd $HOME
 for i in $DIR/*
@@ -13,6 +18,9 @@ do :
 done
 
 # setup mutt
+if [ -h .$FILE ] || [ -f .$FILE ]; then
+  rm .mutt
+fi
 ln -s ~/.dotfiles/mutt .mutt
 
 source $HOME/.bashrc
