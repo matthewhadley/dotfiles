@@ -15,7 +15,8 @@ do :
 done
 
 # setup mutt
-ln -sF ~/.dotfiles/mutt .mutt
+rm -f ~/.mutt 2> /dev/null
+ln -s .dotfiles/mutt .mutt
 
 source $HOME/.bashrc
 
