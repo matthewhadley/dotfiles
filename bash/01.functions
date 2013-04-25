@@ -62,9 +62,9 @@ function dotfiles() {
     git fetch origin
     git merge origin/master
   elif [ "$1" == "init" ];then
-    $HOME/.dotfiles/setup/init.sh
+    $HOME/.dotfiles/init.sh
   fi
-  . $HOME/.dotfiles/dotfiles/bashrc
+  source $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
 }
 

@@ -18,7 +18,7 @@ done
 rm -f ~/.mutt 2> /dev/null
 ln -s .dotfiles/mutt .mutt
 
-source $HOME/.bashrc
+source $HOME/.dotfiles/dotfiles/bashrc
 
 if [ "$DOMAIN" = "local" ];then
   DIR="$HOME/bin"
