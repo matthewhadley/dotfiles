@@ -1,8 +1,9 @@
 # Copy ssh keys to another host
-# Usage: copykeys example.com diffsky
+# Usage: copykeys example.com [diffsky] [port]
 function copykeys {
     username=$2
-    ssh ${username:=$USER}@${1} "echo `cat ~/.ssh/id_dsa.pub` >> ~/.ssh/authorized_keys"
+    port=$3
+    ssh -p${port:=22} ${username:=$USER}@${1} "mkdir -p ~/.ssh;echo `cat ~/.ssh/id_rsa.pub` >> ~/.ssh/authorized_keys"
 }
 
 function parseGitDirty {
