@@ -9,6 +9,3 @@ HISTCONTROL=ignoreboth
 
 # Control own PS1 instead of virtualenv (python)
 VIRTUAL_ENV_DISABLE_PROMPT=1
-
-# correct node path for homebrew install of nodejs
-export NODE_PATH="/usr/local/lib/node_modules/"
