@@ -7,16 +7,20 @@ elif [ -f /etc/arch-release ]; then
   export DOMAIN='arch'
 elif [ -f /etc/debian_version ]; then
   export DOMAIN='debian'
+elif [ -f /etc/centos-release ]; then
+  export DOMAIN='centos'
+elif [ "$OS" == "Darwin" ]; then
+  export DOMAIN='osx'
 else
-  export DOMAIN='local'
+  export DOMAIN='unknown'
 fi
 
 function source_rc() {
-    for rc in $1/*; do
-        if [ -f $rc ]; then
-            source $rc
-        fi
-    done
+  for rc in $1/*; do
+    if [ -f $rc ]; then
+      source $rc
+    fi
+  done
 }
 
 source_rc $DOTFILES/bash
