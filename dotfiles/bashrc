@@ -1,9 +1,7 @@
 ## bash.rc
 export DOTFILES=$HOME/.dotfiles
 export OS=`uname`
-if [ -d /home/y ]; then
-  export DOMAIN='yahoo'
-elif [ -f /etc/arch-release ]; then
+if [ -f /etc/arch-release ]; then
   export DOMAIN='arch'
 elif [ -f /etc/debian_version ]; then
   export DOMAIN='debian'

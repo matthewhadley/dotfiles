@@ -22,8 +22,5 @@ alias gmb='git merge --no-ff'
 alias gt="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 
-# yahoo
-alias ynpm='npm --registry http://ynpm-registry.corp.yahoo.com:4080/'
-
 # sublime text
 alias sbn='~/bin/sb -n .'
