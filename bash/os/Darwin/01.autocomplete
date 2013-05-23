@@ -20,7 +20,7 @@ complete -F _sbp sbp
 # Autocomplete for task paper projects via `tp`
 function _tp
  {
-    local DIR=$HOME/tasks/*.taskpaper
+    local DIR=$HOME/Dropbox/Apps/TaskPaper/*.taskpaper
     local file completes
 
     for f in $DIR; do
