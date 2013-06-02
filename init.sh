@@ -21,12 +21,6 @@ ln -s .dotfiles/mutt .mutt
 # lead bashrc
 source $HOME/.dotfiles/dotfiles/bashrc
 
-# bash completion http://bash-completion.alioth.debian.org/
-# $ brew install bash-completion
-if [ -f $(brew --prefix)/etc/bash_completion ]; then
-  source $(brew --prefix)/etc/bash_completion
-fi
-
 if [ "$DOMAIN" = "local" ];then
   DIR="$HOME/bin"
   if [ ! -d $DIR ]; then
