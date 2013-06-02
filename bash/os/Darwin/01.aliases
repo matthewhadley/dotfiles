@@ -26,7 +26,7 @@ alias git='~/dev/bash/git.channel/git.channel.sh'
 alias c='pygmentize -O style=manni -f console256 -g'
 
 # Recursively delete `.DS_Store` files
-alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
+alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
 
 # simple server
 alias ss='polpetta'
