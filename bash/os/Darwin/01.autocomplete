@@ -1,7 +1,8 @@
 # bash completion http://bash-completion.alioth.debian.org/
 # $ brew install bash-completion
-if [ -f $(brew --prefix)/etc/bash_completion ]; then
-  source $(brew --prefix)/etc/bash_completion
+# $(brew --prefix) == /usr/local
+if [ -f /usr/local/etc/bash_completion ]; then
+  source /usr/local/etc/bash_completion
 fi
 
 # Autocomplete for sublime projects via `sbp`
