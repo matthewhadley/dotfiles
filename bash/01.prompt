@@ -1,0 +1,25 @@
+# https://code.google.com/p/iterm2/issues/detail?id=571
+# http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
+# http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
+prompt_command() {
+  dir=${PWD%/*/*};
+  if [ ${#dir} -gt 0 -a "$dir" != "$PWD" ];then
+    last=${PWD:${#dir}+1}
+  else
+    last=$PWD;
+  fi
+  if [ "$last" == "$HOME" ];then
+    last="~"
+  fi
+  if [ "`dirname $last`" == "$USER" ];then
+    last="~/${PWD##*/}"
+  fi
+  hostname="${HOSTNAME}"
+  if [ "$hostname" == "${HOSTNAME}" ]; then
+    hostname=""
+  else
+    hostname="[$HOSTNAME] "
+  fi
+  echo -ne "\033]0;${hostname}${last}\007"
+}
+PROMPT_COMMAND=prompt_command
