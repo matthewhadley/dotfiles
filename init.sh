@@ -26,7 +26,6 @@ fi
 DIR="$HOME/bin"
 rm -rf $DIR
 mkdir $DIR
-chflags hidden $DIR
 cd $DIR
 # ~/bin symlinks
 ln -sf ~/dev/bash/git.corp.identity/git.corp.identity.sh git.corp.identity
@@ -36,6 +35,8 @@ ln -sf ~/dev/perl/git-moo/git-moo git-moo
 ln -sf ~/dev/bash/bashbin/copykeys copykeys
 ln -sf ~/dev/bash/bashbin/perms perms
 if [ "$DOMAIN" = "osx" ];then
+  # hide ~/bin
+  chflags hidden $DIR
   # osx only ~/bin symlinks
   ln -sf /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl sb
   ln -sf ~/dev/bash/git.dayone/git.dayone.sh git.dayone
