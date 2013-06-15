@@ -11,4 +11,6 @@ HISTCONTROL=ignoreboth
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # alias GIT_SSH for https://github.com/diffsky/git-ssh
-export GIT_SSH=$HOME/bin/git-ssh
+if [ -f $HOME/bin/git-ssh ];then
+  export GIT_SSH=$HOME/bin/git-ssh
+fi

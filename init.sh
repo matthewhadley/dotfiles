@@ -14,9 +14,6 @@ do :
   ln -sf "$LINK" ".$FILE"
 done
 
-# lead bashrc
-source $HOME/.dotfiles/dotfiles/bashrc
-
 if [ "$DOMAIN" = "osx" ];then
   # setup mutt
   rm -f ~/.mutt 2> /dev/null
@@ -28,7 +25,7 @@ rm -rf $DIR
 mkdir $DIR
 cd $DIR
 # ~/bin symlinks
-ln -sf ~/dev/bash/git.corp.identity/git.corp.identity.sh git.corp.identity
+ln -sf ~/dev/bash/git.corp/git.corp.sh git.corp
 ln -sf ~/dev/bash/git-ssh/git-ssh.sh git-ssh
 ln -sf ~/dev/perl/cloc/cloc-1.56.pl cloc
 ln -sf ~/dev/perl/git-moo/git-moo git-moo
@@ -47,5 +44,19 @@ if [ "$DOMAIN" = "osx" ];then
   ln -sf ~/dev/bash/bashbin/tp tp
   ln -sf ~/dev/bash/bashbin/tpadd tpadd
 fi
+
+# clone git/ssh
+DIR="$HOME/dev/bash"
+mkdir -p "$DIR"
+cd $DIR
+if [ ! -d "$DIR/git.corp" ];then
+  git clone git@github.com:diffsky/git.corp.git
+fi
+if [ ! -d "$DIR/git-ssh" ];then
+  git clone git@github.com:diffsky/git-ssh.git
+fi
+
+# lead bashrc
+source $HOME/.dotfiles/dotfiles/bashrc
 
 echo ".dotfiles init'd$bin (bin symlinks created)"
