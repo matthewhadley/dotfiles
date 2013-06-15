@@ -55,6 +55,9 @@ fi
 if [ ! -d "$DIR/git-ssh" ];then
   git clone git@github.com:diffsky/git-ssh.git
 fi
+if [ ! -d "$DIR/git.channel" ];then
+  git clone git@github.com:diffsky/git.channel.git
+fi
 
 # lead bashrc
 source $HOME/.dotfiles/dotfiles/bashrc
