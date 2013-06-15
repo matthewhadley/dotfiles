@@ -31,3 +31,9 @@ alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
 # simple server
 alias ss='polpetta'
 alias pp='polpetta'
+
+# sublime text
+alias sbn='sb -n .'
+
+# sourcetree
+alias st='open -a SourceTree .'

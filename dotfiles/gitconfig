@@ -7,6 +7,9 @@
 [core]
 	excludesfile = /Users/mhadley/.gitignore
 [corp]
-	org = github.com-cl
+	org = "creativelive/;cl-mhadley"
 	user = cl-mhadley
 	email = matthew.hadley@creativelive.com
+	ssh = config-cl
+[corp "org"]
+	alias1 = cl-mhadley

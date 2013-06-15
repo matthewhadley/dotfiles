@@ -22,6 +22,3 @@ alias gm='git merge'
 alias gmb='git merge --no-ff'
 alias gt="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
-
-# sublime text
-alias sbn='~/bin/sb -n .'
