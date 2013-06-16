@@ -5,11 +5,9 @@
 	name = diffsky
 	email = matthew.hadley@gmail.com
 [core]
-	excludesfile = /Users/mhadley/.gitignore
+	excludesfile = ~/.gitignore
 [corp]
 	org = "creativelive/;cl-mhadley"
 	user = cl-mhadley
 	email = matthew.hadley@creativelive.com
 	ssh = config-cl
-[corp "org"]
-	alias1 = cl-mhadley
