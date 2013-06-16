@@ -64,7 +64,7 @@ function dotfiles() {
 # cd to parent directory of symlinked file
 function cds() {
   realpath=$(readlink $1)
-  cd $(dirname $realpath)
+  cd $(dirname "$realpath")
 }
 
 # make a directory and cd into it

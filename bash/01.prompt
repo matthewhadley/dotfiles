@@ -11,7 +11,7 @@ prompt_command() {
   if [ "$last" == "$HOME" ];then
     last="~"
   fi
-  if [ "`dirname $last`" == "$USER" ];then
+  if [ '"`dirname "$last"`' == "$USER" ];then
     last="~/${PWD##*/}"
   fi
   # only show hostname if not on OSX
