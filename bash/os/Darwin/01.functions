@@ -1,16 +1,16 @@
 # Check for tasks
 # 0,30 * * * * source /Users/mhadley/.bashrc; gtasks-dashboard > /Users/mhadley/.gtasks/dashboard
-function parseTasks {
-  if [ -f $HOME/.gtasks/dashboard ]; then
-    cat $HOME/.gtasks/dashboard
-    echo -e "\r\n"
-    rm $HOME/.gtasks/dashboard 2> /dev/null
-    # introduce a random <1 second delay in an attempt to prevent multiple terms
-    # from trying to delete the file at the same time
-    # http://www.unix.com/shell-programming-scripting/7197-sleep-under-one-second.html
-    # perl -e "select(undef,undef,undef,.${RANDOM})"
-    #if [ -f $HOME/.gtasks/dashboard ]; then
-    #  rm $HOME/.gtasks/dashboard
-    #fi
-  fi
-}
+# function parseTasks {
+#   if [ -f $HOME/.gtasks/dashboard ]; then
+#     cat $HOME/.gtasks/dashboard
+#     echo -e "\r\n"
+#     rm $HOME/.gtasks/dashboard 2> /dev/null
+#     # introduce a random <1 second delay in an attempt to prevent multiple terms
+#     # from trying to delete the file at the same time
+#     # http://www.unix.com/shell-programming-scripting/7197-sleep-under-one-second.html
+#     # perl -e "select(undef,undef,undef,.${RANDOM})"
+#     #if [ -f $HOME/.gtasks/dashboard ]; then
+#     #  rm $HOME/.gtasks/dashboard
+#     #fi
+#   fi
+# }
