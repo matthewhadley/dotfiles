@@ -51,9 +51,11 @@ function repeat() {
 function dotfiles() {
   if [ "$1" == "remote" ];then
     echo "attempting to merge from remote origin..."
+    OWD=$PWD
     cd $HOME/.dotfiles
     git fetch origin
     git merge origin/master
+    cd $OWD
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/init.sh
   fi
