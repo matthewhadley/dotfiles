@@ -7,7 +7,7 @@
 [core]
 	excludesfile = ~/.gitignore
 [corp]
-	org = "creativelive/;cl-mhadley"
+	org = "creativelive/;cl-mhadley;cl-lei;cl-ali;cl-ryjadhav;cl-dzoba"
 	user = cl-mhadley
 	email = matthew.hadley@creativelive.com
 	ssh = config-cl
