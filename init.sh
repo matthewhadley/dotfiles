@@ -20,11 +20,15 @@ if [ "$DOMAIN" = "osx" ];then
   ln -s .dotfiles/mutt .mutt
 fi
 
+# vim
+rm -rf $HOME/.vim
+ln -s $HOME/.dotfiles/vim $HOME/.vim
+
+# ~/bin symlinks
 DIR="$HOME/bin"
 rm -rf $DIR
 mkdir $DIR
 cd $DIR
-# ~/bin symlinks
 ln -sf ~/dev/bash/git.corp/git.corp.sh git.corp
 ln -sf ~/dev/bash/git-ssh/git-ssh.sh git-ssh
 ln -sf ~/dev/perl/cloc/cloc-1.56.pl cloc
