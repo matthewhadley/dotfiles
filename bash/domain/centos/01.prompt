@@ -2,5 +2,8 @@ PROMPT_COLOR=$BLDBLU
 if [ "$(id -u)" == "0" ]; then
   # running as root
   PRE_PROMPT="$BLDRED\u$BLDWHT@$TXTDEF"
+elif [ "$(id -u)" == "500" ]; then
+  # running as vagrant
+  PRE_PROMPT="$BLDGRE\u$BLDWHT@$TXTDEF"
 fi
 PS1="$PRE_PROMPT$PROMPT_COLOR\h:$BLDWHT \w\$(parseGitBranch)$TXTDEF\n\$ "
