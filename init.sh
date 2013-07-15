@@ -67,3 +67,4 @@ fi
 source $HOME/.dotfiles/dotfiles/bashrc
 
 echo ".dotfiles init'd$bin (bin symlinks created)"
+exit 0
