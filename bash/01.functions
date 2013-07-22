@@ -28,6 +28,19 @@ function glr {
   git fetch origin && git rebase --preserve-merges origin/$(getGitBranch)
 }
 
+#  display file permissions in octal format
+function perms {
+  INPUT=*
+  if [ ! -z "$1" ]; then
+      INPUT=$@
+  fi
+  if [ "$OS" == "Darwin" ]; then
+    stat -f '%A %N' $INPUT
+  else
+    stat -c '%A %a %n' $INPUT
+  fi
+}
+
 # Determine the active python virtualenv
 # to add to PS1 use \$(parseVirtualEnv)
 function parseVirtualEnv {
