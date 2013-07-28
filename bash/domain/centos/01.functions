@@ -1,6 +1,8 @@
 function fullbak {
+  echo -e "Starting full system backup...\n"
   sudo mkdir -p /bak/tar
   FULLBAK=/bak/tar/fullbak-$HOSTNAME-`date "+%Y-%m-%d-%H-%M"`.tar
   sudo tar -zcvpf $FULLBAK --directory / --exclude proc --exclude sys --exclude tmp --exclude dev/pts --exclude run --exclude mnt --exclude boot --exclude selinux --exclude media --exclude lost+found --exclude bak --exclude etc/fstab --exclude etc/sysconfig/network-scripts/ifcfg-eth0 --exclude etc/sysconfig/network --exclude home/vagrant .
+  echo -e "done\n"
   echo $FULLBAK
 }
