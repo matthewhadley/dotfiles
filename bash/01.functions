@@ -72,6 +72,9 @@ function dotfiles() {
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/init.sh
   fi
+  # ssh
+  mkdir -p $HOME/.ssh
+  cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
   source $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
 }
