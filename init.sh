@@ -16,7 +16,7 @@ done
 
 # ssh
 mkdir -p $HOME/.ssh
-cp $HOME/.dotfiles/config* $HOME/.ssh
+cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
 
 if [ "$DOMAIN" = "osx" ];then
   # setup mutt
