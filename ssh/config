@@ -7,12 +7,10 @@ ForwardAgent        yes
 
 Host                cumulus
 HostName            50.116.43.47
-Port                1110
 ForwardAgent        yes
 
 Host                radiatus
 HostName            192.241.194.127
-Port                1110
 ForwardAgent        yes
 
 
