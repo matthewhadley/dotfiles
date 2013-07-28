@@ -1,0 +1,22 @@
+# ~/.ssh/config
+
+# clweb0[1,2,3]
+Host                *.dev.us-west-2.cl.int
+IdentityFile        ~/.ssh/cl_id_rsa
+ForwardAgent        yes
+
+Host                cumulus
+HostName            50.116.43.47
+Port                1110
+ForwardAgent        yes
+
+Host                radiatus
+HostName            192.241.194.127
+Port                1110
+ForwardAgent        yes
+
+
+# don't trust external machines with ssh keys
+Host                *
+ForwardAgent        no
+Protocol            2,1

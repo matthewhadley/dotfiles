@@ -14,6 +14,10 @@ do :
   ln -sf "$LINK" ".$FILE"
 done
 
+# ssh
+mkdir -p $HOME/.ssh
+cp $HOME/.dotfiles/config* $HOME/.ssh
+
 if [ "$DOMAIN" = "osx" ];then
   # setup mutt
   rm -f ~/.mutt 2> /dev/null
