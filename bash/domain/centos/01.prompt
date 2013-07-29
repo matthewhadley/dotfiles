@@ -2,7 +2,7 @@ PROMPT_COLOR=$BLDBLU
 if [ "$(id -u)" == "0" ]; then
   # running as root
   PRE_PROMPT="$BLDRED\u$BLDWHT@$TXTDEF"
-elif [ "$(id -u)" == "500" ]; then
+elif [ "$(whoami)" == "vagrant" ]; then
   # running as vagrant
   PRE_PROMPT="$BLDGRE\u$BLDWHT@$TXTDEF"
 fi
