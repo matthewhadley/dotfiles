@@ -79,6 +79,17 @@ function dotfiles() {
   echo "sourced .dotfiles"
 }
 
+# remove known_hosts entry
+function unknow_host() {
+  if [ -z "$1" ];then
+    echo "error: missing hostname"
+    return
+  fi
+  echo "removing host $1"
+  ssh-keygen -R $1 &>/dev/null
+  rm $HOME/.ssh/known_hosts.old 2>/dev/null
+}
+
 # cd to parent directory of symlinked file
 function cds() {
   realpath=$(readlink $1)
