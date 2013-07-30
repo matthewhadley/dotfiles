@@ -7,6 +7,7 @@ function pathadd {
 
 pathadd "$HOME/bin"
 pathadd "/usr/local/sbin"
+pathadd "/usr/local/bin"
 
 # Note, edit /etc/paths to put local paths before global
 # http://stackoverflow.com/questions/5364614/
