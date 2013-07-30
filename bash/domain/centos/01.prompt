@@ -6,4 +6,4 @@ elif [ "$(whoami)" == "vagrant" ]; then
   # running as vagrant
   PRE_PROMPT="$BLDGRE\u$BLDWHT@$TXTDEF"
 fi
-PS1="$PRE_PROMPT$PROMPT_COLOR\h:$BLDWHT \w\$(parseGitBranch)$TXTDEF\n\$ "
+PS1="$PRE_PROMPT$PROMPT_COLOR\H:$BLDWHT \w\$(parseGitBranch)$TXTDEF\n\$ "
