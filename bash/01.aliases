@@ -19,6 +19,8 @@ alias gr='git rm'
 alias gc='git commit -m'
 alias gb='git branch'
 __git_complete gb _git_branch
+
+__git_complete gunpb _git_branch
 alias gbv='git branch -va'
 alias gbD='git branch -D'
 __git_complete gbD _git_branch

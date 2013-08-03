@@ -1,5 +1,4 @@
-# required as install node via homebrew
+# required if install node via homebrew (now using n https://github.com/visionmedia/n)
 # https://github.com/yeoman/yeoman/issues/430#issuecomment-8660341
-pathadd '/usr/local/share/npm/bin'
-
-source ~/dev/bash/z/z.sh
+# pathadd '/usr/local/share/npm/bin'
+# export NODE_PATH="/usr/local/lib/node_modules/"

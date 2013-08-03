@@ -2,7 +2,8 @@
 # http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
 # http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
 prompt_command() {
-  dir=${PWD%/*/*};
+  local dir=${PWD%/*/*}
+  local last
   if [ ${#dir} -gt 0 -a "$dir" != "$PWD" ];then
     last=${PWD:${#dir}+1}
   else
@@ -16,7 +17,7 @@ prompt_command() {
   fi
   # only show hostname if not on OSX
   if [ "$DOMAIN" != "osx" ]; then
-    hostname="[$HOSTNAME] "
+    local hostname="[$HOSTNAME] "
   fi
   echo -ne "\033]0;${hostname}${last}\007"
 }

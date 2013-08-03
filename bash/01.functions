@@ -1,74 +1,83 @@
 # Determine if a git repo has uncomitted changes in it
-function parseGitDirty {
+parse_git_dirty() {
   [[ "$(git status 2> /dev/null | tail -n1 | cut -c 1-17)" != "nothing to commit" ]] && echo "*"
 }
 
 # Get the git branch name of current directory and wrap in parens if exists (for PS1)
-function parseGitBranch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ (\1$(parseGitDirty))/"
+parse_git_branch() {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ (\1$(parse_git_dirty))/"
 }
 
 # echo git branch of current directory
-function getGitBranch {
+get_git_branch() {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
 }
 
 # git push origin branch
-function gpob {
-  git push origin $(getGitBranch)
+gpob() {
+  git push origin $(get_git_branch)
 }
 
 # git pull origin branch
-function glob {
-  git pull origin $(getGitBranch)
+glob() {
+  git pull origin $(get_git_branch)
+}
+
+# git unpublish branch
+gunpb() {
+  local oifs=$IFS
+  IFS='/'
+  local branch=($1)
+  IFS=$oifs
+  git push ${branch[0]} --delete ${branch[1]}
 }
 
 # rebase remote
-function glr {
-  git fetch origin && git rebase --preserve-merges origin/$(getGitBranch)
+glr() {
+  git fetch origin && git rebase --preserve-merges origin/$(get_git_branch)
 }
 
 #  display file permissions in octal format
-function perms {
-  INPUT=*
+perms() {
+  local input=*
   if [ ! -z "$1" ]; then
-      INPUT=$@
+    input=$@
   fi
   if [ "$OS" == "Darwin" ]; then
-    stat -f '%A %N' $INPUT
+    stat -f '%A %N' $input
   else
-    stat -c '%A %a %n' $INPUT
+    stat -c '%A %a %n' $input
   fi
 }
 
 # Determine the active python virtualenv
-# to add to PS1 use \$(parseVirtualEnv)
-function parseVirtualEnv {
-    if [ "$VIRTUAL_ENV" != "" ];then
-        local ENV=`basename $VIRTUAL_ENV`
-        echo " [$ENV]"
-    fi
+# to add to PS1 use \$(parse_virtual_env)
+parse_virtual_env() {
+  if [ "$VIRTUAL_ENV" != "" ];then
+    local env=`basename $VIRTUAL_ENV`
+      echo " [$env]"
+  fi
 }
 
 # Repeat a command mulitple times
-function repeat() {
-    n=$1
-    shift
-    while [ $(( n -= 1 )) -ge 0 ]
-    do
-        "$@"
-    done
+repeat() {
+  local n=$1
+  shift
+  while [ $(( n -= 1 )) -ge 0 ]
+  do
+    "$@"
+  done
 }
 
 # Update and source .dotfiles
-function dotfiles() {
+dotfiles() {
   if [ "$1" == "remote" ];then
     echo "attempting to merge from remote origin..."
-    OWD=$PWD
+    local owd=$PWD
     cd $HOME/.dotfiles
     git fetch origin
     git merge origin/master
-    cd $OWD
+    cd $owd
   elif [ "$1" == "init" ];then
     $HOME/.dotfiles/init.sh
   fi
@@ -80,7 +89,7 @@ function dotfiles() {
 }
 
 # remove known_hosts entry
-function unknow_host() {
+unknow_host() {
   if [ -z "$1" ];then
     echo "error: missing hostname"
     return
@@ -91,12 +100,12 @@ function unknow_host() {
 }
 
 # cd to parent directory of symlinked file
-function cds() {
-  realpath=$(readlink $1)
+cds() {
+  local realpath=$(readlink $1)
   cd $(dirname "$realpath")
 }
 
 # make a directory and cd into it
-function md () {
+md() {
   mkdir -p "$@" && cd "$@";
 }

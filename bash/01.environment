@@ -14,3 +14,5 @@ VIRTUAL_ENV_DISABLE_PROMPT=1
 if [ -f $HOME/bin/git-ssh ];then
   export GIT_SSH=$HOME/bin/git-ssh
 fi
+
+source $HOME/.dotfiles/bash/z/z.sh

@@ -1,9 +1,10 @@
-PROMPT_COLOR=$BLDGRE
+local prompt_color=$BLDGRE
+local pre_prompt
 if [ "$(id -u)" == "0" ]; then
   # running as root
-  PRE_PROMPT="$BLDRED\u$BLDWHT@$TXTDEF"
+  pre_prompt="$BLDRED\u$BLDWHT@$TXTDEF"
 elif [ "$(whoami)" == "duff" ]; then
   # running as duff
-  PRE_PROMPT="$BLDYEL\u$BLDWHT@$TXTDEF"
+  pre_prompt="$BLDYEL\u$BLDWHT@$TXTDEF"
 fi
-PS1="$PRE_PROMPT$PROMPT_COLOR\h:$BLDWHT \w\$(parseGitBranch)$TXTDEF\n\$ "
+PS1="$pre_prompt$prompt_color\h:$BLDWHT \w\$(parse_git_branch)$TXTDEF\n\$ "

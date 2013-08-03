@@ -3,6 +3,3 @@ BASE_VIRTUAL_ENV="$HOME/.virtualenvs/base/bin/activate"
 if [ -f $BASE_VIRTUAL_ENV ];then
     source $BASE_VIRTUAL_ENV
 fi
-
-# correct node path for homebrew install of nodejs
-export NODE_PATH="/usr/local/lib/node_modules/"
