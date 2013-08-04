@@ -1,12 +1,12 @@
 #!/bin/bash
 
 if [ "$1" == "all" ];then
-  echo "updating git submodules"
+  echo "Updating git submodules"
   # setup git submodules
   owd=$PWD
   cd $HOME/.dotfiles
   git submodule update --init --recursive
-  git submodule foreach 'git fetch origin;git merge origin/master'
+  git submodule foreach 'git fetch origin;git merge origin/master;git checkout master'
   cd $owd
 fi
 
