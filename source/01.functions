@@ -89,12 +89,12 @@ dotfiles() {
       local all="all"
     fi
     $HOME/.dotfiles/init.sh $all
-    # second source seems to be needd to apply changes
+    # this source needed here to apply changes
     source $HOME/.dotfiles/dotfiles/bashrc
     return
   fi
   if [ "$1" == "remote" ];then
-    echo "attempting to merge from remote origin..."
+    echo "Attempting to merge from remote origin..."
     local owd=$PWD
     cd $HOME/.dotfiles
     git fetch origin
@@ -102,6 +102,12 @@ dotfiles() {
     cd $owd
     mkdir -p $HOME/.ssh
     cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
+    if [ "$2" == "all" ];then
+      $HOME/.dotfiles/init.sh all
+      # this source needed here to apply changes
+      source $HOME/.dotfiles/dotfiles/bashrc
+      return
+    fi
   fi
   source $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
