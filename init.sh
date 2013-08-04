@@ -32,6 +32,11 @@ if [ ! -f /usr/local/etc/bash_completion ]; then
   echo "warn: package bash completion not present"
 fi
 
+# symlinks
+if [ "$DOMAIN" = "osx" ];then
+  ln -s $HOME/dev/python/keychain/keychain.py /usr/local/bin/keychain &> /dev/null
+fi
+
 echo ".dotfiles init'd"
 
 # source all the bash
