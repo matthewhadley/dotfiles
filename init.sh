@@ -1,11 +1,14 @@
 #!/bin/bash
 
-# setup git submodules
-owd=$PWD
-cd $HOME/.dotfiles
-git submodule update --init --recursive
-git submodule foreach 'git fetch origin;git merge origin/master'
-
+if [ "$1" == "all" ];then
+  echo "updating git submodules"
+  # setup git submodules
+  owd=$PWD
+  cd $HOME/.dotfiles
+  git submodule update --init --recursive
+  git submodule foreach 'git fetch origin;git merge origin/master'
+  cd $owd
+fi
 
 for i in $HOME/.dotfiles/dotfiles/*
 do :
@@ -44,5 +47,4 @@ echo ".dotfiles init'd"
 source $HOME/.dotfiles/dotfiles/bashrc
 echo "sourced .dotfiles"
 
-cd $owd
 exit 0

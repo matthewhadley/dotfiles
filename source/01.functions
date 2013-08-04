@@ -85,7 +85,10 @@ repeat() {
 # Update and source .dotfiles
 dotfiles() {
   if [ "$1" == "init" ];then
-    $HOME/.dotfiles/init.sh
+    if [ "$2" == "all" ];then
+      local all="all"
+    fi
+    $HOME/.dotfiles/init.sh $all
     # second source seems to be needd to apply changes
     source $HOME/.dotfiles/dotfiles/bashrc
     return
