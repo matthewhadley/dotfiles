@@ -10,3 +10,6 @@
 [submodule "bash/copykeys"]
 	path = bash/copykeys
 	url = git@github.com:diffsky/copykeys.git
+[submodule "vim"]
+	path = vim
+	url = git@github.com:diffsky/dotvim.git
