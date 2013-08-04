@@ -85,6 +85,7 @@ repeat() {
 # Update and source .dotfiles
 dotfiles() {
   if [ "$1" == "init" ];then
+    local all='local'
     if [ "$2" == "all" ];then
       local all="all"
     fi

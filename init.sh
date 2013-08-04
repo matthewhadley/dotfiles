@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$1" == "all" ];then
+if [ "$1" != "local" ];then
   echo "Updating git submodules..."
   # setup git submodules
   owd=$PWD
