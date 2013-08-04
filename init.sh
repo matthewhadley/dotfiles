@@ -3,8 +3,7 @@
 # setup git submodules
 owd=$PWD
 cd $HOME/.dotfiles
-git submodule init
-git submodule update
+git submodule update --init --recursive
 
 for i in $HOME/.dotfiles/dotfiles/*
 do :
