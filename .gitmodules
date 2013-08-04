@@ -1,6 +1,3 @@
-[submodule "vim/bundle/nerdtree"]
-	path = vim/bundle/nerdtree
-	url = git://github.com/scrooloose/nerdtree.git
 [submodule "git/git.corp"]
 	path = git/git.corp
 	url = git@github.com:diffsky/git.corp.git
