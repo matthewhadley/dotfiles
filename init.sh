@@ -4,6 +4,8 @@
 owd=$PWD
 cd $HOME/.dotfiles
 git submodule update --init --recursive
+git submodule foreach 'git fetch origin;git merge origin/master'
+
 
 for i in $HOME/.dotfiles/dotfiles/*
 do :
