@@ -32,7 +32,7 @@ rm -rf $HOME/.vim
 ln -s $HOME/.dotfiles/vim $HOME/.vim
 
 # warn about bash-completion package not installed
-local bash_warn="warn: package bash completion not present"
+bash_warn="warn: package bash completion not present"
 if [[ "$DOMAIN" = "osx" && ! -f /usr/local/etc/bash_completion ]]; then
   echo $bash_warn
 fi
