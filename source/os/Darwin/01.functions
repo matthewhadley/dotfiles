@@ -69,3 +69,12 @@ tpadd() {
   fi
   mv $tmp $list
 }
+
+# reclaim ownership of Arq restored files
+arqown() {
+  local restored="$1"
+  if [ -z "$1" ];then
+    restored="."
+  fi
+  sudo chown -R $USER $restored;chgrp -R staff $restored
+}
