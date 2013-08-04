@@ -86,6 +86,8 @@ repeat() {
 dotfiles() {
   if [ "$1" == "init" ];then
     $HOME/.dotfiles/init.sh
+    # second source seems to be needd to apply changes
+    source $HOME/.dotfiles/dotfiles/bashrc
     return
   fi
   if [ "$1" == "remote" ];then
