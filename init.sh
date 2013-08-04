@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$1" == "all" ];then
-  echo "Updating git submodules"
+  echo "Updating git submodules..."
   # setup git submodules
   owd=$PWD
   cd $HOME/.dotfiles
