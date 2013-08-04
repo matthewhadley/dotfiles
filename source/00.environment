@@ -10,9 +10,11 @@ HISTCONTROL=ignoreboth
 # Control own PS1 instead of virtualenv (python)
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
-# alias GIT_SSH for https://github.com/diffsky/git-ssh
-if [ -f $HOME/bin/git-ssh ];then
-  export GIT_SSH=$HOME/bin/git-ssh
-fi
+# set GIT_SSH to allow per host configs
+# https://github.com/diffsky/git-ssh
+export GIT_SSH=$HOME/.dotfiles/git/git-ssh/git-ssh.sh
+export GIT_CORP=$HOME/.dotfiles/git/git.corp/git.corp.sh
 
+
+source $HOME/.dotfiles/git/git-completion.sh
 source $HOME/.dotfiles/bash/z/z.sh

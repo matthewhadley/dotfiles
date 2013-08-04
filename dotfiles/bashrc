@@ -21,7 +21,7 @@ function source_rc() {
   done
 }
 
-source_rc $DOTFILES/bash
-source_rc $DOTFILES/bash/domain/$DOMAIN
-source_rc $DOTFILES/bash/os/$OS
-source_rc $DOTFILES/bash/host/$HOSTNAME
+source_rc $DOTFILES/source
+source_rc $DOTFILES/source/domain/$DOMAIN
+source_rc $DOTFILES/source/os/$OS
+source_rc $DOTFILES/source/host/$HOSTNAME

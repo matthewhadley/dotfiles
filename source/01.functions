@@ -1,3 +1,16 @@
+# channel git calls
+export GIT_PATH=$(which git)
+git(){
+  if [ "$1" == "commit" -o "$1" == "clone" ];then
+    $GIT_CORP "$@"
+    if [ "$1" == "commit" -a "$DOMAIN" == "osx" ];then
+      git.dayone "$@"
+    fi
+  else
+    $GIT_PATH "$@"
+  fi
+}
+
 # Determine if a git repo has uncomitted changes in it
 parse_git_dirty() {
   [[ "$(git status 2> /dev/null | tail -n1 | cut -c 1-17)" != "nothing to commit" ]] && echo "*"
@@ -71,6 +84,10 @@ repeat() {
 
 # Update and source .dotfiles
 dotfiles() {
+  if [ "$1" == "init" ];then
+    $HOME/.dotfiles/init.sh
+    return
+  fi
   if [ "$1" == "remote" ];then
     echo "attempting to merge from remote origin..."
     local owd=$PWD
@@ -78,12 +95,9 @@ dotfiles() {
     git fetch origin
     git merge origin/master
     cd $owd
-  elif [ "$1" == "init" ];then
-    $HOME/.dotfiles/init.sh
+    mkdir -p $HOME/.ssh
+    cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
   fi
-  # ssh
-  mkdir -p $HOME/.ssh
-  cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
   source $HOME/.dotfiles/dotfiles/bashrc
   echo "sourced .dotfiles"
 }

@@ -23,7 +23,8 @@ alias ss='polpetta'
 alias pp='polpetta'
 
 # sublime text
-alias sbn='sb -n .'
+alias sb='/Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl'
+alias sbn='/Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl -n .'
 
 # sourcetree
 alias st='open -a SourceTree .'

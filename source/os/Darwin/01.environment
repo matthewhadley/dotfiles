@@ -1,0 +1,12 @@
+# activate the default python virtualenv
+BASE_VIRTUAL_ENV="$HOME/.virtualenvs/base/bin/activate"
+if [ -f $BASE_VIRTUAL_ENV ];then
+    source $BASE_VIRTUAL_ENV
+fi
+
+# bash completion http://bash-completion.alioth.debian.org/
+# $ brew install bash-completion
+# $(brew --prefix) == /usr/local
+if [ -f /usr/local/etc/bash_completion ]; then
+  source /usr/local/etc/bash_completion
+fi

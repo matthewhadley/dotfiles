@@ -1,6 +1,15 @@
 [submodule "vim/bundle/nerdtree"]
 	path = vim/bundle/nerdtree
 	url = git://github.com/scrooloose/nerdtree.git
+[submodule "git/git.corp"]
+	path = git/git.corp
+	url = git@github.com:diffsky/git.corp.git
+[submodule "git/git-ssh"]
+	path = git/git-ssh
+	url = git@github.com:diffsky/git-ssh.git
 [submodule "bash/z"]
 	path = bash/z
 	url = git@github.com:rupa/z.git
+[submodule "bash/copykeys"]
+	path = bash/copykeys
+	url = git@github.com:diffsky/copykeys.git

@@ -1,5 +1,13 @@
-# git
-alias git='~/dev/bash/git.channel/git.channel.sh'
+#dotfiles
+alias cdot='cd $HOME/.dotfiles'
+alias d='dotfiles'
+alias di='dotfiles init'
+alias dr='dotfiles remote'
+
+# make copykeys available
+alias copykeys=$HOME/.dotfiles/bash/copykeys/copykeys
+
+# git shortcuts
 alias gp='git push'
 __git_complete gp _git_push
 alias gl='git pull'
@@ -19,7 +27,6 @@ alias gr='git rm'
 alias gc='git commit -m'
 alias gb='git branch'
 __git_complete gb _git_branch
-
 __git_complete gunpb _git_branch
 alias gbv='git branch -va'
 alias gbD='git branch -D'

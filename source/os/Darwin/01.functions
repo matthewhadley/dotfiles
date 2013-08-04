@@ -1,0 +1,71 @@
+# write git entries to dayone app
+git.dayone(){
+  local repo=$(basename $(git rev-parse --show-toplevel 2> /dev/null))
+  echo -e "$3\n#dev #$repo" | dayone new 1> /dev/null
+}
+
+# open sublime text project
+_sbp() {
+  local DIR=$HOME/.sbp/*.sublime-project
+  local file completes
+
+  for f in $DIR; do
+    file=`echo ${f##*/} | sed "s/\..*//"`
+    completes=(${completes[@]} ${file})
+  done
+
+  local curw
+  COMPREPLY=()
+  curw=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
+  return 0
+}
+complete -F _sbp sbp
+sbp(){
+  if [ -z "$1" ];then
+    echo "error - no project specified"
+    return
+  fi
+  /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl -n --project $HOME/.sbp/$1.sublime-project
+}
+
+# open task paper
+_tp() {
+  local DIR=$HOME/Dropbox/Apps/TaskPaper/*.taskpaper
+  local file completes
+
+  for f in $DIR; do
+    file=`echo ${f##*/} | sed "s/\..*//"`
+    completes=(${completes[@]} ${file})
+  done
+
+  local curw
+  COMPREPLY=()
+  curw=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
+  return 0
+}
+complete -F _tp tp
+tp(){
+  open $HOME/Dropbox/Apps/Taskpaper/$1.taskpaper
+}
+
+# add a task to a taskpaper list
+tpadd() {
+  local task=$1
+  local list
+  if [ -z "$2" ]; then
+    list="scratch"
+  else
+    list=$2
+  fi
+
+  local tmp=/tmp/tpadd.$$
+  list=$HOME/Dropbox/Apps/Taskpaper/$list.taskpaper
+
+  echo "- $task" > $tmp
+  if [ -f $list ]; then
+    cat $list >> $tmp
+  fi
+  mv $tmp $list
+}
