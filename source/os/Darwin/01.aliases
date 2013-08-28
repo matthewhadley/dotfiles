@@ -28,3 +28,6 @@ alias sbn='/Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl -n
 
 # sourcetree
 alias st='open -a SourceTree .'
+
+# npmcorp
+alias npmcorp='npm --userconfig=$HOME/.npmrc_corp'
