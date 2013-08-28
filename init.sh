@@ -27,6 +27,9 @@ if [ "$DOMAIN" = "osx" ];then
   ln -s $HOME/.dotfiles/mutt $HOME/.mutt
 fi
 
+# Marks
+mkdir -p $HOME/.marks
+
 # vim
 rm -rf $HOME/.vim
 ln -s $HOME/.dotfiles/vim $HOME/.vim

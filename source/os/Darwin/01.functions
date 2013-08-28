@@ -6,10 +6,10 @@ git.dayone(){
 
 # open sublime text project
 _sbp() {
-  local DIR=$HOME/.sbp/*.sublime-project
+  local dir=$HOME/.sbp/*.sublime-project
   local file completes
 
-  for f in $DIR; do
+  for f in $dir; do
     file=`echo ${f##*/} | sed "s/\..*//"`
     completes=(${completes[@]} ${file})
   done
@@ -31,10 +31,10 @@ sbp(){
 
 # open task paper
 _tp() {
-  local DIR=$HOME/Dropbox/Apps/TaskPaper/*.taskpaper
+  local dir=$HOME/Dropbox/Apps/TaskPaper/*.taskpaper
   local file completes
 
-  for f in $DIR; do
+  for f in $dir; do
     file=`echo ${f##*/} | sed "s/\..*//"`
     completes=(${completes[@]} ${file})
   done

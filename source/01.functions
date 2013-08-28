@@ -156,3 +156,40 @@ cds() {
 md() {
   mkdir -p "$@" && cd "$@";
 }
+
+# marks
+# http://jeroenjanssens.com/2013/08/16/quickly-navigate-your-filesystem-from-the-command-line.html
+jump() {
+  cd -P "$MARKPATH/$1" 2>/dev/null || echo "No such mark: $1"
+}
+mark() {
+  mkdir -p "$MARKPATH"; ln -s "$(pwd)" "$MARKPATH/$1"
+}
+unmark() {
+  rm -i "$MARKPATH/$1"
+}
+marks() {
+  if [ "$DOMAIN" = "osx" ];then
+    \ls -l "$MARKPATH" | tail -n +2 | sed 's/  / /g' | cut -d' ' -f9- | awk -F ' -> ' '{printf "%-10s -> %s\n", $1, $2}'
+  else
+    ls -l "$MARKPATH" | sed 's/  / /g' | cut -d' ' -f9- | sed 's/ -/\t-/g' && echo
+  fi
+}
+
+_completemarks() {
+  local dir=$MARKPATH/*
+  local file completes
+
+  for f in $dir; do
+    file=`echo ${f##*/} | sed "s/\..*//"`
+    completes=(${completes[@]} ${file})
+  done
+
+  local curw
+  COMPREPLY=()
+  curw=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
+  return 0
+}
+
+complete -F _completemarks jump unmark
