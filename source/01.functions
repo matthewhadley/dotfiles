@@ -37,7 +37,7 @@ glob() {
 }
 
 # git fetch pull request
-gfpr() {
+gpr() {
   local remote='origin'
   if [ ! -z "$2" ];then
     remote=$2
@@ -48,13 +48,18 @@ gfpr() {
     git checkout pr-$1
     return
   fi
+  echo "attempting to fetch pull request for $remote pull/$1/head:pr-$1"
   git fetch $remote pull/$1/head:pr-$1
   git checkout pr-$1
 }
 
 # git fetch upstream pull request
-gfupr() {
-  gfpr $1 "upstream"
+gpru() {
+  if [ -z "$1" ];then
+    echo "error: no pr number specified"
+  else
+    gpr $1 "upstream"
+  fi
 }
 
 # git unpublish branch
