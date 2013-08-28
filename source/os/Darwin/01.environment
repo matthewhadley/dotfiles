@@ -10,3 +10,7 @@ fi
 if [ -f /usr/local/etc/bash_completion ]; then
   source /usr/local/etc/bash_completion
 fi
+
+# ghi
+# https://github.com/stephencelis/ghi
+export GHI_TOKEN=$(keychain -g "GHI_TOKEN_CL")
