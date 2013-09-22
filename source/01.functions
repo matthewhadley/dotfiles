@@ -13,6 +13,7 @@ git(){
 
 # Determine if a git repo has uncomitted changes in it
 parse_git_dirty() {
+  # Requires git 1.8. ver 1.7 responds with "no changes added "
   [[ "$(git status 2> /dev/null | tail -n1 | cut -c 1-17)" != "nothing to commit" ]] && echo "*"
 }
 

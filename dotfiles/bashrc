@@ -5,6 +5,9 @@ if [ -f /etc/arch-release ]; then
   export DOMAIN='arch'
 elif [ -f /etc/debian_version ]; then
   export DOMAIN='debian'
+  if [ "$(uname -r | grep bone | wc -l)" -ge "1" ]; then
+    export BEAGLEBONE_BLACK=1
+  fi
 elif [ -f /etc/centos-release ]; then
   export DOMAIN='centos'
 elif [ "$OS" == "Darwin" ]; then
@@ -12,6 +15,7 @@ elif [ "$OS" == "Darwin" ]; then
 else
   export DOMAIN='unknown'
 fi
+
 
 function source_rc() {
   for rc in $1/*; do
