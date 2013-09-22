@@ -2,8 +2,8 @@
 # http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
 # http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
 prompt_command() {
-  if [ -n "$SSH_TTY" ];then
-    # amend prompt for non-console (ie iterm ssh) sessions only
+  # show 2 levels of directory listing for iterm2 tab
+  if [[ "$DOMAIN" == "osx" || -n "$SSH_TTY" ]];then
     local dir=${PWD%/*/*}
     local last
     if [ ${#dir} -gt 0 -a "$dir" != "$PWD" ];then
@@ -14,10 +14,14 @@ prompt_command() {
     if [ "$last" == "$HOME" ];then
       last="~"
     fi
-    if [ '"`dirname "$last"`' == "$USER" ];then
+    if [ ""$(dirname "$last")"" == "$USER" ];then
       last="~/${PWD##*/}"
+    else
+      if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "~" ]];then
+        last=".../$last"
+      fi
     fi
-    # only show hostname if not on OSX
+    # show hostname if not on OSX
     if [ "$DOMAIN" != "osx" ]; then
       local hostname="[$HOSTNAME] "
     fi
