@@ -1,8 +1,8 @@
 # https://code.google.com/p/iterm2/issues/detail?id=571
 # http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
 # http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
-prompt_command() {
-  # show 2 levels of directory listing for iterm2 tab
+# show 2 levels of directory listing for iterm2 tab
+two_dirs() {
   if [[ "$DOMAIN" == "osx" || -n "$SSH_TTY" ]];then
     local dir=${PWD%/*/*}
     local last
@@ -29,4 +29,21 @@ prompt_command() {
   fi
 }
 
-PROMPT_COMMAND=prompt_command
+# lock the (v)term if an env var is set of ~/.vlock exits
+# functions as a means to lock the screen on user input
+# to allow displaying a terminal session like a screensaver
+vlock_term() {
+  if [[ -f $HOME/.vlock || "$VLOCK" == 1 ]];then
+    vlock
+  fi
+}
+
+prompt_command() {
+  two_dirs
+}
+
+if [ -n "$BEAGLEBONE_BLACK" ];then
+  vlock_term="vlock_term"
+fi
+
+PROMPT_COMMAND="prompt_command;$vlock_term"
