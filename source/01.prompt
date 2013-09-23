@@ -1,9 +1,15 @@
 # https://code.google.com/p/iterm2/issues/detail?id=571
 # http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
 # http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
+
 # show 2 levels of directory listing for iterm2 tab
+# check not running on local console
+if [ "$(tty | grep pts | wc -l)" -ge "1" ];then
+  DEV_PTS=1
+fi
 two_dirs() {
-  if [[ "$DOMAIN" == "osx" || -n "$SSH_TTY" ]];then
+  if [[ "$DOMAIN" == "osx" || -n "$DEV_PTS" ]];then
+    local home_sign="~" # rootbashrc uses "/root"
     local dir=${PWD%/*/*}
     local last
     if [ ${#dir} -gt 0 -a "$dir" != "$PWD" ];then
@@ -12,12 +18,12 @@ two_dirs() {
       last=$PWD;
     fi
     if [ "$last" == "$HOME" ];then
-      last="~"
+      last="$home_sign"
     fi
     if [ ""$(dirname "$last")"" == "$USER" ];then
-      last="~/${PWD##*/}"
+      last="$home_sign/${PWD##*/}"
     else
-      if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "~" ]];then
+      if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "$home_sign" ]];then
         last=".../$last"
       fi
     fi
