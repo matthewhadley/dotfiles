@@ -10,17 +10,17 @@ fi
 two_dirs() {
   if [[ "$DOMAIN" == "osx" || -n "$DEV_PTS" ]];then
     local home_sign="~" # rootbashrc uses "/root"
-    local dir=${PWD%/*/*}
+    local dir="${PWD%/*/*}"
     local last
-    if [ ${#dir} -gt 0 -a "$dir" != "$PWD" ];then
-      last=${PWD:${#dir}+1}
+    if [ "${#dir}" -gt 0 -a "$dir" != "$PWD" ];then
+      last="${PWD:${#dir}+1}"
     else
-      last=$PWD;
+      last="$PWD";
     fi
     if [ "$last" == "$HOME" ];then
       last="$home_sign"
     fi
-    if [ ""$(dirname "$last")"" == "$USER" ];then
+    if [ "$(dirname "$last")" == "$USER" ];then
       last="$home_sign/${PWD##*/}"
     else
       if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "$home_sign" ]];then
