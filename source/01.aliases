@@ -48,3 +48,6 @@ __git_complete gr _git_remote
 alias gmb='git merge --no-ff'
 alias gt="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
+# pullr aliases github.com/mojotech/pullr
+alias gnpru="pullr -n -I upstream"
+alias gnpr="pullr -n"

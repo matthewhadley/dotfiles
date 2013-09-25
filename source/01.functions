@@ -38,7 +38,7 @@ glob() {
 }
 
 # git fetch pull request
-gpr() {
+gfpr() {
   local remote='origin'
   if [ ! -z "$2" ];then
     remote=$2
@@ -55,7 +55,7 @@ gpr() {
 }
 
 # git fetch upstream pull request
-gpru() {
+gfpru() {
   if [ -z "$1" ];then
     echo "error: no pr number specified"
   else
