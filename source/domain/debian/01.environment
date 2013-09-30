@@ -1,5 +1,5 @@
 # Keychain
 
-/usr/bin/keychain $HOME/.ssh/id_rsa
-/usr/bin/keychain $HOME/.ssh/cl_id_rsa
+/usr/bin/keychain --quiet $HOME/.ssh/id_rsa
+/usr/bin/keychain --quiet $HOME/.ssh/cl_id_rsa
 source $HOME/.keychain/$HOSTNAME-sh
