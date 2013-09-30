@@ -1,5 +1,5 @@
 local prompt_color=$BLDBLU
-if [ "$(id -u)" == "0" ]; then
+if [ "$(id -u)" == "0" ];then
   # running as root
   local pre_prompt="$BLDRED\u$BLDWHT@$TXTDEF"
 fi
