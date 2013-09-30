@@ -6,7 +6,7 @@ if [ -f /etc/arch-release ]; then
 elif [ -f /etc/debian_version ]; then
   export DOMAIN='debian'
   uname=$(uname -r)
-  if [ "$uname | grep bone | wc -l)" -ge "1" ]; then
+  if [ "echo $uname | grep bone | wc -l)" -ge "1" ]; then
     export BEAGLEBONE_BLACK=1
     export ARM_DEVICE=1
   elif [ "$uname" == "armv6l" ]; then
