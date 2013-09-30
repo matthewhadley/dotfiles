@@ -48,7 +48,7 @@ prompt_command() {
   two_dirs
 }
 
-if [ -n "$BEAGLEBONE_BLACK" ];then
+if [ -n "$ARM_DEVICE" ];then
   vlock_term="vlock_term"
 fi
 
