@@ -21,13 +21,13 @@ do :
   if [ -d "$f" ];then continue; fi
   # Strip dotfiles path from file path
   file=${f:$len}
-  # If file is nested, created the directory
+  # If file is nested, create the directory
   path=$(dirname $file)
   if [ "$path" != "." ];then
     mkdir -p $HOME/$path
   fi
   # Create the symlink inside of $HOME
-  ln -sf "$f" "$HOME/.$file"
+  ln -sf "$dotfiles/$file" "$HOME/.$file"
 done
 
 # ssh
