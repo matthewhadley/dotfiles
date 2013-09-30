@@ -10,48 +10,70 @@ if [ "$1" != "local" ];then
   cd $owd
 fi
 
-for i in $HOME/.dotfiles/dotfiles/*
+# Get a reference to dotfiles location
+dotfiles="$HOME/.dotfiles/dotfiles"
+# Calculate dotfiles path lenth so it can be used to trim filepaths
+len=${#dotfiles}
+let len=$len+1
+for f in $(find $dotfiles)
 do :
-  FILE=`basename "$i"`
-  LINK="$i"
-  ln -sf "$LINK" "$HOME/.$FILE"
+  # Don't symlink directories
+  if [ -d "$f" ];then continue; fi
+  # Strip dotfiles path from file path
+  file=${f:$len}
+  # If file is nested, created the directory
+  path=$(dirname $file)
+  if [ "$path" != "." ];then
+    mkdir -p $HOME/$path
+  fi
+  # Create the symlink inside of $HOME
+  ln -sf "$f" "$HOME/.$file"
 done
 
+# for i in $HOME/.dotfiles/dotfiles/*
+# do :
+#   FILE=`basename "$i"`
+#   LINK="$i"
+#   echo $(basename $FILE)
+
+#   ln -sf "$LINK" "$HOME/.$FILE"
+# done
+
 # # ssh
-mkdir -p $HOME/.ssh
-cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
+# mkdir -p $HOME/.ssh
+# cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
 
-if [ "$DOMAIN" = "osx" ];then
-  # setup mutt
-  rm -f $HOME/.mutt 2> /dev/null
-  ln -s $HOME/.dotfiles/mutt $HOME/.mutt
-fi
+# if [ "$DOMAIN" = "osx" ];then
+#   # setup mutt
+#   rm -f $HOME/.mutt 2> /dev/null
+#   ln -s $HOME/.dotfiles/mutt $HOME/.mutt
+# fi
 
-# Marks
-mkdir -p $HOME/.marks
+# # Marks
+# mkdir -p $HOME/.marks
 
-# vim
-rm -rf $HOME/.vim
-ln -s $HOME/.dotfiles/vim $HOME/.vim
+# # vim
+# rm -rf $HOME/.vim
+# ln -s $HOME/.dotfiles/vim $HOME/.vim
 
-# warn about bash-completion package not installed
-bash_warn="warn: package bash completion not present"
-if [[ "$DOMAIN" = "osx" && ! -f /usr/local/etc/bash_completion ]]; then
-  echo $bash_warn
-fi
-if [[ "$DOMAIN" = "centos" && ! -f /etc/bash_completion ]]; then
-  echo $bash_warn
-fi
+# # warn about bash-completion package not installed
+# bash_warn="warn: package bash completion not present"
+# if [[ "$DOMAIN" = "osx" && ! -f /usr/local/etc/bash_completion ]]; then
+#   echo $bash_warn
+# fi
+# if [[ "$DOMAIN" = "centos" && ! -f /etc/bash_completion ]]; then
+#   echo $bash_warn
+# fi
 
-# symlinks
-if [ "$DOMAIN" = "osx" ];then
-  ln -s $HOME/dev/python/keychain/keychain.py /usr/local/bin/keychain &> /dev/null
-fi
+# # symlinks
+# if [ "$DOMAIN" = "osx" ];then
+#   ln -s $HOME/dev/python/keychain/keychain.py /usr/local/bin/keychain &> /dev/null
+# fi
 
-echo ".dotfiles init'd"
+# echo ".dotfiles init'd"
 
-# source all the bash
-source $HOME/.dotfiles/dotfiles/bashrc
-echo "sourced .dotfiles"
+# # source all the bash
+# source $HOME/.dotfiles/dotfiles/bashrc
+# echo "sourced .dotfiles"
 
 exit 0
