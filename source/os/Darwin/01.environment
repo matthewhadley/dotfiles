@@ -14,3 +14,7 @@ fi
 # ghi
 # https://github.com/stephencelis/ghi
 export GHI_TOKEN=$(keychain -g "GHI_TOKEN_CL")
+
+# initialize ruby env
+# https://github.com/sstephenson/rbenv
+eval "$(rbenv init -)"
