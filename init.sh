@@ -10,14 +10,27 @@ if [ "$1" != "local" ];then
   cd $owd
 fi
 
-for i in $HOME/.dotfiles/dotfiles/*
+# Get a reference to dotfiles location
+dotfiles="$HOME/.dotfiles/dotfiles"
+# Calculate dotfiles path lenth so it can be used to trim filepaths
+len=${#dotfiles}
+let len=$len+1
+for f in $(find $dotfiles)
 do :
-  FILE=`basename "$i"`
-  LINK="$i"
-  ln -sf "$LINK" "$HOME/.$FILE"
+  # Don't symlink directories
+  if [ -d "$f" ];then continue; fi
+  # Strip dotfiles path from file path
+  file=${f:$len}
+  # If file is nested, create the directory
+  path=$(dirname $file)
+  if [ "$path" != "." ];then
+    mkdir -p $HOME/.$path
+  fi
+  # Create the symlink inside of $HOME
+  ln -sf "$dotfiles/$file" "$HOME/.$file"
 done
 
-# # ssh
+# ssh
 mkdir -p $HOME/.ssh
 cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
 

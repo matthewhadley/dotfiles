@@ -1,10 +1,10 @@
 local prompt_color=$BLDBLU
-if [ "$(id -u)" == "0" ]; then
+if [ "$(id -u)" == "0" ];then
   # running as root
   local pre_prompt="$BLDRED\u$BLDWHT@$TXTDEF"
 fi
-if [ -n "$BEAGLEBONE_BLACK" ];then
-  # simpler PS1 for beaglebone that's less taxing on cpu
+if [ -n "$ARM_DEVICE" ];then
+  # simpler PS1 for arm devices (beaglebone black, raspberry pi) that's less taxing on cpu
   PS1="$pre_prompt$prompt_color\h:$BLDWHT \w$TXTDEF\n\$ "
 else
   PS1="$pre_prompt$prompt_color\h:$BLDWHT \w\$(parse_git_branch)$TXTDEF\n\$ "
