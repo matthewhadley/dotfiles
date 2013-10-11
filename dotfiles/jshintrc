@@ -37,7 +37,12 @@
   "proto":        false,
   "predef": [
       "it",
-      "describe"
+      "describe",
+      "before",
+      "after",
+      "define",
+      "require",
+      "$"
     ],
   "regexdash":    false,
   "scripturl":    false,
@@ -48,5 +53,6 @@
   "maxerr":       500,
   "maxlen":       150,
   "passfail":     false,
-  "latedef":      true
+  "latedef":      true,
+  "undef":        true
 }
