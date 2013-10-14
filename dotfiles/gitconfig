@@ -13,7 +13,7 @@
 	ssh = config-cl
 [difftool "sourcetree"]
 	cmd = /usr/local/bin/ksdiff -- \"$LOCAL\" \"$REMOTE\"
-	path =
+	path = 
 [mergetool "sourcetree"]
 	cmd = /usr/local/bin/ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" \"$REMOTE\"
 	trustExitCode = true
