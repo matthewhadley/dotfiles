@@ -59,7 +59,7 @@ gfpru() {
   if [ -z "$1" ];then
     echo "error: no pr number specified"
   else
-    gpr $1 "upstream"
+    gfpr $1 "upstream"
   fi
 }
 
