@@ -31,3 +31,6 @@ alias st='open -a SourceTree .'
 
 # npmcorp
 alias npmcorp='npm --userconfig=$HOME/.npmrc_corp'
+
+# selenium server standalone (via homebrew)
+alias selenium='java -jar /usr/local/opt/selenium-server-standalone/selenium-server-standalone* -p 4444'

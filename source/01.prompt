@@ -24,7 +24,7 @@ two_dirs() {
       last="$home_sign/${PWD##*/}"
     else
       if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "$home_sign" ]];then
-        last=".../$last"
+        last="$last"
       fi
     fi
     # show hostname if not on OSX
@@ -45,7 +45,11 @@ vlock_term() {
 }
 
 prompt_command() {
-  two_dirs
+  if [ -z $PROMPT ];then
+    two_dirs
+  else
+    echo -ne "\033]0;$PROMPT\007"
+  fi
 }
 
 if [ -n "$ARM_DEVICE" ];then
