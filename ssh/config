@@ -9,6 +9,10 @@ Host                radiatus
 HostName            192.241.194.127
 ForwardAgent        yes
 
+Host                humilis
+HostName            192.241.200.171
+ForwardAgent        yes
+
 # forward ssh keys in local network
 Host                192.168.0.*
 ForwardAgent        yes
