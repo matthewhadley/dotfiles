@@ -20,3 +20,7 @@ export MARKPATH=$HOME/.marks
 
 source $HOME/.dotfiles/git/git-completion.sh
 source $HOME/.dotfiles/bash/z/z.sh
+
+# Git state in PS1
+GIT_PS1_SHOWDIRTYSTATE=1
+GIT_PS1_SHOWUNTRACKEDFILES=1

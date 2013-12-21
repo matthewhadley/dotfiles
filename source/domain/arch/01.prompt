@@ -7,4 +7,4 @@ elif [ "$(whoami)" == "duff" ]; then
   # running as duff
   pre_prompt="$BLDYEL\u$BLDWHT@$TXTDEF"
 fi
-PS1="$pre_prompt$prompt_color\h:$BLDWHT \w\$(parse_git_branch)$TXTDEF\n\$ "
+PS1="$pre_prompt$prompt_color\h:$BLDWHT \w\$(__git_ps1)$TXTDEF\n\$ "
