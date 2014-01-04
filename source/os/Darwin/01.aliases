@@ -19,8 +19,7 @@ alias c='pygmentize -O style=manni -f console256 -g'
 alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
 
 # simple server
-alias ss='polpetta'
-alias pp='polpetta'
+alias ss='stave'
 
 # sublime text
 alias sb='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
