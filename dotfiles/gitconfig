@@ -6,14 +6,9 @@
 	email = matthew.hadley@gmail.com
 [core]
 	excludesfile = ~/.gitignore
-[corp]
-	org = "creativelive/;cl-mhadley;cl-lei;cl-ali;cl-ryjadhav;cl-dzoba;cl-joshcole"
-	user = cl-mhadley
-	email = matthew.hadley@creativelive.com
-	ssh = config-cl
 [difftool "sourcetree"]
 	cmd = /usr/local/bin/ksdiff -- \"$LOCAL\" \"$REMOTE\"
-	path = 
+	path =
 [mergetool "sourcetree"]
 	cmd = /usr/local/bin/ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" \"$REMOTE\"
 	trustExitCode = true
