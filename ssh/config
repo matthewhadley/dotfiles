@@ -1,7 +1,7 @@
 # ~/.ssh/config
 
-# clweb0[1,2,3]
-Host                *.dev.us-west-2.cl.int
+# cl
+Host                *.cl.int
 IdentityFile        ~/.ssh/cl_id_rsa
 ForwardAgent        yes
 
