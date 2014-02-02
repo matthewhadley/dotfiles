@@ -13,4 +13,4 @@ fi
 
 # ghi
 # https://github.com/stephencelis/ghi
-export GHI_TOKEN=$(keychain -g "GHI_TOKEN_CL")
+export GHI_TOKEN=$(keychain -g "GHI_TOKEN")
