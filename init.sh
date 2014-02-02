@@ -33,6 +33,7 @@ done
 # ssh
 mkdir -p $HOME/.ssh
 cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
+chmod 0644 $HOME/.ssh/config*
 
 if [ "$DOMAIN" = "osx" ];then
   # setup mutt
