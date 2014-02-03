@@ -1,3 +1,17 @@
+# channel git calls
+hash git 2>&- && { export GIT_PATH=$(which git); }
+git(){
+  if [ "$1" == "commit" -o "$1" == "clone" ];then
+    $GIT_PATH "$@"
+    # pass git commit messages through to dayone cli
+    if [ "$1" == "commit" -a "$DOMAIN" == "osx" ];then
+      git.dayone "$@"
+    fi
+  else
+    $GIT_PATH "$@"
+  fi
+}
+
 # write git entries to dayone app
 git.dayone(){
   local repo=$(basename $(git rev-parse --show-toplevel 2> /dev/null))

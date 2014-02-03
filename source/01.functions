@@ -1,17 +1,3 @@
-# channel git calls
-hash git 2>&- && { export GIT_PATH=$(which git); }
-git(){
-  if [ "$1" == "commit" -o "$1" == "clone" ];then
-    $GIT_PATH "$@"
-    # pass git commit messages through to dayone cli
-    if [ "$1" == "commit" -a "$DOMAIN" == "osx" ];then
-      git.dayone "$@"
-    fi
-  else
-    $GIT_PATH "$@"
-  fi
-}
-
 # Determine if a git repo has uncomitted changes in it
 parse_git_dirty() {
   # Requires git 1.8. ver 1.7 responds with "no changes added "
