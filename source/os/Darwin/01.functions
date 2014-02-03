@@ -78,15 +78,3 @@ arqown() {
   fi
   sudo chown -R $USER $restored;chgrp -R staff $restored
 }
-
-# ghi switch accounts
-ghiuser() {
-  local github_user=$(echo $1 | tr [a-z] [A-Z])
-  local token=$(keychain -g "GHI_TOKEN_$github_user")
-  if [ "$token" == "None" ];then
-    echo "error: github user \"$1\" not found"
-  else
-    export GHI_TOKEN=$token
-    echo "ghi user set to $1"
-  fi
-}
