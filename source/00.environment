@@ -10,11 +10,8 @@ HISTCONTROL=ignoreboth
 # Control own PS1 instead of virtualenv (python)
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
-# Marks
-export MARKPATH=$HOME/.marks
-
+# Git completion
 source $HOME/.dotfiles/git/git-completion.sh
-source $HOME/.dotfiles/bash/z/z.sh
 
 # Git state in PS1
 GIT_PS1_SHOWDIRTYSTATE=1

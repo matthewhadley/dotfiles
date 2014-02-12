@@ -1,0 +1,4 @@
+# z for jumping around https://github.com/rupa/z
+# source after setting PROMPT_COMMAND in 01.prompt
+# as z appends a command to PROMPT_COMMAND
+source $HOME/.dotfiles/bash/z/z.sh
