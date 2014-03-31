@@ -52,3 +52,6 @@ alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%C
 # pullr aliases github.com/mojotech/pullr
 alias gnpru="pullr -n -I upstream"
 alias gnpr="pullr -n"
+
+# ghi color output
+alias ghi='TERM=xterm-256color ghi'
