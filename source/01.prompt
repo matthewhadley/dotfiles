@@ -35,21 +35,6 @@ two_dirs() {
   fi
 }
 
-# lock the (v)term if an env var is set of ~/.vlock exits
-# functions as a means to lock the screen on user input
-# to allow displaying a terminal session like a screensaver
-vlock_term() {
-  if [ -f $HOME/.vlock ];then
-    # after vlock_term is "enabled" then "wait" one console entry before activating
-    vlock_state=`cat $HOME/.vlock`
-    if [ "$vlock_state" ==  "" ];then
-      echo "1" > $HOME/.vlock
-    elif [ $vlock_state -eq 1 ];then
-      vlock
-    fi
-  fi
-}
-
 prompt_command() {
   if [ -z $PROMPT ];then
     two_dirs
@@ -58,8 +43,4 @@ prompt_command() {
   fi
 }
 
-if [ -n "$ARM_DEVICE" ];then
-  vlock_term="vlock_term"
-fi
-
-PROMPT_COMMAND="prompt_command;$vlock_term"
+PROMPT_COMMAND="prompt_command"
