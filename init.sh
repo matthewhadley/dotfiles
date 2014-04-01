@@ -59,8 +59,8 @@ fi
 
 # symlinks
 if [ "$DOMAIN" = "osx" ];then
-  ln -s $HOME/dev/python/keychain/keychain.py /usr/local/bin/keychain &> /dev/null
-  ln -s $HOME/dev/bash/gitstate/gitstate.sh /usr/local/bin/gitstate &> /dev/null
+  ln -s $HOME/dev/python/keychain/keychain /usr/local/bin/keychain &> /dev/null
+  ln -s $HOME/dev/bash/gitstate/gitstate /usr/local/bin/gitstate &> /dev/null
 fi
 
 echo ".dotfiles init'd"
