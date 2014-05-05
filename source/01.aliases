@@ -7,6 +7,9 @@ alias dr='dotfiles remote'
 # make copykeys available
 alias copykeys=$HOME/.dotfiles/bash/copykeys/copykeys
 
+# automatically add github token to mdchangelog
+alias mdchangelog='MDCHANGELOG_TOKEN=`keychain -g GITHUB_TOKEN` mdchangelog'
+
 # git shortcuts
 alias gp='git push'
 __git_complete gp _git_push
