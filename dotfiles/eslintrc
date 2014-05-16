@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "quotes": [1, "single"],
+    "no-unused-vars": [2, {"vars": "local", "args": "none"}],
+    "no-global-strict": 0,
+    "consistent-this": [0, "self"],
+    "consistent-return": 0,
+    "camelcase": 0
+  },
+  "globals": {
+    "it": true,
+    "describe": true,
+    "before": true,
+    "after": true,
+    "define": true,
+    "require": true,
+    "angular": true,
+    "$": true
+  },
+  "env":{
+    "browser": true,
+    "node": true
+  }
+}
