@@ -3,9 +3,10 @@
     "quotes": [1, "single"],
     "no-unused-vars": [2, {"vars": "local", "args": "none"}],
     "no-global-strict": 0,
-    "consistent-this": [0, "self"],
+    "consistent-this": [1, "self"],
     "consistent-return": 0,
-    "camelcase": 0
+    "camelcase": 0,
+    "no-use-before-define": [2, "nofunc"]
   },
   "globals": {
     "it": true,
@@ -22,3 +23,4 @@
     "node": true
   }
 }
+
