@@ -1,12 +1,12 @@
 {
   "rules": {
     "quotes": [1, "single"],
-    "no-unused-vars": [2, {"vars": "local", "args": "none"}],
+    "no-unused-vars": [2, {"vars": "all", "args": "none"}],
+    "consistent-this": [2, "self"],
+    "no-use-before-define": [2, "nofunc"],
     "no-global-strict": 0,
-    "consistent-this": [1, "self"],
     "consistent-return": 0,
-    "camelcase": 0,
-    "no-use-before-define": [2, "nofunc"]
+    "camelcase": 0
   },
   "globals": {
     "it": true,
