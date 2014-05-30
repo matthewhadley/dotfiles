@@ -38,4 +38,4 @@ alias npmcorp='npm --userconfig=$HOME/.npmrc_corp'
 alias selenium='java -jar /usr/local/opt/selenium-server-standalone/selenium-server-standalone* -p 4444'
 
 # nodejs project init
-alias nodeup='npm init && cp -rv ~/dev/nodejs/gulps/{conf,gulp,gulpfile.js,.eslintrc,.jsbeautifyrc,.gitignore,LICENSE,README.md} . && npm i --save-dev gulp gulp-eslint minimist confidence gulp-jsbeautifier gulp-diff'
+alias nodeup='npm init && cp -rv ~/dev/nodejs/gulps/{conf,gulp,gulpfile.js,.eslintrc,.jsbeautifyrc,.gitignore,.travis.yml,LICENSE,README.md} . && npm i --save-dev gulp gulp-eslint minimist confidence gulp-jsbeautifier gulp-diff'
