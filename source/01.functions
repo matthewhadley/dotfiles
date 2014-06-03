@@ -104,8 +104,6 @@ dotfiles() {
       local all="all"
     fi
     $HOME/.dotfiles/init.sh $all
-    # this source needed here to apply changes
-    source $HOME/.dotfiles/dotfiles/bashrc
     return
   fi
   if [ "$1" == "remote" ];then
