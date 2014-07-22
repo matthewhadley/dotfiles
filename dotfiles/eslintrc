@@ -6,7 +6,8 @@
     "no-use-before-define": [2, "nofunc"],
     "no-global-strict": 0,
     "consistent-return": 0,
-    "camelcase": 0
+    "camelcase": 0,
+    "eol-last": 0
   },
   "globals": {
     "it": true,
