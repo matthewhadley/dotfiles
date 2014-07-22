@@ -1,28 +1,8 @@
 [color]
-	us = auto
-	ui = true
+  us = auto
+  ui = true
 [user]
-	name = diffsky
-	email = matthew.hadley@gmail.com
+  name = diffsky
+  email = matthew.hadley@gmail.com
 [core]
-	excludesfile = ~/.gitignore
-[difftool "sourcetree"]
-	cmd = /usr/local/bin/ksdiff -- \"$LOCAL\" \"$REMOTE\"
-	path =
-[mergetool "sourcetree"]
-	cmd = /usr/local/bin/ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" \"$REMOTE\"
-	trustExitCode = true
-[difftool "Kaleidoscope"]
-	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
-[diff]
-	tool = Kaleidoscope
-[difftool]
-	prompt = false
-[mergetool "Kaleidoscope"]
-	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
-	trustExitCode = true
-[mergetool]
-	prompt = false
-	keepBackup = false
-[merge]
-	tool = Kaleidoscope
+  excludesfile = ~/.gitignore
