@@ -1,6 +1,0 @@
-# required if install node via homebrew (now using n https://github.com/visionmedia/n)
-# https://github.com/yeoman/yeoman/issues/430#issuecomment-8660341
-# pathadd '/usr/local/share/npm/bin'
-# export NODE_PATH="/usr/local/lib/node_modules/"
-
-pathadd "$HOME/dev/swift/swift-0.94.1-RC3/bin"

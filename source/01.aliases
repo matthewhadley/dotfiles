@@ -4,8 +4,8 @@ alias d='dotfiles'
 alias di='dotfiles init'
 alias dr='dotfiles remote'
 
-# make copykeys available
-alias copykeys=$HOME/.dotfiles/bash/copykeys/copykeys
+# alias copykeys to ssh-copy-id
+alias copykeys=ssh-copy-id
 
 # git shortcuts
 alias gp='git push'

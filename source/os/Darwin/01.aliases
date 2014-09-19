@@ -5,15 +5,11 @@ alias l='ls -lG'
 # automatically add github token to mdchangelog
 alias mdchangelog='MDCHANGELOG_TOKEN=`keychain -g GITHUB_TOKEN` mdchangelog'
 
-## mutt
+# mutt
 alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
-alias ycorp='mutt -F ~/.mutt/accounts/ycorp.muttrc'
 
-## email
-alias gu='~/dev/bash/gmail-notifier/gmail-notifier/gmail-notifier.sh -c'
-
-## gtasks
-alias 'gtasks-due'='gtasks -L -sdo -dse'
+# gmail (via notifier)
+alias gu='~/dev/bash/gmail-notifier/gmail-notifier/gmail-notifier -c'
 
 # `cat` with beautiful colors. requires Pygments installed.
 alias c='pygmentize -O style=manni -f console256 -g'
@@ -27,15 +23,3 @@ alias ss='stave'
 # sublime text
 alias sb='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
 alias sbn='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n .'
-
-# sourcetree
-alias st='open -a SourceTree .'
-
-# npmcorp
-alias npmcorp='npm --userconfig=$HOME/.npmrc_corp'
-
-# selenium server standalone (via homebrew)
-alias selenium='java -jar /usr/local/opt/selenium-server-standalone/selenium-server-standalone* -p 4444'
-
-# nodejs project init
-alias nodeup='npm init && cp -rv ~/dev/nodejs/gulps/{conf,gulp,gulpfile.js,.eslintrc,.jsbeautifyrc,.gitignore,.travis.yml,LICENSE,README.md} . && npm i --save-dev gulp gulp-eslint minimist confidence gulp-jsbeautifier gulp-diff'
