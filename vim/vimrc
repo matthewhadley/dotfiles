@@ -1,0 +1,60 @@
+" For this file to run, ~/.vimrc should contain:
+"" Load the first file named 'vimrc' found in runtimepath
+" runtime vimrc
+
+" enable pathogen https://github.com/tpope/vim-pathogen:
+call pathogen#infect()
+
+" Allow vim to manage multiple buffers effectively
+set hidden
+
+" Increase command history
+set history=1000
+
+" case-smart searching
+set ignorecase
+set smartcase
+
+" set the terminal title
+set title
+
+" maintain more context around the cursor
+set scrolloff=3
+
+" Intuitive backspacing in insert mode
+set backspace=indent,eol,start
+
+" toggle paste mode with F12, need to paste in code without auto indentation from "indent on"
+set pastetoggle=<F12>
+
+" File-type highlighting and configuration.
+" Run :filetype (without args) to see what you may have to turn on yourself, or just set them all to be sure.
+syntax on
+filetype on
+filetype plugin on
+filetype indent on
+
+" Highlight search terms...
+set hlsearch
+set incsearch " ...dynamically as they are typed.
+
+" remap command key to ;
+nnoremap ; :
+
+" statusline
+set laststatus=2
+set statusline=%F\ %m\ \ %l/%LL:%cC
+
+" tabs
+" set showtabline=2
+
+" navigate between tabs using ctrl+arrows
+nnoremap <C-Left> :tabprevious<CR>
+nnoremap <C-Right> :tabnext<CR>
+
+" keep .swp and backups out of the way
+set directory=$HOME/.vim/tmp
+set backupdir=$HOME/.vim/tmp
+
+" colors (also handles tab/status bar colors)
+colo Tomorrow

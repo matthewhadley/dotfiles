@@ -1,15 +1,5 @@
 #!/bin/bash
 
-if [ "$1" != "local" ];then
-  echo "Updating git submodules..."
-  # setup git submodules
-  owd=$PWD
-  cd $HOME/.dotfiles
-  git submodule update --init --recursive
-  # git submodule foreach 'git fetch origin;git merge origin/master;git checkout master'
-  cd $owd
-fi
-
 # Get a reference to dotfiles location
 dotfiles="$HOME/.dotfiles/dotfiles"
 # Calculate dotfiles path lenth so it can be used to trim filepaths
@@ -40,9 +30,6 @@ if [ "$DOMAIN" = "osx" ];then
   rm -f $HOME/.mutt 2> /dev/null
   ln -s $HOME/.dotfiles/mutt $HOME/.mutt
 fi
-
-# Marks
-mkdir -p $HOME/.marks
 
 # vim
 rm -rf $HOME/.vim
