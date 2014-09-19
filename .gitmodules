@@ -1,9 +1,0 @@
-[submodule "bash/z"]
-	path = bash/z
-	url = git@github.com:rupa/z.git
-[submodule "bash/copykeys"]
-	path = bash/copykeys
-	url = git@github.com:diffsky/copykeys.git
-[submodule "vim"]
-	path = vim
-	url = git@github.com:diffsky/dotvim.git
