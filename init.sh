@@ -33,15 +33,6 @@ fi
 rm -rf $HOME/.vim
 ln -s $HOME/.dotfiles/vim $HOME/.vim
 
-# warn about bash-completion package not installed
-bash_warn="warn: package bash completion not present"
-if [[ "$DOMAIN" = "osx" && ! -f /usr/local/etc/bash_completion ]]; then
-  echo $bash_warn
-fi
-if [[ "$DOMAIN" = "centos" && ! -f /etc/bash_completion ]]; then
-  echo $bash_warn
-fi
-
 echo ".dotfiles init'd"
 
 # source all the bash
