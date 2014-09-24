@@ -1,8 +1,10 @@
 ## bash.rc
 export DOTFILES=$HOME/.dotfiles
 export OS=`uname`
-if [ -f /etc/arch-release ]; then
-  export DOMAIN='arch'
+if [ "$OS" == "Darwin" ]; then
+  export DOMAIN='osx'
+elif [ -f /etc/centos-release ]; then
+  export DOMAIN='centos'
 elif [ -f /etc/debian_version ]; then
   export DOMAIN='debian'
   if [ "$(uname -r | grep bone | wc -l)" -ge "1" ]; then
@@ -12,10 +14,6 @@ elif [ -f /etc/debian_version ]; then
     export RASPBERRY_PI=1
     export ARM_DEVICE=1
   fi
-elif [ -f /etc/centos-release ]; then
-  export DOMAIN='centos'
-elif [ "$OS" == "Darwin" ]; then
-  export DOMAIN='osx'
 else
   export DOMAIN='unknown'
 fi

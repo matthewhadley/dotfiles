@@ -1,4 +1,0 @@
-# use rsa
-keychain_eval() {
-  eval $(keychain --eval --agents ssh -Q --quiet $HOME/.ssh/ir_rsa)
-}
