@@ -21,6 +21,10 @@ insert_final_newline = false
 indent_size = 2
 insert_final_newline = true
 
+[*.sh]
+indent_size = 2
+insert_final_newline = true
+
 [*.less]
 indent_size = 2
 
