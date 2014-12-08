@@ -5,9 +5,6 @@ alias l='ls -lG'
 # automatically add github token to mdchangelog
 alias mdchangelog='MDCHANGELOG_TOKEN=`keychain -g GITHUB_TOKEN` mdchangelog'
 
-# mutt
-alias gmail='mutt -F ~/.mutt/accounts/gmail.muttrc'
-
 # gmail (via notifier)
 alias gu='~/dev/bash/gmail-notifier/gmail-notifier/gmail-notifier -c'
 

@@ -21,15 +21,6 @@ do :
   ln -sf "$dotfiles/$file" "$HOME/.$file"
 done
 
-if [ "$DOMAIN" = "osx" ];then
-  # setup mutt
-  rm -f $HOME/.mutt 2> /dev/null
-  ln -s $HOME/.dotfiles/mutt $HOME/.mutt
-  # keychain
-  rm /usr/local/bin/keychain;
-  ln -s $HOME/dev/python/keychain/keychain /usr/local/bin/keychain
-fi
-
 # vim
 rm -rf $HOME/.vim
 ln -s $HOME/.dotfiles/vim $HOME/.vim
