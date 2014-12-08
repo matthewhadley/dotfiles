@@ -5,10 +5,6 @@ Host                *.cl.int
 IdentityFile        ~/.ssh/cl_id_rsa
 ForwardAgent        yes
 
-Host                radiatus
-HostName            192.241.194.127
-ForwardAgent        yes
-
 Host                humilis
 HostName            192.241.200.171
 ForwardAgent        yes

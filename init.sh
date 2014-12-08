@@ -26,7 +26,8 @@ if [ "$DOMAIN" = "osx" ];then
   rm -f $HOME/.mutt 2> /dev/null
   ln -s $HOME/.dotfiles/mutt $HOME/.mutt
   # keychain
-  rm /usr/local/bin/keychain;ln -s $HOME/dev/python/keychain/keychain /usr/local/bin/keychain
+  rm /usr/local/bin/keychain;
+  ln -s $HOME/dev/python/keychain/keychain /usr/local/bin/keychain
 fi
 
 # vim
@@ -38,5 +39,3 @@ echo ".dotfiles init'd"
 # source all the bash
 source $HOME/.dotfiles/dotfiles/bashrc
 echo "sourced .dotfiles"
-
-exit 0

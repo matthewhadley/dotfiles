@@ -96,36 +96,6 @@ repeat() {
   done
 }
 
-# Update and source .dotfiles
-dotfiles() {
-  if [ "$1" == "init" ];then
-    local all='local'
-    if [ "$2" == "all" ];then
-      local all="all"
-    fi
-    $HOME/.dotfiles/init.sh $all
-    return
-  fi
-  if [ "$1" == "remote" ];then
-    echo "Attempting to merge from remote origin..."
-    local owd=$PWD
-    cd $HOME/.dotfiles
-    git fetch origin
-    git merge origin/master
-    cd $owd
-    mkdir -p $HOME/.ssh
-    cp $HOME/.dotfiles/ssh/config* $HOME/.ssh
-    if [ "$2" == "all" ];then
-      $HOME/.dotfiles/init.sh all
-      # this source needed here to apply changes
-      source $HOME/.dotfiles/dotfiles/bashrc
-      return
-    fi
-  fi
-  source $HOME/.dotfiles/dotfiles/bashrc
-  echo "sourced .dotfiles"
-}
-
 # remove known_hosts entry
 unknow_host() {
   if [ -z "$1" ];then
