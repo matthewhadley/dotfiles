@@ -4,4 +4,5 @@ defutf8 on # Default to UTF-8
 nonblock on # Don't let hung windows bring down the whole session
 defscrollback 5000 # Big buffer
 hardstatus alwayslastline
-hardstatus string '%{= wK}%?%-Lw%?%{B}[%{wK}%n*%f %t%?(%u)%?%{B}]%{wK}%?%+Lw'
+#hardstatus string '%{= wK}%?%-Lw%?%{B}[%{wK}%n*%f %t%?(%u)%?%{B}]%{wK}%?%+Lw'
+hardstatus string '%{= k}%{w}%?%-Lw%?%{B}[%{k}%n%f %t%?(%u)%?%{B}]%{w}%?%+Lw'

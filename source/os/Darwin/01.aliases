@@ -3,7 +3,7 @@ alias ls='ls -G'
 alias l='ls -lG'
 
 # automatically add github token to mdchangelog
-alias mdchangelog='MDCHANGELOG_TOKEN=`keychain -g GITHUB_TOKEN` mdchangelog'
+alias mdchangelog='MDCHANGELOG_TOKEN=$(keychain -g GITHUB_TOKEN) mdchangelog'
 
 # gmail (via notifier)
 alias gu='~/dev/bash/gmail-notifier/gmail-notifier/gmail-notifier -c'

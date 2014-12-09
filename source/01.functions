@@ -50,7 +50,7 @@ gfpru() {
   fi
 }
 
-# git unpublish branch
+# github unpublish branch
 gunpb() {
   local oifs=$IFS
   IFS='/'
@@ -82,7 +82,7 @@ perms() {
 parse_virtual_env() {
   if [ "$VIRTUAL_ENV" != "" ];then
     local env=`basename $VIRTUAL_ENV`
-      echo " [$env]"
+    echo " [$env]"
   fi
 }
 
