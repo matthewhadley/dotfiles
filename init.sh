@@ -21,14 +21,10 @@ do :
   ln -sf "$dotfiles/$file" "$HOME/.$file"
 done
 
-# dev machine symlinks
+# dev machine bolt symlink
 if [ -f $HOME/dev/bash/bolt/bin/bolt ];then
   rm -rf /usr/local/bin/bolt
   ln -s $HOME/dev/bash/bolt/bin/bolt /usr/local/bin/bolt
-fi
-if [ -f $HOME/dev/python/keychain/keychain ];then
-  rm -rf /usr/local/bin/keychain
-  ln -s $HOME/dev/python/keychain/keychain /usr/local/bin/keychain
 fi
 
 # vim
