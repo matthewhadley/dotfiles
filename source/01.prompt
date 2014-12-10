@@ -27,8 +27,8 @@ two_dirs() {
         last="$last"
       fi
     fi
-    # show hostname if not on OSX
-    if [ "$PLATFORM" != "osx" ]; then
+    # show hostname if in ssh session
+    if [ -n "$SSH_CLIENT" ]; then
       local hostname="[$HOSTNAME] "
     fi
     echo -ne "\033]0;${hostname}${last}\007"
