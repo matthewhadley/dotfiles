@@ -8,7 +8,7 @@ if [ "$(tty | grep pts | wc -l)" -ge "1" ];then
   DEV_PTS=1
 fi
 two_dirs() {
-  if [[ "$DOMAIN" == "osx" || -n "$DEV_PTS" ]];then
+  if [[ "$PLATFORM" == "osx" || -n "$DEV_PTS" ]];then
     local home_sign="~" # rootbashrc uses "/root"
     local dir="${PWD%/*/*}"
     local last
@@ -28,7 +28,7 @@ two_dirs() {
       fi
     fi
     # show hostname if not on OSX
-    if [ "$DOMAIN" != "osx" ]; then
+    if [ "$PLATFORM" != "osx" ]; then
       local hostname="[$HOSTNAME] "
     fi
     echo -ne "\033]0;${hostname}${last}\007"

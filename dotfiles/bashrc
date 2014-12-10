@@ -2,11 +2,11 @@
 export DOTFILES=$HOME/.dotfiles
 export OS=`uname`
 if [ "$OS" == "Darwin" ]; then
-  export DOMAIN='osx'
+  export PLATFORM='osx'
 elif [ -f /etc/centos-release ]; then
-  export DOMAIN='centos'
+  export PLATFORM='centos'
 elif [ -f /etc/debian_version ]; then
-  export DOMAIN='debian'
+  export PLATFORM='debian'
   if [ "$(uname -r | grep bone | wc -l)" -ge "1" ]; then
     export BEAGLEBONE_BLACK=1
     export ARM_DEVICE=1
@@ -15,7 +15,7 @@ elif [ -f /etc/debian_version ]; then
     export ARM_DEVICE=1
   fi
 else
-  export DOMAIN='unknown'
+  export PLATFORM='unknown'
 fi
 
 
@@ -28,6 +28,6 @@ function source_rc() {
 }
 
 source_rc $DOTFILES/source
-source_rc $DOTFILES/source/domain/$DOMAIN
+source_rc $DOTFILES/source/platform/$PLATFORM
 source_rc $DOTFILES/source/os/$OS
 source_rc $DOTFILES/source/host/$HOSTNAME
