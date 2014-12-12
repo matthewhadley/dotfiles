@@ -32,7 +32,3 @@ rm -rf $HOME/.vim
 ln -s $HOME/.dotfiles/vim $HOME/.vim
 
 echo ".dotfiles init'd"
-
-# source all the bash
-source $HOME/.dotfiles/dotfiles/bashrc
-echo "sourced .dotfiles"
