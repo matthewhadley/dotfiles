@@ -5,8 +5,20 @@ Host                *.cl.int
 IdentityFile        ~/.ssh/cl_id_rsa
 ForwardAgent        yes
 
+Host                eng-mini.local
+User                cleng
+ForwardAgent        yes
+
+Host                mactestmini.local
+User                mactestbot
+ForwardAgent        yes
+
 Host                humilis
 HostName            192.241.200.171
+ForwardAgent        yes
+
+Host                sjofn
+HostName            104.236.187.168
 ForwardAgent        yes
 
 # forward ssh keys in local network
