@@ -24,7 +24,7 @@ two_dirs() {
       last="$home_sign/${PWD##*/}"
     else
       if [[ "$(echo "$last" | cut -c 1)" != "/" && "$last" != "$home_sign" ]];then
-        last="$last"
+        last="$last" # or ../$last if you want to indicate that at depth
       fi
     fi
     # show hostname if in ssh session
