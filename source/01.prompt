@@ -31,7 +31,10 @@ two_dirs() {
     if [ -n "$SSH_CLIENT" ]; then
       local hostname="[$HOSTNAME] "
     fi
-    echo -ne "\033]0;${hostname}${last}\007"
+    if [ ! -z "TTY_NUM" ]; then
+      local tty_display=" $TTY_NUM "
+    fi
+    echo -ne "\033]0;${tty_display}${hostname}${last}\007"
   fi
 }
 
