@@ -5,17 +5,9 @@
   name = diffsky
   email = matthew.hadley@gmail.com
 [core]
-  excludesfile = ~/.gitignore
-[diff]
-  tool = icdiff
-[difftool "icdiff"]
-  cmd = icdiff "$LOCAL" "$REMOTE"
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
+	excludesfile = /Users/mhadley/.gitignore
+  # https://github.com/stevemao/diff-so-fancy
+	pager = diff-highlight | diff-so-fancy | less --tabs=1,5 -R
 [corp]
 	org = git.apple.com
 	user = mhadley
