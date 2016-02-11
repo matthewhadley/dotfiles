@@ -77,15 +77,6 @@ perms() {
   fi
 }
 
-# Determine the active python virtualenv
-# to add to PS1 use \$(parse_virtual_env)
-parse_virtual_env() {
-  if [ "$VIRTUAL_ENV" != "" ];then
-    local env=`basename $VIRTUAL_ENV`
-    echo " [$env]"
-  fi
-}
-
 # Repeat a command mulitple times
 repeat() {
   local n=$1
