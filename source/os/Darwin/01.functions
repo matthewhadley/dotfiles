@@ -17,28 +17,3 @@ git.dayone(){
   local repo=$(basename $(git rev-parse --show-toplevel 2> /dev/null))
   echo -e "$3\n#dev #$repo" | dayone new 1> /dev/null
 }
-
-# open sublime text project
-_sbp() {
-  local dir=$HOME/.sbp/*.sublime-project
-  local file completes
-
-  for f in $dir; do
-    file=`echo ${f##*/} | sed "s/\..*//"`
-    completes=(${completes[@]} ${file})
-  done
-
-  local curw
-  COMPREPLY=()
-  curw=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($(compgen -W '${completes[@]}' -- $curw))
-  return 0
-}
-complete -F _sbp sbp
-sbp(){
-  if [ -z "$1" ];then
-    echo "error - no project specified"
-    return
-  fi
-  /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl -n --project $HOME/.sbp/$1.sublime-project
-}
