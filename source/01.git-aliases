@@ -44,6 +44,3 @@ alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%C
 
 # formatted git log branch pipe graphs
 alias glg="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
-
-# ghi color output
-alias ghi='GHI_TOKEN=$(keychain -g "GHI_TOKEN") TERM=xterm-256color ghi'
