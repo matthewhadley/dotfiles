@@ -80,7 +80,7 @@
     "beforeAlternate": true
   },
   "requireSpacesInForStatement": true,
-  "validateIndentation": "  ",
+  "validateIndentation": 2,
   "validateParameterSeparator": ", ",
   "validateQuoteMarks": "'"
 }
