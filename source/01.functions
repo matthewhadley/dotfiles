@@ -24,6 +24,23 @@ glob() {
   git pull origin $(get_git_branch)
 }
 
+# git squash all commits on current branch
+gsqa() {
+  local msg
+  local count
+  if [ $# -eq "1" ];then
+    msg="$1"
+    count=$(git rev-list --count origin...$(get_git_branch))
+  elif [ $# -eq "2" ];then
+    count="$1"
+    msg="$2"
+  else
+    echo "missing commit message"
+    return
+  fi
+  git reset --soft HEAD~$count && git add -A . && git commit -m "$msg"
+}
+
 # git fetch pull request
 gfpr() {
   local remote='origin'
