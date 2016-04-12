@@ -17,6 +17,7 @@ alias gf='git fetch'
 __git_complete gf _git_fetch
 alias grm='git rm'
 alias gc='git commit -m'
+alias gac='git add -A && git commit -m'
 alias gb='git branch'
 __git_complete gb _git_branch
 __git_complete gunpb _git_branch

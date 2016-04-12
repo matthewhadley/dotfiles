@@ -37,8 +37,9 @@ gsqa() {
     return
   elif [ $# -eq "1" ];then
     msg="$1"
+    branch="$(get_git_branch)"
     # default to compare revisions against origin of current branch
-    count=$(git rev-list --count origin...$(get_git_branch))
+    count=$(git rev-list --count origin/$branch...$branch)
   elif [ $# -eq "2" ];then
     msg="$2"
     if [[ $1 =~ ^-?[0-9]+$ ]]; then
