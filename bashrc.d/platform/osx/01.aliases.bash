@@ -18,5 +18,3 @@ alias sbn='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n .'
 # docker
 alias docker-init='. /Applications/Docker/Docker\ Quickstart\ Terminal.app/Contents/Resources/Scripts/start.sh'
 
-# npm
-alias npm-public='npm --registry https://registry.npmjs.org'

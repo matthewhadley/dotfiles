@@ -1,5 +1,6 @@
 # channel git calls
 hash git 2>&- && { export GIT_PATH=$(which git); }
+
 git(){
   if [ "$1" == "commit" -o "$1" == "clone" ];then
     $GIT_CORP "$@"

@@ -1,12 +1,3 @@
-# Get TTY number
-TTY_NUM=$(tty|cut -c10-)
-
-# Use vim
-export EDITOR=vim
-
-# Prevent tar include "._" file resource forks
-export COPYFILE_DISABLE=true
-
 # Don't add duplicate commands or commands that start with a space to bash history
 HISTCONTROL=ignoreboth
 # Append history instead of rewriting it
@@ -19,8 +10,4 @@ HISTTIMEFORMAT='%F %T '
 
 # bash_history per ttyl
 mkdir -p $HOME/.history.d
-HISTFILE="$HOME/.history.d/"$(uname -n)"-"$TTY_NUM
-
-# Git state in PS1
-GIT_PS1_SHOWDIRTYSTATE=1
-GIT_PS1_SHOWUNTRACKEDFILES=1
+HISTFILE="$HOME/.history.d/$HOSTNAME-$TTY_NUM"

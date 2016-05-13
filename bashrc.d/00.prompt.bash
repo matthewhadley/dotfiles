@@ -2,6 +2,10 @@
 # http://stackoverflow.com/questions/3058325/what-is-the-difference-between-ps1-and-prompt-command
 # http://stackoverflow.com/questions/1371261/get-current-directory-name-without-full-path-in-bash-script
 
+# Git state in PS1
+GIT_PS1_SHOWDIRTYSTATE=1
+GIT_PS1_SHOWUNTRACKEDFILES=1
+
 # show 2 levels of directory listing for iterm2 tab
 # check not running on local console
 if [ "$(tty | grep pts | wc -l)" -ge "1" ];then
