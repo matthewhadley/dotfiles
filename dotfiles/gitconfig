@@ -31,3 +31,5 @@
   prompt = false
 [diff]
   tool = Kaleidoscope
+[push]
+	followTags = true
