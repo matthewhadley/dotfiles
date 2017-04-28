@@ -9,7 +9,7 @@
   # https://github.com/stevemao/diff-so-fancy
   pager = diff-highlight | diff-so-fancy | less --tabs=1,5 -R
 [corp]
-  org = git.apple.com
+  org = .apple.com
   user = mhadley
   email = mhadley@apple.com
 [difftool "sourcetree"]
