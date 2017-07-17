@@ -4,8 +4,8 @@ hash git 2>&- && { export GIT_PATH=$(which git); }
 git(){
   if [ "$1" == "commit" -o "$1" == "clone" ];then
     $GIT_CORP "$@"
-    # pass git commit messages through to dayone cli
-    if [ "$1" == "commit" -a "$PLATFORM" == "osx" ];then
+    # if flag GIT_DAYONE set, pass git commit messages through to dayone cli
+    if [ "$GIT_DAYONE" == "1" -a "$1" == "commit" -a "$PLATFORM" == "osx" ];then
       git.dayone "$@"
     fi
   else
