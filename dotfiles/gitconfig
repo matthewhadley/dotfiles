@@ -5,7 +5,7 @@
   name = diffsky
   email = matthew.hadley@gmail.com
 [core]
-  excludesfiles = /Users/mhadley/.gitignore_global
+  excludesfile = /Users/mhadley/.gitignore_global
   # https://github.com/stevemao/diff-so-fancy
   pager = diff-highlight | diff-so-fancy | less --tabs=1,5 -R
 [corp]
