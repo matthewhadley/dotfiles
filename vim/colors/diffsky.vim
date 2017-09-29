@@ -1,11 +1,12 @@
+" @diffsky modified color palette from original:
+" https://github.com/chriskempson/vim-tomorrow-theme/blob/master/colors/Tomorrow.vim
+
 " Tomorrow - Full Colour and 256 Colour
 " http://chriskempson.com
 "
 " Hex colour conversion functions borrowed from the theme "Desert256""
 
 " Default GUI Colours
-" @diffsky modified color palette from original:
-" https://github.com/chriskempson/vim-tomorrow-theme/blob/master/colors/Tomorrow.vim
 " also has tabline changes further down
 let s:foreground = "4d4d4c"
 let s:background = "ffffff"

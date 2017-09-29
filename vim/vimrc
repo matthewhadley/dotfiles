@@ -57,4 +57,4 @@ set directory=$HOME/.vim/tmp
 set backupdir=$HOME/.vim/tmp
 
 " colors (also handles tab/status bar colors)
-colo Tomorrow-diffsky
+colo diffsky
