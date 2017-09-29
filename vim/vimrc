@@ -38,6 +38,16 @@ filetype indent on
 set hlsearch
 set incsearch " ...dynamically as they are typed.
 
+" Clipboard compat with system clipboard
+set clipboard=unnamed
+" map CTRL+C to copy
+vmap <C-C> "+y
+" map CTRL+V to paste
+vmap <C-V> "+p
+
+" Use a mouse!
+set mouse=a
+
 " remap command key to ;
 nnoremap ; :
 
@@ -47,6 +57,7 @@ set statusline=%F\ %m\ \ %l/%LL:%cC
 
 " tabs
 " set showtabline=2
+set tabstop=4
 
 " navigate between tabs using ctrl+arrows
 nnoremap <C-Left> :tabprevious<CR>

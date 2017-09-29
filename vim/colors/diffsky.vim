@@ -8,18 +8,19 @@
 
 " Default GUI Colours
 " also has tabline changes further down
-let s:foreground = "4d4d4c"
+let s:foreground = "3A3A3A"
 let s:background = "ffffff"
-let s:selection = "d6d6d6"
+let s:selection = "FCF082"
 let s:line = "282a2e"
 let s:comment = "969896"
 let s:red = "cc6666"
-let s:orange = "de935f"
+let s:orange = "FDA35E"
 let s:yellow = "f0c674"
 let s:green = "184D7D"
-let s:aqua = "8abeb7"
+let s:aqua = "2475B2"
 let s:blue = "81a2be"
 let s:purple = "277AC7"
+let s:black = "000000"
 let s:window = "fafafa"
 
 set background=light
@@ -239,7 +240,7 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   " Vim Highlighting
   call <SID>X("Normal", s:foreground, s:background, "")
   highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
-  " @diffsky changes
+
   hi TabLineFill cterm=bold ctermbg=255
   hi TabLine cterm=bold ctermbg=255
   hi TabLineSel cterm=bold ctermbg=255
@@ -274,22 +275,30 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   " Standard Highlighting
   call <SID>X("Comment", s:comment, "", "")
   call <SID>X("Todo", s:comment, s:background, "")
-  call <SID>X("Title", s:comment, "", "")
+  call <SID>X("Title", s:line, "", "")
   call <SID>X("Identifier", s:red, "", "none")
   call <SID>X("Statement", s:foreground, "", "")
   call <SID>X("Conditional", s:foreground, "", "")
   call <SID>X("Repeat", s:foreground, "", "")
   call <SID>X("Structure", s:purple, "", "")
-  call <SID>X("Function", s:blue, "", "")
-  call <SID>X("Constant", s:orange, "", "")
-  call <SID>X("String", s:green, "", "")
+  call <SID>X("Function", s:red, "", "")
+  call <SID>X("Constant", s:black, "", "")
+  call <SID>X("String", s:aqua, "", "")
   call <SID>X("Special", s:foreground, "", "")
   call <SID>X("PreProc", s:purple, "", "")
-  call <SID>X("Operator", s:aqua, "", "none")
+  call <SID>X("Operator", s:black, "", "none")
   call <SID>X("Type", s:blue, "", "none")
   call <SID>X("Define", s:purple, "", "none")
   call <SID>X("Include", s:blue, "", "")
   "call <SID>X("Ignore", "666666", "", "")
+
+  " JavaScript Highlighting
+  call <SID>X("javaScriptBraces", s:foreground, "", "")
+  call <SID>X("javaScriptFunction", s:purple, "", "")
+  call <SID>X("javaScriptConditional", s:black, "", "")
+  call <SID>X("javaScriptRepeat", s:purple, "", "")
+  call <SID>X("javaScriptNumber", s:orange, "", "")
+  call <SID>X("javaScriptMember", s:black, "", "")
 
   " Vim Highlighting
   call <SID>X("vimCommand", s:red, "", "none")
@@ -316,14 +325,6 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   call <SID>X("goDeclaration", s:blue, "", "")
   call <SID>X("goConstants", s:yellow, "", "")
   call <SID>X("goBuiltins", s:orange, "", "")
-
-  " JavaScript Highlighting
-  call <SID>X("javaScriptBraces", s:foreground, "", "")
-  call <SID>X("javaScriptFunction", s:purple, "", "")
-  call <SID>X("javaScriptConditional", s:purple, "", "")
-  call <SID>X("javaScriptRepeat", s:purple, "", "")
-  call <SID>X("javaScriptNumber", s:orange, "", "")
-  call <SID>X("javaScriptMember", s:orange, "", "")
 
   " HTML Highlighting
   call <SID>X("htmlTag", s:red, "", "")
