@@ -299,26 +299,6 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   call <SID>X("cConditional", s:purple, "", "")
   call <SID>X("cRepeat", s:purple, "", "")
 
-  " PHP Highlighting
-  call <SID>X("phpVarSelector", s:red, "", "")
-  call <SID>X("phpKeyword", s:purple, "", "")
-  call <SID>X("phpRepeat", s:purple, "", "")
-  call <SID>X("phpConditional", s:purple, "", "")
-  call <SID>X("phpStatement", s:purple, "", "")
-  call <SID>X("phpMemberSelector", s:foreground, "", "")
-
-  " Ruby Highlighting
-  call <SID>X("rubySymbol", s:green, "", "")
-  call <SID>X("rubyConstant", s:yellow, "", "")
-  call <SID>X("rubyAttribute", s:blue, "", "")
-  call <SID>X("rubyInclude", s:blue, "", "")
-  call <SID>X("rubyLocalVariableOrMethod", s:orange, "", "")
-  call <SID>X("rubyCurlyBlock", s:orange, "", "")
-  call <SID>X("rubyStringDelimiter", s:green, "", "")
-  call <SID>X("rubyInterpolationDelimiter", s:orange, "", "")
-  call <SID>X("rubyConditional", s:purple, "", "")
-  call <SID>X("rubyRepeat", s:purple, "", "")
-
   " Python Highlighting
   call <SID>X("pythonInclude", s:purple, "", "")
   call <SID>X("pythonStatement", s:purple, "", "")
@@ -335,10 +315,6 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   call <SID>X("goDeclaration", s:blue, "", "")
   call <SID>X("goConstants", s:yellow, "", "")
   call <SID>X("goBuiltins", s:orange, "", "")
-
-  " CoffeeScript Highlighting
-  call <SID>X("coffeeKeyword", s:purple, "", "")
-  call <SID>X("coffeeConditional", s:purple, "", "")
 
   " JavaScript Highlighting
   call <SID>X("javaScriptBraces", s:foreground, "", "")
