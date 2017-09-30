@@ -55,11 +55,14 @@ nnoremap ; :
 set laststatus=2
 set statusline=%F\ %m\ \ %l/%LL:%cC
 
+" show line numbers
+set number
+
 " tabs
 " set showtabline=2
 set tabstop=4
 
-" navigate between tabs using ctrl+arrows
+" navigate between tabs using CTRL+arrows
 nnoremap <C-Left> :tabprevious<CR>
 nnoremap <C-Right> :tabnext<CR>
 
@@ -69,3 +72,19 @@ set backupdir=$HOME/.vim/tmp
 
 " colors (also handles tab/status bar colors)
 colo diffsky
+
+" ale linter options
+" lint on save only
+"let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_delay=1000
+" type ALEFix to autofix eslint errors
+let g:ale_fixers = {'javascript': ['eslint']}
+
+" always show gutter column
+set signcolumn=yes
+
+" custom git gutter sign
+let g:gitgutter_sign_modified = '■'
+
+" open file explorer with CTRL+E
+map <C-e> :NERDTreeToggle<CR>

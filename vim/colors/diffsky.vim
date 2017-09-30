@@ -21,13 +21,14 @@ let s:aqua = "2475B2"
 let s:blue = "81a2be"
 let s:purple = "277AC7"
 let s:black = "000000"
+let s:grey = "474747"
 let s:window = "fafafa"
 
 set background=light
 hi clear
 syntax reset
 
-let g:colors_name = "Tomorrow"
+let g:colors_name = "diffsky"
 
 if has("gui_running") || &t_Co == 88 || &t_Co == 256
   " Returns an approximate grey index for the given grey level
@@ -239,17 +240,17 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
 
   " Vim Highlighting
   call <SID>X("Normal", s:foreground, s:background, "")
-  highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
+  highlight LineNr term=bold cterm=NONE ctermfg=LightGray ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
 
   hi TabLineFill cterm=bold ctermbg=255
   hi TabLine cterm=bold ctermbg=255
   hi TabLineSel cterm=bold ctermbg=255
 
-  call <SID>X("NonText", s:selection, "", "")
+  call <SID>X("NonText", s:background, "", "")
   call <SID>X("SpecialKey", s:selection, "", "")
   call <SID>X("Search", s:foreground, s:yellow, "")
   call <SID>X("TabLine", s:foreground, s:background, "reverse")
-  call <SID>X("StatusLine", s:window, s:yellow, "reverse")
+  call <SID>X("StatusLine", s:window, s:grey, "reverse")
   call <SID>X("StatusLineNC", s:window, s:foreground, "reverse")
   call <SID>X("VertSplit", s:window, s:window, "none")
   call <SID>X("Visual", "", s:selection, "")
@@ -299,6 +300,12 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
   call <SID>X("javaScriptRepeat", s:purple, "", "")
   call <SID>X("javaScriptNumber", s:orange, "", "")
   call <SID>X("javaScriptMember", s:black, "", "")
+
+  " Git Gutter Highlighting
+  call <SID>X("GitGutterAdd", 'A6E22E', "", "")
+  call <SID>X("GitGutterChange", '5F8FD1', "", "")
+  call <SID>X("GitGutterDelete", 'F92672', "", "")
+  call <SID>X("GitGutterChangeDelete", 'F92672', "", "")
 
   " Vim Highlighting
   call <SID>X("vimCommand", s:red, "", "none")

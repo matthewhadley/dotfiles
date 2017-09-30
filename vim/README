@@ -1,3 +1,27 @@
 dot vim files
 
-See https://github.com/jelera/vim-javascript-syntax for javascript syntax highlighting via pathogen
+Using pathogen for plugins. CLone all repos to ~/.vim/bundle
+
+Better javascript syntax highlighting:
+git clone git@github.com:jelera/vim-javascript-syntax.git
+
+eslint linting via ale:
+git clone git@github.com:w0rp/ale.git
+
+editorconfig support:
+git clone git@github.com:editorconfig/editorconfig-vim.git
+
+Fuzzy file select CtrlP:
+git clone git@github.com:ctrlpvim/ctrlp.vim.git
+
+File tree explorer:
+git clone git@github.com:scrooloose/nerdtree.git
+
+git gutter:
+git clone git@github.com:airblade/vim-gitgutter.git
+
+multiple cursor editing (like sublime):
+git clone git@github.com:terryma/vim-multiple-cursors.git
+
+better block code commenting:
+git clone git://github.com/tpope/vim-commentary.git
