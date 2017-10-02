@@ -1,27 +1,27 @@
 dot vim files
 
-Using pathogen for plugins. CLone all repos to ~/.vim/bundle
+Using vim 8's native plugin loading Clone all repos to ~/.vim/pack/bundle[/start]
 
 Better javascript syntax highlighting:
-git clone git@github.com:jelera/vim-javascript-syntax.git
+git clone --depth 1 git@github.com:jelera/vim-javascript-syntax.git
 
 eslint linting via ale:
-git clone git@github.com:w0rp/ale.git
+git clone --depth 1 git@github.com:w0rp/ale.git
 
 editorconfig support:
-git clone git@github.com:editorconfig/editorconfig-vim.git
-
-Fuzzy file select CtrlP:
-git clone git@github.com:ctrlpvim/ctrlp.vim.git
+git clone --depth 1 git@github.com:editorconfig/editorconfig-vim.git
 
 File tree explorer:
-git clone git@github.com:scrooloose/nerdtree.git
+git clone --depth 1 git@github.com:scrooloose/nerdtree.git
 
 git gutter:
-git clone git@github.com:airblade/vim-gitgutter.git
+git clone --depth 1 git@github.com:airblade/vim-gitgutter.git
 
 multiple cursor editing (like sublime):
-git clone git@github.com:terryma/vim-multiple-cursors.git
+git clone --depth 1 git@github.com:terryma/vim-multiple-cursors.git
 
 better block code commenting:
-git clone git://github.com/tpope/vim-commentary.git
+git clone --depth 1 git://github.com/tpope/vim-commentary.git
+
+fzf file searching:
+git clone --depth 1 git@github.com:junegunn/fzf.vim.git

@@ -2,9 +2,6 @@
 "" Load the first file named 'vimrc' found in runtimepath
 " runtime vimrc
 
-" enable pathogen https://github.com/tpope/vim-pathogen:
-call pathogen#infect()
-
 " Allow vim to manage multiple buffers effectively
 set hidden
 
@@ -88,3 +85,9 @@ let g:gitgutter_sign_modified = '■'
 
 " open file explorer with CTRL+E
 map <C-e> :NERDTreeToggle<CR>
+
+" FZF plugin
+nnoremap <C-P> :FZF<CR>
+let g:fzf_layout = { 'down': '~20%' }
+" ensure FZF.vim knows where to find binary installed from homebrew
+set rtp+=/usr/local/opt/fzf
