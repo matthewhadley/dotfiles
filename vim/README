@@ -25,3 +25,6 @@ git clone --depth 1 git://github.com/tpope/vim-commentary.git
 
 fzf file searching:
 git clone --depth 1 git@github.com:junegunn/fzf.vim.git
+
+show linked highlighting groups for cursor position (for colorschemes):
+git clone --depth 1 git@github.com:gerw/vim-HiLinkTrace.git

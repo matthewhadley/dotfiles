@@ -18,6 +18,9 @@ set title
 " maintain more context around the cursor
 set scrolloff=3
 
+" highlight current line
+set cursorline
+
 " Intuitive backspacing in insert mode
 set backspace=indent,eol,start
 
@@ -69,6 +72,8 @@ set backupdir=$HOME/.vim/tmp
 
 " colors (also handles tab/status bar colors)
 colo diffsky
+" Show syntax highlighting groups for word under cursor
+nmap <C-l> :HLT<CR>
 
 " ale linter options
 " lint on save only
@@ -91,3 +96,17 @@ nnoremap <C-P> :FZF<CR>
 let g:fzf_layout = { 'down': '~20%' }
 " ensure FZF.vim knows where to find binary installed from homebrew
 set rtp+=/usr/local/opt/fzf
+
+" shift+arrow selection
+nmap <S-Up> v<Up>
+nmap <S-Down> v<Down>
+nmap <S-Left> v<Left>
+nmap <S-Right> v<Right>
+vmap <S-Up> <Up>
+vmap <S-Down> <Down>
+vmap <S-Left> <Left>
+vmap <S-Right> <Right>
+imap <S-Up> <Esc>v<Up>
+imap <S-Down> <Esc>v<Down>
+imap <S-Left> <Esc>v<Left>
+imap <S-Right> <Esc>v<Right>
