@@ -6,29 +6,23 @@ dotfiles="$HOME/.dotfiles/dotfiles"
 # Calculate dotfiles path lenth so it can be used to trim filepaths
 len=${#dotfiles}
 let len=$len+1
-for f in $(find $dotfiles)
+for f in $(find "$dotfiles")
 do :
   # Don't symlink directories
   if [ -d "$f" ];then continue; fi
   # Strip dotfiles path from file path
   file=${f:$len}
   # If file is nested, create the directory
-  path=$(dirname $file)
+  path=$(dirname "$file")
   if [ "$path" != "." ];then
-    mkdir -p $HOME/.$path
+    mkdir -p "$HOME/.$path"
   fi
   # Create the symlink inside of $HOME
   ln -sf "$dotfiles/$file" "$HOME/.$file"
 done
 
-# dev machine bolt symlink
-if [ -f $HOME/dev/bash/bolt/bin/bolt ];then
-  rm -rf /usr/local/bin/bolt
-  ln -s $HOME/dev/bash/bolt/bin/bolt /usr/local/bin/bolt
-fi
-
 # vim
-rm -rf $HOME/.vim
-ln -s $HOME/.dotfiles/vim $HOME/.vim
+rm -rf "$HOME/.vim"
+ln -s "$HOME/.dotfiles/vim" "$HOME/.vim"
 
 echo ".dotfiles init'd"
