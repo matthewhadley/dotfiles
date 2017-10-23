@@ -19,6 +19,8 @@ PLUGINS=(
   'gerw/vim-HiLinkTrace'
 )
 
+# resolve directory dynamically for provisioning other users
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 for PLUGIN in ${PLUGINS[@]}; do
-  ok git git@github.com:${PLUGIN}.git --depth 1 --dir $HOME/.vim/pack/bundle/start/${PLUGIN#*/}
+  ok git git@github.com:${PLUGIN}.git --depth 1 --dir $DIR/pack/bundle/start/${PLUGIN#*/}
 done
