@@ -7,8 +7,7 @@ elif [ "$(whoami)" == "vagrant" ]; then
   # running as vagrant
   pre_prompt="$BLDGRE\u$BLDWHT@$TXTDEF"
 fi
-if [ "$(whoami)" == "vagrant" ] || [ -d "/nethome" ]; then
-  # disable git status for creativelive
+if [ "$(whoami)" == "vagrant" ]; then
   # disable git status in vagrant as it is slow on shared folders
   PS1="$pre_prompt$prompt_color\H:$BLDWHT \w$TXTDEF\n\$ "
 else
