@@ -1,6 +1,4 @@
-#!/bin/bash
-
-REPOS=(
+PLUGINS=(
   # better javascript syntax highlighting
   'jelera/vim-javascript-syntax'
   # eslint linting via ale
@@ -21,10 +19,6 @@ REPOS=(
   'gerw/vim-HiLinkTrace'
 )
 
-# Using vim 8's native plugin loading
-# add plugins to ~/.vim/pack/bundle[/start] for autostart
-DIR="$HOME/.vim/pack/bundle/start"
-rm -rf $DIR
-for REPO in ${REPOS[@]}; do
-  git clone --depth 1 git@github.com:${REPO}.git $DIR/${REPO#*/}
+for PLUGIN in ${PLUGINS[@]}; do
+  ok git git@github.com:${PLUGIN}.git --depth 1 --dir $HOME/.vim/pack/bundle/start/${PLUGIN#*/}
 done
