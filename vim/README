@@ -1,30 +1,3 @@
 dot vim files
 
-Using vim 8's native plugin loading Clone all repos to ~/.vim/pack/bundle[/start]
-
-Better javascript syntax highlighting:
-git clone --depth 1 git@github.com:jelera/vim-javascript-syntax.git
-
-eslint linting via ale:
-git clone --depth 1 git@github.com:w0rp/ale.git
-
-editorconfig support:
-git clone --depth 1 git@github.com:editorconfig/editorconfig-vim.git
-
-File tree explorer:
-git clone --depth 1 git@github.com:scrooloose/nerdtree.git
-
-git gutter:
-git clone --depth 1 git@github.com:airblade/vim-gitgutter.git
-
-multiple cursor editing (like sublime):
-git clone --depth 1 git@github.com:terryma/vim-multiple-cursors.git
-
-better block code commenting:
-git clone --depth 1 git://github.com/tpope/vim-commentary.git
-
-fzf file searching:
-git clone --depth 1 git@github.com:junegunn/fzf.vim.git
-
-show linked highlighting groups for cursor position (for colorschemes):
-git clone --depth 1 git@github.com:gerw/vim-HiLinkTrace.git
+Using vim 8's native plugin loading, see `plugins.sh`
