@@ -12,5 +12,3 @@ ForwardAgent        yes
 Host                *
 ForwardAgent        no
 Protocol            2,1
-UseKeychain yes
-AddKeysToAgent yes
