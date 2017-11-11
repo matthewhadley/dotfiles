@@ -14,3 +14,6 @@ alias sbn='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n .'
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:magenta'"
+
+# LOTS
+alias lots='LOTS_RG=1 lots'
