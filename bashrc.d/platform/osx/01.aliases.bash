@@ -17,3 +17,6 @@ alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line
 
 # LOTS
 alias lots='LOTS_RG=1 lots'
+
+# npm
+alias npm-public='npm --registry https://registry.npmjs.org'
