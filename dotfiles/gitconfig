@@ -7,7 +7,7 @@
 [core]
   excludesfile = /Users/mhadley/.gitignore_global
   # https://github.com/stevemao/diff-so-fancy
-  pager = diff-highlight | diff-so-fancy | less --tabs=1,5 -R
+  pager = diff-so-fancy | less --tabs=1,5 -R
 [corp]
   org = .apple.com
   user = mhadley
