@@ -1,7 +1,7 @@
 # ~/.ssh/config
 
-Host                sjofn
-HostName            104.236.187.168
+Host                sif
+HostName            198.199.110.194
 ForwardAgent        yes
 
 # forward ssh keys in local network
