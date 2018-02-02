@@ -10,7 +10,9 @@ alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
 
 # sublime text
 alias sb='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl'
+alias sbg='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl `git diff --name-only | tr "\n" " "`'
 alias sbn='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n .'
+alias sbng='/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n . `git diff --name-only | tr "\n" " "`'
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:magenta'"
