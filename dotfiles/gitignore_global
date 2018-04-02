@@ -2,3 +2,8 @@
 npm-debug.log
 node_modules
 .vagrant
+.idea
+.sublime-project
+.sublime-workspace
+.vscode
+.brackets.json
