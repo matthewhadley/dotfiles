@@ -17,6 +17,8 @@ PLUGINS=(
   'junegunn/fzf.vim'
   # show linked highlighting groups for cursor position (for colorschemes)
   'gerw/vim-HiLinkTrace'
+  # vue syntax highlight
+  'posva/vim-vue'
 )
 
 # resolve directory dynamically for provisioning other users

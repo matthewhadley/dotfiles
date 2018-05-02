@@ -1,3 +1,3 @@
 dot vim files
 
-Using vim 8's native plugin loading, see `plugins.sh`
+Using vim 8's native plugin loading, see `plugins.bolt`
