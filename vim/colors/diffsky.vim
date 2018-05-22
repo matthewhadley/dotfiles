@@ -2,6 +2,8 @@ set background=light
 hi clear
 syntax reset
 
+let g:ale_sign_error = '●'
+let g:ale_sign_warning = '●'
 let g:colors_name = "test"
 
 hi Normal           ctermfg=239 ctermbg=NONE cterm=NONE
@@ -67,4 +69,7 @@ hi GitGutterChange        ctermfg=33 ctermbg=NONE cterm=NONE
 hi GitGutterDelete        ctermfg=160 ctermbg=NONE cterm=NONE
 hi GitGutterChangeDelete  ctermfg=160 ctermbg=NONE cterm=NONE
 
-hi ALEError               ctermfg=NONE ctermbg=NONE cterm=NONE
+hi ALEError               ctermfg=255 ctermbg=167 cterm=NONE
+hi ALEWarning             ctermfg=255 ctermbg=167 cterm=NONE
+hi ALEErrorSign           ctermfg=0 ctermbg=NONE cterm=NONE
+hi ALEWarningSign         ctermfg=0 ctermbg=NONE cterm=NONE
