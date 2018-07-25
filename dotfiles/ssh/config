@@ -1,5 +1,9 @@
 # ~/.ssh/config
 
+Host                fulla
+HostName            192.241.220.34
+ForwardAgent        yes
+
 Host                sif
 HostName            198.199.110.194
 ForwardAgent        yes
