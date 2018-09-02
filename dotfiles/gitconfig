@@ -2,7 +2,7 @@
   us = auto
   ui = true
 [user]
-  name = diffsky
+  name = matthewhadley
   email = matthew.hadley@gmail.com
 [core]
   excludesfile = /Users/mhadley/.gitignore_global

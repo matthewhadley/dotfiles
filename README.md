@@ -1,6 +1,6 @@
 # dotfiles
 
 ```
-git clone git@github.com:diffsky/dotfiles.git ~/.dotfiles \
+git clone git@github.com:matthewhadley/dotfiles.git ~/.dotfiles \
 && ~/.dotfiles/init.sh && . ~/.bashrc
 ```
