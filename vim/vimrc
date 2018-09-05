@@ -71,7 +71,7 @@ set directory=$HOME/.vim/tmp
 set backupdir=$HOME/.vim/tmp
 
 " colors (also handles tab/status bar colors)
-colo matthewhadley
+colo diffsky
 " Show syntax highlighting groups for word under cursor
 nmap <C-l> :HLT<CR>
 
