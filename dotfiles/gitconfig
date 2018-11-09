@@ -6,18 +6,12 @@
   email = matthew.hadley@gmail.com
 [core]
   excludesfile = /Users/mhadley/.gitignore_global
-  # https://github.com/stevemao/diff-so-fancy
+  # https://github.com/so-fancy/diff-so-fancy
   pager = diff-so-fancy | less --tabs=1,5 -R
 [corp]
   org = .apple.com
   user = mhadley
   email = mhadley@apple.com
-[difftool "sourcetree"]
-  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-  path =
-[mergetool "sourcetree"]
-  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-  trustExitCode = true
 [mergetool "Kaleidoscope"]
   cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
   trustexitcode = true
