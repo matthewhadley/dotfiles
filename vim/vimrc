@@ -88,6 +88,9 @@ set signcolumn=yes
 " custom git gutter sign
 let g:gitgutter_sign_modified = '■'
 
+" disable modelines
+set nomodeline
+
 " open file explorer with CTRL+E
 map <C-e> :NERDTreeToggle<CR>
 
