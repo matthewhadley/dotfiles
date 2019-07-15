@@ -5,7 +5,7 @@
   name = matthewhadley
   email = matthew.hadley@gmail.com
 [core]
-  excludesfile = /Users/mhadley/.gitignore_global
+ excludesfile = /Users/mhadley/.gitignore_global
   # https://github.com/so-fancy/diff-so-fancy
   pager = diff-so-fancy | less --tabs=1,5 -R
 [corp]
@@ -26,9 +26,9 @@
 [diff]
   tool = Kaleidoscope
 [push]
-	followTags = true
+  followTags = true
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
