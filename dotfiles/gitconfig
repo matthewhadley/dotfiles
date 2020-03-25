@@ -2,16 +2,19 @@
   us = auto
   ui = true
 [user]
-  name = matthewhadley
-  email = matthew.hadley@gmail.com
+  name = Matthew Hadley
+  email = mhadley@apple.com
 [core]
- excludesfile = /Users/mhadley/.gitignore_global
+  excludesfile = /Users/mhadley/.gitignore_global
   # https://github.com/so-fancy/diff-so-fancy
   pager = diff-so-fancy | less --tabs=1,5 -R
 [corp]
   org = .apple.com
   user = mhadley
   email = mhadley@apple.com
+[personal]
+  user = matthewhadley
+  email = matthew.hadley@gmail.com
 [mergetool "Kaleidoscope"]
   cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
   trustexitcode = true
