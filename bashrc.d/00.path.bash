@@ -7,6 +7,7 @@ function pathadd {
 
 pathadd "/usr/local/sbin"
 pathadd "/usr/local/bin"
+pathadd "/usr/local/opt/node@12/bin"
 
 # Note, edit /etc/paths to put local paths before global
 # http://stackoverflow.com/questions/5364614/
