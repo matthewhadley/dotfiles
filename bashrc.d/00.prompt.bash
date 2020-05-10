@@ -43,6 +43,8 @@ two_dirs() {
 }
 
 prompt_command() {
+  # save history as it's generated
+  history -a
   if [ -z $PROMPT ];then
     two_dirs
   else

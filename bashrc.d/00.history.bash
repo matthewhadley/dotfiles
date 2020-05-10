@@ -11,3 +11,5 @@ HISTTIMEFORMAT='%F %T '
 # bash_history per ttyl
 mkdir -p $HOME/.history.d
 HISTFILE="$HOME/.history.d/$HOSTNAME-$TTY_NUM"
+
+# note `history -a` added to PROMPT_COMMAND
