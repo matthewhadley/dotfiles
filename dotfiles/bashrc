@@ -3,17 +3,6 @@
 export OS=`uname`
 if [ "$OS" == "Darwin" ]; then
   export PLATFORM='osx'
-elif [ -f /etc/centos-release ]; then
-  export PLATFORM='centos'
-elif [ -f /etc/debian_version ]; then
-  export PLATFORM='debian'
-  if [ "$(uname -r | grep bone | wc -l)" -ge "1" ]; then
-    export BEAGLEBONE_BLACK=1
-    export ARM_DEVICE=1
-  elif [ "$(uname -m)" == "armv6l" ]; then
-    export RASPBERRY_PI=1
-    export ARM_DEVICE=1
-  fi
 else
   export PLATFORM='unknown'
 fi
