@@ -1,5 +1,5 @@
 # env
-export NODE_ENV=dev
+export NODE_ENV=development
 
 # set GIT_SSH to allow per host configs
 # https://github.com/matthewhadley/git-ssh
