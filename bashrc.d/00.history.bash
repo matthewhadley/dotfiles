@@ -1,15 +1,18 @@
-# Don't add duplicate commands or commands that start with a space to bash history
-HISTCONTROL=ignoreboth
+# Don't add commands that start with a space
+setopt HIST_IGNORE_SPACE
+# Don't add duplicate commands
+setopt HIST_IGNORE_DUPS
 # Append history instead of rewriting it
-shopt -s histappend
+setopt appendhistory
+# Immediately append to the history file, not just when a term is killed
+setopt incappendhistory
+
 # Allow a larger history file
 HISTFILESIZE=1000000
 HISTSIZE=1000000
 # Add timestamps to history entries
 HISTTIMEFORMAT='%F %T '
 
-# bash_history per ttyl
-mkdir -p $HOME/.history.d
+# History per ttyl
+mkdir -p "$HOME/.history.d"
 HISTFILE="$HOME/.history.d/$HOSTNAME-$TTY_NUM"
-
-# note `history -a` added to PROMPT_COMMAND

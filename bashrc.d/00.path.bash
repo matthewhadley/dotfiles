@@ -5,6 +5,11 @@ function pathadd {
   fi
 }
 
+#yarn
+pathadd "$HOME/.yarn/bin"
+pathadd "$HOME/.config/yarn/global/node_modules/.bin"
+
+# homebrew
 pathadd "/usr/local/sbin"
 pathadd "/usr/local/bin"
 

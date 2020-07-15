@@ -1,3 +1,5 @@
+# git functions
+
 # Determine if a git repo has uncomitted changes in it
 parse_git_dirty() {
   # Requires git 1.8. ver 1.7 responds with "no changes added "
@@ -63,7 +65,7 @@ gfpr() {
     remote=$2
   fi
   git show-ref --verify --quiet refs/heads/pr-$1
-  if [ $? == 0 ];then
+  if [[ $? == 0 ]];then
     echo "error: pr branch already exists"
     git checkout pr-$1
     return
@@ -93,7 +95,7 @@ gunpb() {
 
 # rebase remote
 glr() {
-  git fetch origin && git rebase --preserve-merges origin/$(get_git_branch)
+  git fetch origin && git rebase --rebase-merges origin/$(get_git_branch)
 }
 
 # ghi (https://github.com/stephencelis/ghi) with CORP support
@@ -103,14 +105,14 @@ ghi() {
   if [ ! -z "$GIT_CORP_ORG" ]; then
     local CONFIG=$(git rev-parse --show-toplevel 2> /dev/null)
     if [ -f ${CONFIG}/.git/config ];then
-      IFS=';' read -ra ADDR <<< "$GIT_CORP_ORG"
+      IFS=';' read -r ADDR <<< "$GIT_CORP_ORG"
       for i in "${ADDR[@]}"; do
         CORP_GIT=$(grep "${i}" ${CONFIG}/.git/config | wc -l)
         if [ "$CORP_GIT" -ge "1" ]; then
           TOKEN_TYPE="GHI_CORP_TOKEN"
           local HOST
           HOST=$(keychain -g "GIT_CORP_HOST")
-          if [ $? == 1 ];then
+          if [[ $? == 1 ]];then
             echo "missing keychain value for GIT_CORP_HOST"
             return 1
           fi

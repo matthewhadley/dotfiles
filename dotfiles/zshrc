@@ -1,0 +1,22 @@
+#zsh
+
+export OS=`uname`
+if [[ "$OS" == "Darwin" ]]; then
+  export PLATFORM='osx'
+else
+  export PLATFORM='unknown'
+fi
+
+function source_rc() {
+  for rc in $1/*; do
+    if [ -f $rc ]; then
+      source $rc
+    fi
+  done
+}
+
+source_rc $HOME/.dotfiles/bashrc.d
+source_rc $HOME/.dotfiles/bashrc.d/platform/$PLATFORM
+source_rc $HOME/.dotfiles/bashrc.d/host/$HOST
+
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

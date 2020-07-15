@@ -1,7 +1,0 @@
-# filter bash history with <UP> <DOWN> matching partial command in prompt
-"\e[1;9C": forward-word
-"\e[1;9D": backward-word
-"\e[A": history-search-backward
-"\e[B": history-search-forward
-set show-all-if-ambiguous on
-set completion-ignore-case on

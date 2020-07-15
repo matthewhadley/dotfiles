@@ -1,34 +1,24 @@
 #  display file/directory permissions in octal format
 perms() {
   # default to all visible files/directories
-  local input=*
+  local input=(*);
   if [ ! -z "$1" ]; then
     input=$@
   fi
   # check to also show hidden files/directories
-  if [ "$1" == "-a" ]; then
-    input=".* *"
+  if [[ "$1" == "-a" ]]; then
+    input=(.* *)
   fi
-  if [ "$(uname)" == "Darwin" ]; then
-    stat -f '%A %N' $input 2>/dev/null
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stat -f '%A %N' "${=input}"
   else
     stat -c '%A %a %n' $input 2>/dev/null
   fi
 }
 
-# Repeat a command mulitple times
-repeat() {
-  local n=$1
-  shift
-  while [ $(( n -= 1 )) -ge 0 ]
-  do
-    "$@"
-  done
-}
-
 # remove known_hosts entry
 unknow_host() {
-  if [ -z "$1" ];then
+  if [[ -z "$1" ]];then
     echo "error: missing hostname"
     return
   fi
