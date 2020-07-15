@@ -42,27 +42,19 @@ two_dirs() {
       local tty_display=" $TTY_NUM "
     fi
 
+    # set iterm tab display
     echo -ne "\033]0;${tty_display}${hostname}${last}\007"
   fi
 }
 
-NEWLINE=$'\n'
-PROMPT="%F{white}%m: %~$(__git_ps1)${NEWLINE}%F%(!.#.$) "
-
 prompt_command() {
   two_dirs
-  if [ -z $PROMPT ];then
-    two_dirs
-  else
-    # echo -ne "\033]0;$PROMPT\007"
-    echo -ne ""
-  fi
+  # set prompt
+  NEWLINE=$'\n'
+  PROMPT="%F{white}%m: %~$(__git_ps1)${NEWLINE}%F%(!.#.$) "
 }
-
-PROMPT_COMMAND="prompt_command"
-
-# have zsh call bash PROMPT_COMMAND
-precmd() { eval "$PROMPT_COMMAND" }
+# have zsh call prompt_command for prompt setting
+precmd() { prompt_command }
 
 # unix.stackexchange.com/questions/167582/why-zsh-ends-a-line-with-a-highlighted-percent-symbol
 PROMPT_EOL_MARK=''
