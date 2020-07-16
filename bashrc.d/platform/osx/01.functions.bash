@@ -1,9 +1,3 @@
-# reveal a function defintion and where it is defined
-whence() {
-  shopt -s extdebug;declare -F $1;shopt -u extdebug
-  type -a $1
-}
-
 # show recently modified files using fd https://github.com/sharkdp/fd
 # usage: recent [path] [number of results]
 recent() {
