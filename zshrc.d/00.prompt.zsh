@@ -13,8 +13,8 @@ source $(brew --prefix)/etc/bash_completion.d/git-prompt.sh
 if [ "$(tty | grep pts | wc -l)" -ge "1" ];then
   DEV_PTS=1
 fi
-two_dirs() {
 
+two_dirs() {
   if [[ "$PLATFORM" == "osx" || -n "$DEV_PTS" ]];then
     local home_sign="~" # rootbashrc uses "/root"
     local dir="${PWD%/*/*}"
@@ -56,5 +56,6 @@ prompt_command() {
 # have zsh call prompt_command for prompt setting
 precmd() { prompt_command }
 
+# do no use highlighted percent symbol at end of line
 # unix.stackexchange.com/questions/167582/why-zsh-ends-a-line-with-a-highlighted-percent-symbol
 PROMPT_EOL_MARK=''

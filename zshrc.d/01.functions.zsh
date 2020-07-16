@@ -9,11 +9,7 @@ perms() {
   if [[ "$1" == "-a" ]]; then
     input=(.* *)
   fi
-  if [[ "$(uname)" == "Darwin" ]]; then
-    stat -f '%A %N' "${=input}"
-  else
-    stat -c '%A %a %n' $input 2>/dev/null
-  fi
+  stat -f '%A %N' "${=input}"
 }
 
 # remove known_hosts entry
@@ -35,4 +31,15 @@ cds() {
 # make a directory and cd into it
 md() {
   mkdir -p "$@" && cd "$@";
+}
+
+# show recently modified files using fd https://github.com/sharkdp/fd
+# usage: recent [path] [number of results]
+recent() {
+  fd -t f -0 . $1 | xargs -0 stat -f "%m%t%Sm %N" | sort -rn | head -n ${2:-20} | cut -f2-
+}
+
+# anybar
+anybar() {
+  echo -n $1 | nc -4u -w0 localhost ${2:-1738}
 }

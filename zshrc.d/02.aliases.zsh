@@ -19,3 +19,8 @@ alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line
 
 # npm
 alias npm-public='npm --registry https://registry.npmjs.org'
+
+# reconnect that Magic Mouse
+btcc() {
+  btc $(btc | grep "Magic Mouse" | cut -c-17)
+}

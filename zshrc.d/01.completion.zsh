@@ -1,4 +1,8 @@
 # bash completion
+
+autoload -U compinit
+compinit
+
 # brew bash-completion package
 if [[ -d $(brew --prefix)/etc/bash_completion.d/ ]]; then
   zstyle ':completion:*:*:git:*' script /usr/local/etc/bash_completion.d/git-completion.bash
