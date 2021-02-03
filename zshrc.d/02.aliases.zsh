@@ -24,3 +24,7 @@ alias npm-public='npm --registry https://registry.npmjs.org'
 btcc() {
   btc $(btc | grep "Magic Mouse" | cut -c-17)
 }
+
+# local webserver github.com/http-party/http-server
+# localhost only without caching
+alias hs="hs -a 127.0.0.1 -c-1"
