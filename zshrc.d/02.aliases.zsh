@@ -27,4 +27,4 @@ btcc() {
 
 # local webserver github.com/http-party/http-server
 # localhost only without caching
-alias hs="hs -a 127.0.0.1 -c-1"
+alias hs="http-server -a 127.0.0.1 -c-1"
