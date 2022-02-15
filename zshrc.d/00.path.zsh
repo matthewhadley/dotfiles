@@ -5,18 +5,13 @@ function pathadd {
   fi
 }
 
-# This formula is keg-only, which means it was not symlinked into /usr/local,
-# because this is an alternate version of another formula.
-pathadd "/usr/local/opt/node@14/bin"
-pathadd "/usr/local/opt/openjdk/bin"
+# Note, edit /etc/paths to put local paths before global
+# http://stackoverflow.com/questions/5364614/
+
+#volta
+export VOLTA_HOME="$HOME/.volta"
+pathadd "$VOLTA_HOME/bin"
 
 #yarn
 pathadd "$HOME/.yarn/bin"
 pathadd "$HOME/.config/yarn/global/node_modules/.bin"
-
-# homebrew
-pathadd "/usr/local/sbin"
-pathadd "/usr/local/bin"
-
-# Note, edit /etc/paths to put local paths before global
-# http://stackoverflow.com/questions/5364614/
