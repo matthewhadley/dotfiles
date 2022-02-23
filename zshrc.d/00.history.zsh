@@ -15,4 +15,4 @@ HISTTIMEFORMAT='%F %T '
 
 # History per ttyl
 mkdir -p "$HOME/.history.d"
-HISTFILE="$HOME/.history.d/$HOSTNAME-$TTY_NUM"
+HISTFILE="$HOME/.history.d/${HOSTNAME:+$HOSTNAME-}${TTY_NUM}"
