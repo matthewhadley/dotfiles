@@ -15,3 +15,6 @@ pathadd "$VOLTA_HOME/bin"
 #yarn
 pathadd "$HOME/.yarn/bin"
 pathadd "$HOME/.config/yarn/global/node_modules/.bin"
+
+#openjdk@11
+pathadd /opt/homebrew/opt/openjdk@11/bin
