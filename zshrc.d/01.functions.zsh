@@ -1,3 +1,25 @@
+# get, set, delete keychain values
+keychain() {
+  key="$1"
+  value="$2"
+
+  if [[ "$value" == "null" ]]; then
+    VALUE=$(/usr/bin/security delete-generic-password -s "$key" -a "$USER" 2>&1 >/dev/null)
+    if [ $? -ne 0 ];then
+      return 1
+    fi
+  elif [ -n "$value" ]; then
+    /usr/bin/security add-generic-password -s "$key" -w "$value" -a "$USER" -U
+  elif [ -n "$key" ]; then
+    VALUE=$(/usr/bin/security find-generic-password -w -s "$key" 2>&1 >/dev/null)
+    if [ $? -eq 0 ];then
+      /usr/bin/security find-generic-password -w -s "$key" -a "$USER"
+    else
+      return 1
+    fi
+  fi
+}
+
 #  display file/directory permissions in octal format
 perms() {
   # default to all visible files/directories

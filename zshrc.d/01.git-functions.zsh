@@ -111,7 +111,7 @@ ghi() {
         if [ "$CORP_GIT" -ge "1" ]; then
           TOKEN_TYPE="GHI_CORP_TOKEN"
           local HOST
-          HOST=$(keychain -g "GIT_CORP_HOST")
+          HOST=$(keychain "GIT_CORP_HOST")
           if [[ $? == 1 ]];then
             echo "missing keychain value for GIT_CORP_HOST"
             return 1
@@ -122,5 +122,5 @@ ghi() {
       done
     fi
   fi
-  GHI_TOKEN=$(keychain -g "$TOKEN_TYPE") TERM=xterm-256color /usr/local/bin/ghi --no-pager "$@"
+  GHI_TOKEN=$(keychain "$TOKEN_TYPE") TERM=xterm-256color /usr/local/bin/ghi --no-pager "$@"
 }
