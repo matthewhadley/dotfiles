@@ -1,2 +1,3 @@
 vim/pack
 dotfiles/ssh/hosts
+zshrc.d/00.apple.zsh
