@@ -10,6 +10,10 @@ alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:white'"
+rgh() {
+  local args="$@"
+  rg "$args" ~/.history.d
+}
 
 # npm
 alias npm-public='npm --registry https://registry.npmjs.org'

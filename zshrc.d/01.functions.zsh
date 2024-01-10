@@ -60,3 +60,7 @@ md() {
 recent() {
   fd -t f -0 . $1 | xargs -0 stat -f "%m%t%Sm %N" | sort -rn | head -n ${2:-20} | cut -f2-
 }
+
+# rgh() {
+#   rg $1 ~/.history.d
+# }
