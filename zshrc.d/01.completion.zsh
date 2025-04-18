@@ -1,10 +1,11 @@
-# bash completion
+# zsh completion
 
-autoload -U compinit
-compinit
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
 
-# brew bash-completion package
-[[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
+  autoload -Uz compinit
+  compinit
+fi
 
 # superuser.com/questions/1092033/how-can-i-make-zsh-tab-completion-fix-capitalization-errors-for-directories-and/1092328
 # tab completion capital letters also match small letters
