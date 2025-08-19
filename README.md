@@ -9,6 +9,7 @@ Homebrew Formulae
 
 ```
 $ brew leaves
+bash-completion
 diff-so-fancy
 dnsmasq
 git

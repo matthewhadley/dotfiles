@@ -11,10 +11,7 @@ function pathadd {
 #volta
 export VOLTA_HOME="$HOME/.volta"
 pathadd "$VOLTA_HOME/bin"
-
-#yarn
-pathadd "$HOME/.yarn/bin"
-pathadd "$HOME/.config/yarn/global/node_modules/.bin"
+pathadd "$(npm config get prefix)/bin"
 
 #openjdk@11
 pathadd /opt/homebrew/opt/openjdk@11/bin
