@@ -11,7 +11,6 @@ function pathadd {
 #volta
 export VOLTA_HOME="$HOME/.volta"
 pathadd "$VOLTA_HOME/bin"
-pathadd "$(npm config get prefix)/bin"
 
 #openjdk@11
 pathadd /opt/homebrew/opt/openjdk@11/bin
