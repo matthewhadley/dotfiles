@@ -3,6 +3,10 @@ keychain() {
   key="$1"
   value="$2"
 
+  if [[ "$key" == "" ]]; then
+    echo "usage: keychain key [value|null]"
+  fi
+
   if [[ "$value" == "null" ]]; then
     VALUE=$(/usr/bin/security delete-generic-password -s "$key" -a "$USER" 2>&1 >/dev/null)
     if [ $? -ne 0 ];then
