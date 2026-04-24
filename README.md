@@ -21,7 +21,6 @@ ripgrep
 shellcheck
 tree
 vim
-volta
 watch
 websocketd
 yq

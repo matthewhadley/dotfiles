@@ -3,11 +3,11 @@
 alias gp='git push'
 alias gl='git pull'
 alias gpo='git push origin'
-alias gpom='git push origin master'
+alias gpom='git push origin main'
 alias glo='git pull origin'
-alias glom='git pull origin master'
+alias glom='git pull origin main'
 alias gfo='git fetch origin'
-alias gfom='git fetch origin master'
+alias gfom='git fetch origin main'
 alias gs='git status -sb'
 alias ga='git add -A'
 alias gf='git fetch'
@@ -21,12 +21,12 @@ alias gd='git diff'
 alias gdt='git difftool -y'
 alias gch='git checkout'
 alias gm='git merge'
-alias gmom='git merge origin/master'
+alias gmom='git merge origin/main'
 alias gmt='git mergetool'
 alias grp='git remote prune'
 alias gr='git remote'
 
-# git merge branch - for local merging of feature branches into master, creates a merge commit even for a fast forward
+# git merge branch - for local merging of feature branches into main, creates a merge commit even for a fast forward
 alias gmb='git merge --no-ff'
 
 # formatted git log

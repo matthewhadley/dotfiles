@@ -8,4 +8,4 @@ function source_rc() {
   done
 }
 
-source_rc $HOME/.dotfiles/zshrc.d
+source_rc $HOME/.zshrc.d

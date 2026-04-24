@@ -10,4 +10,5 @@ ForwardAgent        yes
 # don't trust external machines with ssh keys
 Host                *
 ForwardAgent        no
-Protocol            2,1
+AddKeysToAgent      yes
+UseKeychain         yes

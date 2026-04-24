@@ -98,29 +98,3 @@ glr() {
   git fetch origin && git rebase --rebase-merges origin/$(get_git_branch)
 }
 
-# ghi (https://github.com/stephencelis/ghi) with CORP support
-ghi() {
-  local GIT_CORP_ORG=$(git config --global corp.org)
-  local TOKEN_TYPE="GHI_TOKEN"
-  if [ ! -z "$GIT_CORP_ORG" ]; then
-    local CONFIG=$(git rev-parse --show-toplevel 2> /dev/null)
-    if [ -f ${CONFIG}/.git/config ];then
-      IFS=';' read -r ADDR <<< "$GIT_CORP_ORG"
-      for i in "${ADDR[@]}"; do
-        CORP_GIT=$(grep "${i}" ${CONFIG}/.git/config | wc -l)
-        if [ "$CORP_GIT" -ge "1" ]; then
-          TOKEN_TYPE="GHI_CORP_TOKEN"
-          local HOST
-          HOST=$(keychain "GIT_CORP_HOST")
-          if [[ $? == 1 ]];then
-            echo "missing keychain value for GIT_CORP_HOST"
-            return 1
-          fi
-          git config github.host "$HOST"
-          break
-        fi
-      done
-    fi
-  fi
-  GHI_TOKEN=$(keychain "$TOKEN_TYPE") TERM=xterm-256color /usr/local/bin/ghi --no-pager "$@"
-}
