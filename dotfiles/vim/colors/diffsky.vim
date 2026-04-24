@@ -2,9 +2,7 @@ set background=light
 hi clear
 syntax reset
 
-let g:ale_sign_error = '●'
-let g:ale_sign_warning = '●'
-let g:colors_name = "test"
+let g:colors_name = "diffsky"
 
 hi Normal           ctermfg=239 ctermbg=NONE cterm=NONE
 hi LineNr           ctermfg=254 ctermbg=NONE cterm=NONE
@@ -14,7 +12,6 @@ hi TabLineSel       ctermfg=0 ctermbg=NONE cterm=NONE
 hi NonText          ctermfg=255 ctermbg=NONE cterm=NONE
 hi SpecialKey       ctermfg=NONE ctermbg=228 cterm=NONE
 hi Search           ctermfg=0 ctermbg=222 cterm=NONE
-hi TabLine          ctermfg=0 ctermbg=NONE cterm=NONE
 hi StatusLine       ctermfg=238 ctermbg=254 cterm=NONE
 hi StatusLineNC     ctermfg=238 ctermbg=255 cterm=NONE
 hi VertSplit        ctermfg=0 ctermbg=NONE cterm=NONE
@@ -53,7 +50,6 @@ hi Define           ctermfg=0 ctermbg=NONE cterm=NONE
 hi Include          ctermfg=0 ctermbg=NONE cterm=NONE
 hi Ignore           ctermfg=0 ctermbg=NONE cterm=NONE
 
-" JavaScript Highlighting
 hi javaScriptBraces       ctermfg=0 ctermbg=NONE cterm=NONE
 hi javaScriptConditional  ctermfg=0 ctermbg=NONE cterm=NONE
 hi javaScriptExceptions   ctermfg=0 ctermbg=NONE cterm=NONE
@@ -62,14 +58,3 @@ hi javaScriptRepeat       ctermfg=0 ctermbg=NONE cterm=NONE
 hi javaScriptNumber       ctermfg=215 ctermbg=NONE cterm=NONE
 hi javaScriptMember       ctermfg=0 ctermbg=NONE cterm=NONE
 hi javaScriptEndColons    ctermfg=239 ctermbg=NONE cterm=NONE
-
-" Git Gutter Highlighting
-hi GitGutterAdd           ctermfg=76 ctermbg=NONE cterm=NONE
-hi GitGutterChange        ctermfg=33 ctermbg=NONE cterm=NONE
-hi GitGutterDelete        ctermfg=160 ctermbg=NONE cterm=NONE
-hi GitGutterChangeDelete  ctermfg=160 ctermbg=NONE cterm=NONE
-
-hi ALEError               ctermfg=255 ctermbg=167 cterm=NONE
-hi ALEWarning             ctermfg=255 ctermbg=167 cterm=NONE
-hi ALEErrorSign           ctermfg=0 ctermbg=NONE cterm=NONE
-hi ALEWarningSign         ctermfg=0 ctermbg=NONE cterm=NONE

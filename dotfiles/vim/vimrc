@@ -1,0 +1,54 @@
+set hidden
+set history=1000
+set ignorecase
+set smartcase
+set title
+set scrolloff=3
+set cursorline
+set backspace=indent,eol,start
+set pastetoggle=<F12>
+
+syntax on
+filetype on
+filetype plugin on
+filetype indent on
+
+set hlsearch
+set incsearch
+
+set clipboard=unnamed
+vmap <C-C> "+y
+vmap <C-V> "+p
+
+set mouse=a
+
+nnoremap ; :
+
+set laststatus=2
+set statusline=%F\ %m\ \ %l/%LL:%cC
+
+set number
+set tabstop=4
+
+nnoremap <C-Left> :tabprevious<CR>
+nnoremap <C-Right> :tabnext<CR>
+
+set noswapfile
+set nobackup
+
+colo diffsky
+
+set nomodeline
+
+nmap <S-Up> v<Up>
+nmap <S-Down> v<Down>
+nmap <S-Left> v<Left>
+nmap <S-Right> v<Right>
+vmap <S-Up> <Up>
+vmap <S-Down> <Down>
+vmap <S-Left> <Left>
+vmap <S-Right> <Right>
+imap <S-Up> <Esc>v<Up>
+imap <S-Down> <Esc>v<Down>
+imap <S-Left> <Esc>v<Left>
+imap <S-Right> <Esc>v<Right>

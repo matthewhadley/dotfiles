@@ -1,16 +1,5 @@
 # git functions
 
-# Determine if a git repo has uncomitted changes in it
-parse_git_dirty() {
-  # Requires git 1.8. ver 1.7 responds with "no changes added "
-  [[ "$(git status 2> /dev/null | tail -n1 | cut -c 1-17)" != "nothing to commit" ]] && echo "*"
-}
-
-# Get the git branch name of current directory and wrap in parens if exists (for PS1)
-parse_git_branch() {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ (\1$(parse_git_dirty))/"
-}
-
 # echo git branch of current directory
 get_git_branch() {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'

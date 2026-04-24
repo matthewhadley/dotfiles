@@ -6,7 +6,7 @@ alias l='ls -lG'
 alias vi=vim
 
 # Recursively delete `.DS_Store` files
-alias rm.DS="find . -name '*.DS_Store' -type f -ls -delete"
+alias rm.DS="find . -name '.DS_Store' -type f -ls -delete"
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:white'"

@@ -1,5 +1,4 @@
-dotfiles/vim.ln/pack
 dotfiles/ssh/hosts
 dotfiles/gitconfig-corp
-dotfiles/zshrc.d.ln/00.apple.zsh
+dotfiles/zshrc.d/00.apple.zsh
 **/.DS_Store

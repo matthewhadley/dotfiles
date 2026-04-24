@@ -5,6 +5,7 @@ keychain() {
 
   if [[ "$key" == "" ]]; then
     echo "usage: keychain key [value|null]"
+    return
   fi
 
   if [[ "$value" == "null" ]]; then

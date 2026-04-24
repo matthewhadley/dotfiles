@@ -6,12 +6,12 @@ setopt HIST_IGNORE_DUPS
 setopt appendhistory
 # Immediately append to the history file, not just when a term is killed
 setopt incappendhistory
+# Add timestamps to history entries
+setopt EXTENDED_HISTORY
 
 # Allow a larger history file
-HISTFILESIZE=1000000
+SAVEHIST=1000000
 HISTSIZE=1000000
-# Add timestamps to history entries
-HISTTIMEFORMAT='%F %T '
 
 # History per ttyl
 mkdir -p "$HOME/.history.d"

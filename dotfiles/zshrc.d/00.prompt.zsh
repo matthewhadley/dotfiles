@@ -6,7 +6,7 @@
 setopt PROMPT_SUBST
 GIT_PS1_SHOWDIRTYSTATE=1
 GIT_PS1_SHOWUNTRACKEDFILES=1
-source $(brew --prefix)/etc/bash_completion.d/git-prompt.sh
+source $BREW_PREFIX/etc/bash_completion.d/git-prompt.sh
 
 two_dirs() {
   # show 2 levels of directory listing for iterm2 tab
@@ -31,7 +31,7 @@ two_dirs() {
   if [[ -n "$SSH_CLIENT" ]]; then
     local hostname="[$HOSTNAME] "
   fi
-  if [[ ! -z "TTY_NUM" ]]; then
+  if [[ ! -z "$TTY_NUM" ]]; then
     local tty_display=" $TTY_NUM "
   fi
 

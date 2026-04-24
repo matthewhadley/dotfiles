@@ -7,17 +7,7 @@ dotfiles="$HOME/.dotfiles/dotfiles"
 len=${#dotfiles}
 let len=$len+1
 
-# First pass: handle .ln directories (symlink whole directory)
-for d in $(find "$dotfiles" -maxdepth 1 -type d -name "*.ln")
-do :
-  dir=${d:$len}
-  target="${dir%.ln}"
-  rm -rf "$HOME/.$target"
-  ln -sf "$dotfiles/$dir" "$HOME/.$target"
-done
-
-# Second pass: handle individual files (skip .ln directories entirely)
-for f in $(find "$dotfiles" -name "*.ln" -prune -o -type f -print)
+for f in $(find "$dotfiles" -type f)
 do :
   file=${f:$len}
   path=$(dirname "$file")
