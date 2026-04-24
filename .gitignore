@@ -1,3 +1,4 @@
-vim/pack
+dotfiles/vim.ln/pack
 dotfiles/ssh/hosts
+dotfiles/gitconfig-corp
 zshrc.d/00.apple.zsh

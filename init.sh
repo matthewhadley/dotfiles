@@ -3,26 +3,35 @@
 # Get a reference to dotfiles location
 dotfiles="$HOME/.dotfiles/dotfiles"
 
-# Calculate dotfiles path lenth so it can be used to trim filepaths
+# Calculate dotfiles path length so it can be used to trim filepaths
 len=${#dotfiles}
 let len=$len+1
-for f in $(find "$dotfiles")
+
+# First pass: handle .ln directories (symlink whole directory)
+for d in $(find "$dotfiles" -maxdepth 1 -type d -name "*.ln")
 do :
-  # Don't symlink directories
+  dir=${d:$len}
+  target="${dir%.ln}"
+  rm -rf "$HOME/.$target"
+  ln -sf "$dotfiles/$dir" "$HOME/.$target"
+done
+
+# Second pass: handle individual files (skip anything inside .ln directories)
+for f in $(find "$dotfiles" -not -path "*.ln/*" -not -path "*.ln")
+do :
   if [ -d "$f" ];then continue; fi
-  # Strip dotfiles path from file path
   file=${f:$len}
-  # If file is nested, create the directory
   path=$(dirname "$file")
   if [ "$path" != "." ];then
     mkdir -p "$HOME/.$path"
   fi
-  # Create the symlink inside of $HOME
-  ln -sf "$dotfiles/$file" "$HOME/.$file"
+  # Files ending in .cp get copied (with .cp stripped), otherwise symlinked
+  if [[ "$file" == *.cp ]];then
+    target="${file%.cp}"
+    cp -f "$dotfiles/$file" "$HOME/.$target"
+  else
+    ln -sf "$dotfiles/$file" "$HOME/.$file"
+  fi
 done
-
-# vim
-rm -rf "$HOME/.vim"
-ln -s "$HOME/.dotfiles/vim" "$HOME/.vim"
 
 echo ".dotfiles init'd"

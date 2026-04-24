@@ -8,9 +8,7 @@ function pathadd {
 # Note, edit /etc/paths to put local paths before global
 # http://stackoverflow.com/questions/5364614/
 
-#volta
-export VOLTA_HOME="$HOME/.volta"
-pathadd "$VOLTA_HOME/bin"
-
-#openjdk@11
-pathadd /opt/homebrew/opt/openjdk@11/bin
+# Homebrew - ensure homebrew binaries take precedence over macOS built-ins
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi

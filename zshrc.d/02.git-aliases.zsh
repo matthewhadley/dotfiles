@@ -1,14 +1,4 @@
-# channel git calls
-hash git 2>&- && { export GIT_PATH=$(which git); }
 
-function git(){
-  if [[ "$1" == "commit" || "$1" == "clone" ]];then
-    # let git.corp proxy git cmd
-    $GIT_CORP "$@"
-  else
-    $GIT_PATH "$@"
-  fi
-}
 # git
 alias gp='git push'
 alias gl='git pull'
@@ -40,7 +30,7 @@ alias gr='git remote'
 alias gmb='git merge --no-ff'
 
 # formatted git log
-alias gl="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
+alias glog="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
 
 # formatted git log branch pipe graphs
 alias glg="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
