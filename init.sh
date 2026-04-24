@@ -16,10 +16,9 @@ do :
   ln -sf "$dotfiles/$dir" "$HOME/.$target"
 done
 
-# Second pass: handle individual files (skip anything inside .ln directories)
-for f in $(find "$dotfiles" -not -path "*.ln/*" -not -path "*.ln")
+# Second pass: handle individual files (skip .ln directories entirely)
+for f in $(find "$dotfiles" -name "*.ln" -prune -o -type f -print)
 do :
-  if [ -d "$f" ];then continue; fi
   file=${f:$len}
   path=$(dirname "$file")
   if [ "$path" != "." ];then
