@@ -1,8 +1,8 @@
 # dotfiles
 
 ```
-git clone git@github.com:matthewhadley/dotfiles.git ~/.dotfiles \
-&& ~/.dotfiles/init.sh && . ~/.zshrc
+git clone git@github.com:matthewhadley/dotfiles.git \
+&& dotfiles/init.sh && . ~/.zshrc
 ```
 
 Homebrew Formulae

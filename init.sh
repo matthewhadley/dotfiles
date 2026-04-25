@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Get a reference to dotfiles location
-dotfiles="$HOME/.dotfiles/dotfiles"
+# Resolve dotfiles location relative to this script
+dotfiles="$(cd "$(dirname "$0")" && pwd)/dotfiles"
 
 # Calculate dotfiles path length so it can be used to trim filepaths
 len=${#dotfiles}
@@ -14,13 +14,7 @@ do :
   if [ "$path" != "." ];then
     mkdir -p "$HOME/.$path"
   fi
-  # Files ending in .cp get copied (with .cp stripped), otherwise symlinked
-  if [[ "$file" == *.cp ]];then
-    target="${file%.cp}"
-    cp -f "$dotfiles/$file" "$HOME/.$target"
-  else
-    ln -sf "$dotfiles/$file" "$HOME/.$file"
-  fi
+  cp -f "$dotfiles/$file" "$HOME/.$file"
 done
 
 echo ".dotfiles init'd"
