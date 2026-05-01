@@ -4,9 +4,12 @@
 
 # Git state in PS1
 setopt PROMPT_SUBST
-GIT_PS1_SHOWDIRTYSTATE=1
-GIT_PS1_SHOWUNTRACKEDFILES=1
-source $BREW_PREFIX/etc/bash_completion.d/git-prompt.sh
+autoload -Uz vcs_info
+zstyle ':vcs_info:git:*' formats ' (%b%u%c)'
+zstyle ':vcs_info:git:*' actionformats ' (%b|%a%u%c)'
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' unstagedstr ' *'
+zstyle ':vcs_info:git:*' stagedstr ' +'
 
 two_dirs() {
   # show 2 levels of directory listing for iterm2 tab
@@ -40,12 +43,11 @@ two_dirs() {
 }
 
 prompt_command() {
+  vcs_info
   two_dirs
-  # set prompt
   NEWLINE=$'\n'
-  PROMPT="%F{white}%m: %~$(__git_ps1)${NEWLINE}%F%(!.#.$) "
+  PROMPT="%F{white}%m: %~\${vcs_info_msg_0_}${NEWLINE}%F%(!.#.$) "
 }
-# have zsh call prompt_command for prompt setting
 precmd() { prompt_command }
 
 # do no use highlighted percent symbol at end of line

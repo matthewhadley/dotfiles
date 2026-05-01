@@ -16,12 +16,8 @@ keychain() {
   elif [ -n "$value" ]; then
     /usr/bin/security add-generic-password -s "$key" -w "$value" -a "$USER" -U
   elif [ -n "$key" ]; then
-    VALUE=$(/usr/bin/security find-generic-password -w -s "$key" 2>&1 >/dev/null)
-    if [ $? -eq 0 ];then
-      /usr/bin/security find-generic-password -w -s "$key" -a "$USER"
-    else
-      return 1
-    fi
+    local val
+    val=$(/usr/bin/security find-generic-password -w -s "$key" -a "$USER" 2>/dev/null) && echo "$val" || return 1
   fi
 }
 
