@@ -10,7 +10,7 @@
 	excludesfile = ~/.gitignore_global
   # https://github.com/so-fancy/diff-so-fancy
   pager = diff-so-fancy | less --tabs=1,5 -R
-[includeIf "hasconfig:remote.*.url:**.apple.com**"]
+[includeIf "hasconfig:remote.*.url:git@*.apple.com:*/**"]
 	path = ~/.gitconfig-corp
 [mergetool "Kaleidoscope"]
   cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
