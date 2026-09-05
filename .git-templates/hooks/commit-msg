@@ -1,0 +1,86 @@
+#!/bin/bash
+# commit-msg hook enforcing scopedcommits.com
+#
+#   <scope>: <description>
+#
+# Scope is the subsystem the commit touches -- the spec's point is that this is
+# the highest-value thing in a log you are scanning. There is no type field:
+# feat/fix/chore carry little information once every commit is prefixed by the
+# area it changed.
+#
+# Accepted subject forms:
+#   nvim: add the neo-tree dotfiles source
+#   nvim, zsh: share one entry point                 comma-separated scopes
+#   auth (PROJ-123): fix login bug                   ticket after the scope
+#   net/http/cookiejar: add godoc links              paths are valid scopes
+#   treewide: retab                                  for cross-cutting changes
+#
+# Optionally restrict the vocabulary per repo. Unset means any scope is
+# allowed, which is the spec's default:
+#
+#   git config scopedcommits.scopes "nvim vim zsh git ghostty dotfiles treewide"
+
+MSG=$(head -1 "$1" | tr -d '\r')
+
+# The spec exempts special commits: "reverts, merges, etc. can be formatted
+# however you like".
+if [[ $MSG =~ ^(Merge|Revert|fixup!|squash!|amend!) ]]; then
+	exit 0
+fi
+
+# The root commit is exempt for the same reason -- there is no subsystem to
+# name when the tree did not previously exist. rev-parse fails when HEAD has
+# no commit behind it.
+if ! git rev-parse --verify --quiet HEAD >/dev/null; then
+	exit 0
+fi
+
+scope_re='[a-z0-9._/-]+'
+subject_re="^${scope_re}([[:space:]]*,[[:space:]]*${scope_re})*([[:space:]]\([A-Za-z0-9_-]+\))?:[[:space:]].+$"
+
+# Rejecting discards the message unless you know it is still on disk, so every
+# failure path below says how to get it back.
+#
+# In the dotfiles repo the commands have to go through the wrapper: only this
+# hook has GIT_DIR set, and from a shell $HOME is not a repo, so a bare `git`
+# would fail. Elsewhere plain git is right.
+if [[ $(git rev-parse --absolute-git-dir) == "$HOME/.dotfiles" ]]; then
+	vcs="dotfiles"
+else
+	vcs="git"
+fi
+retry="$vcs commit -eF $(git rev-parse --git-path COMMIT_EDITMSG)"
+
+if ! [[ $MSG =~ $subject_re ]]; then
+	echo "Rejected commit: message format"
+	echo "  wanted:  <scope>: <description>"
+	echo "  got:     $MSG"
+	echo "  see:     scopedcommits.com"
+	echo "  retry:   $retry"
+	exit 1
+fi
+
+# Validate against the repo's vocabulary, if it declares one.
+allowed=$(git config --get scopedcommits.scopes)
+if [[ -n $allowed ]]; then
+	# Strip any " (TICKET)" then split the scope list on commas.
+	scopes=${MSG%%:*}
+	scopes=${scopes%% (*}
+	IFS=',' read -ra parts <<<"$scopes"
+	for raw in "${parts[@]}"; do
+		s="${raw#"${raw%%[![:space:]]*}"}"
+		s="${s%"${s##*[![:space:]]}"}"
+		if ! [[ " $allowed " == *" $s "* ]]; then
+			if [[ $vcs == "dotfiles" ]]; then
+				add_cmd="dotfiles scopes add $s"
+			else
+				add_cmd="git config scopedcommits.scopes \"$allowed $s\""
+			fi
+			echo "Rejected commit: unknown scope '$s'"
+			echo "  allowed: $allowed"
+			echo "  add it:  $add_cmd"
+			echo "  retry:   $retry"
+			exit 1
+		fi
+	done
+fi

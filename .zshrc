@@ -1,0 +1,11 @@
+#zsh
+
+function source_rc() {
+  for rc in $1/*; do
+    if [ -f $rc ]; then
+      source $rc
+    fi
+  done
+}
+
+source_rc $HOME/.zshrc.d

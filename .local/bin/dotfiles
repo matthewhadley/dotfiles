@@ -1,0 +1,194 @@
+#!/bin/zsh
+
+_dotfiles_git_home() {
+  git -C "$HOME" --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
+}
+
+_dotfiles_scopes_scan() {
+  # Derive the vocabulary from history rather than a list that has to be kept
+  # in step by hand. Bootstrap a new machine with:
+  #
+  #   dotfiles scopes set $(dotfiles scopes scan)
+  #
+  # Two commits are skipped for the same reasons the hook exempts them: special
+  # commits are not required to carry a scope, and subjects with no colon
+  # cannot have one. Anything that does not match the hook's own scope charset
+  # is dropped too, which is what keeps leftover Conventional Commit subjects
+  # like "feat(nvim): ..." from contributing a scope of "feat(nvim)".
+  local -a found
+  local subject scope s
+  while IFS= read -r subject; do
+    [[ $subject =~ '^(Merge|Revert|fixup!|squash!|amend!)' ]] && continue
+    [[ $subject != *:* ]] && continue
+    scope=${subject%%:*}
+    scope=${scope%% \(*}
+    for s in ${(s:,:)scope}; do
+      s=${s## }
+      s=${s%% }
+      [[ $s =~ '^[a-z0-9._/-]+$' ]] && found+=$s
+    done
+  done < <(_dotfiles_git_home log --format=%s)
+  (( ${#found} )) || return 1
+  echo ${(j: :)${(o)${(u)found}}}
+}
+
+_dotfiles_scopes() {
+  # The scope vocabulary the commit-msg hook enforces. Lives in git config,
+  # which for this repo means ~/.dotfiles/config -- inside the git dir, so it
+  # is NOT tracked and a fresh clone starts with no vocabulary at all. Run
+  # `dotfiles scopes set ...` as part of bootstrapping a new machine.
+  local -a current
+  current=(${(s: :)"$(_dotfiles_git_home config --get scopedcommits.scopes)"})
+
+  local verb="$1"
+  [[ -n $verb ]] && shift
+
+  case "$verb" in
+    "")
+      if (( ${#current} == 0 )); then
+        echo "no scopes configured -- the hook accepts any scope"
+        echo "set them with: dotfiles scopes set <name> [name...]"
+        return 1
+      fi
+      echo "${current[*]}"
+      return
+      ;;
+    scan)
+      _dotfiles_scopes_scan
+      return
+      ;;
+    add)
+      (( $# )) || { echo "usage: dotfiles scopes add <name> [name...]"; return 2 }
+      # -U dedupes, so adding one that is already there is a no-op rather than
+      # a duplicate entry.
+      current=(${(u)current[@]} "$@")
+      ;;
+    rm)
+      (( $# )) || { echo "usage: dotfiles scopes rm <name> [name...]"; return 2 }
+      local name
+      for name in "$@"; do
+        if [[ ${current[(Ie)$name]} -eq 0 ]]; then
+          echo "not a configured scope: $name"
+          return 1
+        fi
+        current=(${current:#$name})
+      done
+      ;;
+    set)
+      (( $# )) || { echo "usage: dotfiles scopes set <name> [name...]"; return 2 }
+      current=("$@")
+      ;;
+    *)
+      echo "usage: dotfiles scopes [scan|add|rm|set <name>...]"
+      return 2
+      ;;
+  esac
+
+  current=(${(o)${(u)current[@]}})
+  _dotfiles_git_home config scopedcommits.scopes "${current[*]}"
+  echo "scopes: ${current[*]}"
+}
+
+_dotfiles_list() {
+  local -A st
+  local line f
+
+  while IFS= read -r line; do
+    st[${line:3}]="${line:0:2}"
+  done < <(_dotfiles_git_home status --porcelain)
+
+  _dotfiles_git_home ls-files | while IFS= read -r f; do
+    printf '%s\t~/%s\t%s\n' "${st[$f]:-  }" "$f" "$(_dotfiles_git_home log -1 --format='%s' -- "$f")"
+  done | column -t -s $'\t'
+}
+
+_dotfiles_check() {
+  local branch remote ahead behind staged unstaged untracked line msg
+  local -a changes
+  branch="$(_dotfiles_git_home branch --show-current)" || return
+  remote="${1:-origin}"
+
+  if [[ -z $branch ]]; then
+    echo "dotfiles not on a branch"
+    return 1
+  fi
+
+  _dotfiles_git_home fetch "$remote" "${branch}:refs/remotes/${remote}/${branch}" || return
+
+  read -r ahead behind < <(_dotfiles_git_home rev-list --left-right --count "${branch}...${remote}/${branch}") || return
+  staged=0
+  unstaged=0
+  untracked=0
+
+  while IFS= read -r line; do
+    [[ -z $line ]] && continue
+    changes+=("$line")
+    if [[ ${line:0:2} == "??" ]]; then
+      (( untracked++ ))
+      continue
+    fi
+    [[ ${line:0:1} != " " ]] && (( staged++ ))
+    [[ ${line:1:1} != " " ]] && (( unstaged++ ))
+  done < <(_dotfiles_git_home status --porcelain=v1)
+
+  if (( ahead == 0 && behind == 0 )); then
+    msg="dotfiles up-to-date with $remote/$branch"
+  elif (( ahead > 0 && behind == 0 )); then
+    msg="dotfiles ahead of $remote/$branch by $ahead commit(s)"
+  elif (( ahead == 0 && behind > 0 )); then
+    msg="dotfiles behind $remote/$branch by $behind commit(s)"
+  else
+    msg="dotfiles diverged from $remote/$branch; ahead $ahead, behind $behind"
+  fi
+
+  echo "$msg"
+
+  if (( staged > 0 || unstaged > 0 || untracked > 0 )); then
+    echo "local changes: staged $staged, unstaged $unstaged, untracked $untracked"
+    printf '%s\n' "${changes[@]}"
+  fi
+}
+
+_dotfiles_help() {
+  cat <<'EOF'
+dotfiles git bare repo management at ~/.dotfiles
+
+  edit, nvim     open Neovim showing only the tracked files, as a tree
+  list           every tracked file, its status, and the last commit to touch it
+  check          fetch, then report ahead/behind and any local changes
+  scopes         list the commit scopes the hook allows; scan/add/rm/set
+  help           this text
+
+Agents: read ~/.github/AGENTS.md before working in this repo.
+EOF
+}
+
+case "$1" in
+  help|--help|-h|"")
+    _dotfiles_help
+    ;;
+  list)
+    shift
+    _dotfiles_list "$@"
+    ;;
+  check)
+    shift
+    _dotfiles_check "$@"
+    ;;
+  scopes)
+    shift
+    _dotfiles_scopes "$@"
+    ;;
+  nvim|edit)
+    shift
+    # The neo-tree source resolves the repo itself, so this does not need to
+    # run from $HOME -- but cd'ing there makes nvim's cwd the work tree, so
+    # telescope, :Neotree filesystem and the paths in the tabline all agree
+    # with the tree's own root. The subshell leaves the calling shell's cwd
+    # alone, same as nv does for a directory.
+    ( cd -- "$HOME" && nvim "+Neotree dotfiles left" "$@" )
+    ;;
+  *)
+    git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
+    ;;
+esac

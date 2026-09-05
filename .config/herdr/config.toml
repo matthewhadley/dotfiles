@@ -1,0 +1,24 @@
+onboarding = false
+
+[keys]
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+
+[ui.toast]
+delivery = "herdr"
+
+[ui]
+show_agent_labels_on_pane_borders = false
+agent_panel_sort = "spaces"
+sidebar_start_collapsed = true
+sidebar_collapsed_mode = "compact"
+pane_borders = false
+pane_scrollbars = false
+pane_gaps = true
+tab_bar_position = "top"
+
+
+status_indicators = "dots"
+[theme]
+name = "gruvbox"
+auto_switch = false
