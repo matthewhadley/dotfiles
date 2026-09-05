@@ -189,6 +189,6 @@ case "$1" in
     ( cd -- "$HOME" && nvim "+Neotree dotfiles left" "$@" )
     ;;
   *)
-    git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
+    _dotfiles_git_home "$@"
     ;;
 esac
