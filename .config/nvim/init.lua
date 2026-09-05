@@ -188,6 +188,88 @@ vim.keymap.set("n", "<leader>f", "<cmd>Neotree reveal<CR>", { desc = "Reveal cur
 -- source lives in lua/neotree_dotfiles.lua and is still reachable in-session
 -- with :Neotree dotfiles left.
 
+-- ── Unsupported file types ───────────────────────────────────────────────
+-- Clicking a png in the tree otherwise fills the buffer with the file's bytes
+-- rendered as text, which is unreadable and slow on anything large.
+--
+-- Two guards, because neither alone is sufficient.
+--
+-- The extension list is the fast path: BufReadCmd *replaces* the read rather
+-- than reacting to it, so for anything named here not a byte is read and
+-- nothing is ever drawn. That is the only way to guarantee no flash of
+-- garbage, and it costs no I/O -- but a name is all it can judge by.
+--
+-- The content check below catches everything the list does not know about.
+-- Looking for a NUL byte in the first 1KB is what git and grep do, and it
+-- needs no list to maintain. It cannot run on BufReadCmd though: to allow the
+-- text files through it would have to perform the normal read itself, which
+-- means reimplementing nvim's encoding, BOM and fileformat handling. So it
+-- runs on BufReadPost, one frame later, and accepts a brief flash.
+-- The message sits on the command line until something overwrites it. Opening
+-- an ordinary file does that on its own -- nvim prints `"name" 12L, 340B` --
+-- but landing back on a buffer that is already loaded prints nothing, so it
+-- would linger. Clear it on a timer, and only if it is still the newest one:
+-- without the token, two refusals in quick succession would have the first
+-- one's timer wipe the second one's message.
+local refusal_id = 0
+
+local function refuse(buf, file)
+  refusal_id = refusal_id + 1
+  local mine = refusal_id
+  vim.notify("unsupported file type: " .. vim.fn.fnamemodify(file, ":t"),
+    vim.log.levels.WARN)
+  vim.defer_fn(function()
+    if refusal_id == mine then
+      vim.api.nvim_echo({ { "" } }, false, {})
+    end
+  end, 4000)
+  -- Scheduled: wiping a buffer from inside its own read event leaves the
+  -- window without one. By the time this runs there is an alternate to fall
+  -- back to. Never `:q` -- that closes the window, and the last one quits.
+  vim.schedule(function()
+    if vim.api.nvim_buf_is_valid(buf) then
+      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    end
+  end)
+end
+
+local unsupported_ft = {
+  "png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "ico", "icns", "tiff",
+  "pdf", "mp3", "mp4", "mov", "m4a", "wav", "avi", "mkv",
+  "zip", "gz", "tgz", "bz2", "xz", "7z", "rar", "dmg", "pkg",
+  "ttf", "otf", "woff", "woff2", "eot",
+  "key", "numbers", "pages", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+  "sqlite", "sqlite3", "db", "o", "so", "dylib", "a", "bin", "exe", "wasm",
+}
+
+vim.api.nvim_create_autocmd("BufReadCmd", {
+  pattern = vim.tbl_map(function(ext) return "*." .. ext end, unsupported_ft),
+  desc = "Refuse known-binary extensions without reading them",
+  callback = function(ev)
+    refuse(ev.buf, ev.file)
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = "*",
+  desc = "Refuse anything else whose first 1KB contains a NUL byte",
+  callback = function(ev)
+    -- io.open rather than vim.fn.system: system() replaces NUL with SOH, so it
+    -- strips the very byte being looked for. And :find with plain = true, not
+    -- :match -- a Lua pattern is a C string, so "\0" terminates it, leaving an
+    -- empty pattern that matches anything and returns "", which is truthy.
+    local f = io.open(ev.file, "rb")
+    if not f then
+      return
+    end
+    local chunk = f:read(1024) or ""
+    f:close()
+    if chunk:find("\0", 1, true) then
+      refuse(ev.buf, ev.file)
+    end
+  end,
+})
+
 -- ── netrw (built in, kept as a fallback) ─────────────────────────────────
 -- Worth knowing: it's on every machine you ssh into, where plugins won't be.
 vim.g.netrw_banner = 0
