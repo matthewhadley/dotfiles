@@ -30,3 +30,5 @@
 	tool = nvimdiff
 [merge]
 	tool = nvimdiff
+[alias]
+	logs = log --pretty=format:'%C(yellow bold)%h%Creset - %s %C(white)%cr by %an%Creset'

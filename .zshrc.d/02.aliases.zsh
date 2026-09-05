@@ -45,12 +45,6 @@ alias gr='git remote'
 # git merge branch - for local merging of feature branches into main, creates a merge commit even for a fast forward
 alias gmb='git merge --no-ff'
 
-# formatted git log
-alias glog="git log --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
-
-# formatted git log branch pipe graphs
-alias glg="git log --graph --pretty=format:'%C(yellow bold)%h%Creset -%C(yellow bold)%d%Creset %s %C(white)%cr by %an%Creset' --abbrev-commit --date=relative"
-
 # nvim, with the file tree only when there is no specific file to open.
 #
 #   nv                -> tree on the left, empty edit pane on the right
