@@ -379,9 +379,33 @@ require("lualine").setup({
     lualine_a = { "mode" },
     lualine_b = { "branch", "diff" },   -- both read gitsigns' status dict
     lualine_c = { { "filename", path = 1 } },
-    -- icons_enabled = false only on this component: kills the devicons
-    -- filetype glyph while keeping the branch icon and powerline separators.
-    lualine_x = { { "filetype", icons_enabled = false } },
+    -- Which sidekick CLI sessions are live. status.cli() returns one entry per
+    -- attached session, each with a `tool` name, so this names them rather
+    -- than showing a glyph and a count -- with only claude and codex
+    -- configured, "claude" is more use than a 1.
+    --
+    -- The other half of sidekick's statusline API, status.get(), reports
+    -- Copilot LSP progress. Not wired up: nes is disabled because
+    -- copilot-language-server is not installed, so it would always be nil.
+    lualine_x = {
+      {
+        function()
+          local tools = {}
+          for _, session in ipairs(require("sidekick.status").cli()) do
+            tools[#tools + 1] = session.tool
+          end
+          table.sort(tools)
+          return table.concat(tools, " ")
+        end,
+        cond = function()
+          return #require("sidekick.status").cli() > 0
+        end,
+        color = "Special",
+      },
+      -- icons_enabled = false only on this component: kills the devicons
+      -- filetype glyph while keeping the branch icon and powerline separators.
+      { "filetype", icons_enabled = false },
+    },
     lualine_y = { "progress" },
     lualine_z = { "location" },
   },
@@ -1196,8 +1220,16 @@ vim.keymap.set({ "n", "x" }, "<leader>ax", function()
   require("sidekick.cli").toggle({ name = "codex", focus = true })
 end, { desc = "Sidekick: toggle Codex" })
 
+-- filter = { installed = true } trims the picker to tools whose binary is
+-- actually on PATH. Sidekick ships configs for twelve -- aider, amazon_q,
+-- crush, cursor, gemini, grok, opencode, pi, qwen and the rest -- and without
+-- this they all appear, so the list is mostly things that cannot run.
+--
+-- Filtering rather than pruning cli.tools: the tools table is merged with
+-- tbl_deep_extend, so omitting a key does not remove it, and `installed` keeps
+-- itself current if a tool is added or removed later.
 vim.keymap.set({ "n", "x" }, "<leader>aa", function()
-  require("sidekick.cli").select()
+  require("sidekick.cli").select({ filter = { installed = true } })
 end, { desc = "Sidekick: pick a CLI tool" })
 
 vim.keymap.set({ "n", "x" }, "<leader>ap", function()
