@@ -167,6 +167,7 @@ require("neo-tree").setup({
 
   filesystem = {
     hijack_netrw_behavior = "disabled",  -- nothing auto-opens at startup
+    use_libuv_file_watcher = true,        -- notice external file creates/deletes/renames
     filtered_items = {
       visible = true,           -- dotfiles and gitignored files stay listed
       hide_dotfiles = false,
@@ -625,9 +626,8 @@ vim.keymap.set("n", "<leader>X", function()
   vim.bo[buf].modified = false
   close_buffer_keep_window(buf)
 
-  -- neo-tree does not watch the filesystem, so an open tree would still list the
-  -- file. Wrapped: the tree may not be open, and refresh() is not part of a
-  -- stable API.
+  -- Keep the tree in sync immediately after this command; the filesystem
+  -- watcher also catches changes made outside Neovim.
   pcall(function()
     require("neo-tree.sources.manager").refresh("filesystem")
   end)
