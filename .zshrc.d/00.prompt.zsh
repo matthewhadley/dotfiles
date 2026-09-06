@@ -11,6 +11,15 @@ zstyle ':vcs_info:git:*' check-for-changes true
 zstyle ':vcs_info:git:*' unstagedstr ' *'
 zstyle ':vcs_info:git:*' stagedstr ' +'
 
+# Home Assistant blue for the hostname on an HA box -- the add-on container, or
+# an SSH session onto Home Assistant itself. Plain white elsewhere, so this is
+# inert on a normal machine.
+if [[ ${HOST:l} == *homeassistant* ]]; then
+  _host_color='#03a9f4'
+else
+  _host_color='white'
+fi
+
 two_dirs() {
   # show 2 levels of directory listing for iterm2 tab
   local dir="${PWD%/*/*}"
@@ -46,7 +55,7 @@ prompt_command() {
   vcs_info
   two_dirs
   NEWLINE=$'\n'
-  PROMPT="%F{white}%m: %~\${vcs_info_msg_0_}${NEWLINE}%(!.#.$)%f "
+  PROMPT="%F{$_host_color}%m%f%F{white}: %~\${vcs_info_msg_0_}${NEWLINE}%(!.#.$)%f "
 }
 precmd() { prompt_command }
 
