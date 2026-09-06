@@ -189,6 +189,23 @@ case "$1" in
     ( cd -- "$HOME" && nvim "+Neotree dotfiles left" "$@" )
     ;;
   *)
-    _dotfiles_git_home "$@"
+    # Two -c overrides, and deliberately not -C "$HOME".
+    #
+    # status.relativePaths=false prints paths from the work tree root, so
+    # `dotfiles status` in a subdirectory shows `.editorconfig` rather than
+    # `../../../.editorconfig`. That is what -C "$HOME" was achieving, but -C
+    # also resolves pathspecs against $HOME, which broke
+    # `cd ~/.config/ghostty && dotfiles add config`. This fixes the display
+    # without moving the working directory. Nothing was ever hidden by either:
+    # git status always reports the whole repo.
+    #
+    # advice.statusHints=false drops git's parenthetical "(use ...)" hints.
+    # With showUntrackedFiles off, every clean status otherwise ends with
+    # "(use -u to show untracked files)".
+    #
+    # Passed with -c rather than set in config so plain git is unaffected and
+    # there is no extra machine-local step -- ~/.dotfiles/config is untracked.
+    git -c status.relativePaths=false -c advice.statusHints=false \
+      --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
     ;;
 esac
