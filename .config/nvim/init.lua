@@ -556,6 +556,91 @@ vim.keymap.set("n", "<leader>x", function()
   close_buffer_keep_window()
 end, { desc = "Close buffer, keep the window" })
 
+-- \X deletes the file \x was showing. Paired deliberately: lowercase closes the
+-- buffer, uppercase closes it and takes the file with it.
+--
+-- Recoverable where the platform offers it, permanent where it does not. Probed
+-- in platform-convention order: `trash` ships with macOS 14+, `trash-put` is
+-- trash-cli on Linux, `gio trash` is the freedesktop fallback. Only if none is
+-- present does it fall back to os.remove -- and the prompt says which of the two
+-- it is about to do, so a permanent delete is never a surprise.
+local function trash_argv(path)
+  for _, cmd in ipairs({ { "trash" }, { "trash-put" }, { "gio", "trash" } }) do
+    if vim.fn.executable(cmd[1]) == 1 then
+      local argv = vim.deepcopy(cmd)
+      table.insert(argv, path)
+      return argv, table.concat(cmd, " ")
+    end
+  end
+  return nil, nil
+end
+
+vim.keymap.set("n", "<leader>X", function()
+  local buf = vim.api.nvim_get_current_buf()
+  local path = vim.api.nvim_buf_get_name(buf)
+
+  if vim.bo[buf].buftype ~= "" or path == "" then
+    vim.notify("Not a file buffer", vim.log.levels.WARN)
+    return
+  end
+  if vim.uv.fs_stat(path) == nil then
+    vim.notify(vim.fn.fnamemodify(path, ":~:.") .. " is not on disk", vim.log.levels.WARN)
+    return
+  end
+
+  local short = vim.fn.fnamemodify(path, ":~:.")
+  local argv, tool = trash_argv(path)
+  local prompt = argv
+    and ("Move to Trash?  (" .. tool .. ")\n" .. short)
+    or ("DELETE PERMANENTLY?  (no trash utility found)\n" .. short)
+
+  -- Default 2 = No, so a stray <CR> on the prompt does nothing.
+  if vim.fn.confirm(prompt, "&Yes\n&No", 2) ~= 1 then
+    return
+  end
+  -- confirm() leaves its dialog sitting in the message area. Without clearing it
+  -- first, the success message below lands on a second line, overflows cmdheight
+  -- and triggers the "Press ENTER or type command to continue" prompt.
+  vim.cmd("redraw")
+
+  if argv then
+    local res = vim.system(argv, { text = true }):wait()
+    if res.code ~= 0 then
+      -- Deliberately does NOT fall through to os.remove: a trash tool that is
+      -- present but failing is a problem to look at, not to route around.
+      vim.notify(tool .. " failed: " .. ((res.stderr or ""):gsub("%s+$", "")),
+        vim.log.levels.ERROR)
+      return
+    end
+  else
+    local ok, err = os.remove(path)
+    if not ok then
+      vim.notify("delete failed: " .. tostring(err), vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  -- Clear `modified` first: close_buffer_keep_window refuses on unsaved changes,
+  -- which is the right guard for \x but pointless here -- the file is gone.
+  vim.bo[buf].modified = false
+  close_buffer_keep_window(buf)
+
+  -- neo-tree does not watch the filesystem, so an open tree would still list the
+  -- file. Wrapped: the tree may not be open, and refresh() is not part of a
+  -- stable API.
+  pcall(function()
+    require("neo-tree.sources.manager").refresh("filesystem")
+  end)
+
+  -- Scheduled, and via nvim_echo rather than vim.notify: this runs after the
+  -- buffer close and tree refresh have finished redrawing, so it is the only
+  -- thing in the message area. `false` keeps it out of :messages history -- it is
+  -- transient confirmation, not a log entry.
+  vim.schedule(function()
+    vim.api.nvim_echo({ { (argv and "Trashed " or "Deleted ") .. short } }, false, {})
+  end)
+end, { desc = "Delete this buffer's file (to Trash), close buffer" })
+
 -- ── toggleterm.nvim ──────────────────────────────────────────────────────
 -- Toggleable terminal windows. Separate from sidekick's Claude pane: that one
 -- runs a specific tool, this is for a general shell.
