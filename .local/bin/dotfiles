@@ -149,6 +149,26 @@ _dotfiles_check() {
   fi
 }
 
+_dotfiles_logs() {
+  # A concise history view. Every commit here is authored by the same person,
+  # so `git log`'s "Author:" line is pure noise -- this drops it. Plain
+  # `dotfiles log` still falls through to an unmodified `git log`; this is the
+  # opinionated shorthand. Any extra args (paths, -n, --since, ...) pass through,
+  # and picking a format with --oneline/--pretty/--format steps this aside.
+  local arg
+  for arg in "$@"; do
+    case $arg in
+      --oneline|--pretty|--pretty=*|--format|--format=*)
+        _dotfiles_git_home log "$@"
+        return
+        ;;
+    esac
+  done
+  _dotfiles_git_home log \
+    --pretty='tformat:%C(auto)%h%C(reset) %C(dim)%as%C(reset)  %s%C(auto)%d%C(reset)' \
+    "$@"
+}
+
 _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
@@ -156,6 +176,7 @@ dotfiles git bare repo management at ~/.dotfiles
   edit, nvim     open Neovim showing only the tracked files, as a tree
   list           every tracked file, its status, and the last commit to touch it
   check          fetch, then report ahead/behind and any local changes
+  logs           concise, author-less git log (plain `log` is unmodified git)
   scopes         list the commit scopes the hook allows; scan/add/rm/set
   help           this text
 
@@ -174,6 +195,10 @@ case "$1" in
   check)
     shift
     _dotfiles_check "$@"
+    ;;
+  logs)
+    shift
+    _dotfiles_logs "$@"
     ;;
   scopes)
     shift
