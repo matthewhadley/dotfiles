@@ -57,6 +57,13 @@ M.refresh = function()
   manager.refresh(M.name)
 end
 
+-- `refresh` is a per-source command, not one of the common ones added above,
+-- so the default `R` mapping has nothing to resolve to and neo-tree logs
+-- "[Neo-tree WARN] Invalid mapping for R : refresh" while binding keys. The
+-- module's own M.refresh takes no state argument, which is fine -- a command
+-- is called as command(state) and this one just ignores it.
+commands.refresh = M.refresh
+
 -- ls-files only reports paths under the directory it runs in, so cwd must be
 -- the work tree root or this silently returns nothing.
 local function tracked_files()

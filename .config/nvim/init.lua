@@ -182,6 +182,152 @@ require("neo-tree").setup({
 
 vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<CR>", { desc = "Toggle neo-tree" })
 vim.keymap.set("n", "<leader>f", "<cmd>Neotree reveal<CR>", { desc = "Reveal current file in tree" })
+
+-- Stage a path into the dotfiles bare repo, with the same
+-- --git-dir/--work-tree invocation lua/neotree_dotfiles.lua uses. A no-op on
+-- anything that is not a file on disk (a directory, a vanished path); reports
+-- a non-zero exit rather than failing silently.
+local function dotfiles_stage(path)
+  if not (path and vim.uv.fs_stat(path) and vim.fn.isdirectory(path) == 0) then
+    return
+  end
+  local home = assert(vim.env.HOME)
+  local res = vim.system({
+    "git", "--git-dir=" .. home .. "/.dotfiles", "--work-tree=" .. home, "add", path,
+  }, { text = true }):wait()
+  if res.code ~= 0 then
+    vim.notify("dotfiles: git add failed: " .. vim.trim(res.stderr or ""), vim.log.levels.ERROR)
+  end
+end
+
+-- The window id of a neo-tree window open in the current tabpage, if any --
+-- so <leader>n from an edit pane can still drive the tree's new-file dialog.
+local function visible_neotree_win()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if pcall(vim.api.nvim_buf_get_var, vim.api.nvim_win_get_buf(win), "neo_tree_source") then
+      return win
+    end
+  end
+end
+
+-- Open a freshly created file in a real edit window and drop into insert
+-- mode. `prefer_win` (the window <leader>n was pressed in) is used when it is
+-- still a normal window; otherwise the first non-neo-tree window in the tab.
+-- Deferred, not just scheduled: neo-tree's popup teardown and the source
+-- refresh that runs first both queue their own redraws, and this has to land
+-- after all of them or focus snaps back to the tree.
+local function open_new_file(path, prefer_win)
+  vim.defer_fn(function()
+    if not (path and vim.uv.fs_stat(path) and vim.fn.isdirectory(path) == 0) then
+      return
+    end
+    local function is_tree(w)
+      return not vim.api.nvim_win_is_valid(w)
+        or vim.bo[vim.api.nvim_win_get_buf(w)].filetype == "neo-tree"
+    end
+    local target = (prefer_win and not is_tree(prefer_win)) and prefer_win or nil
+    if not target then
+      for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if not is_tree(w) then
+          target = w
+          break
+        end
+      end
+    end
+    if target then
+      vim.api.nvim_set_current_win(target)
+    end
+    vim.cmd.edit(vim.fn.fnameescape(path))
+    vim.cmd.startinsert()
+  end, 10)
+end
+
+-- Run neo-tree's own new-file dialog (the popup the built-in `a` shows)
+-- against a resolved source state, then reveal the new file in the tree and
+-- open it. All sources go through the common `add`; the tree is then updated
+-- per source:
+--
+--   * filesystem: show_new_children() rescans and expands down to the new
+--     file. Its focus_node call -- and the position.restore after the redraw
+--     -- both pass do_not_focus_window, so this moves the tree's cursor line
+--     without pulling focus off the edit pane.
+--   * dotfiles: staged first (the view is rebuilt from `git ls-files`, so an
+--     untracked file would never appear -- and staging is the intent for a
+--     file added to the tracked-set view; reversible with `dotfiles reset`),
+--     then a plain refresh, then focus_node to move the tree cursor to it.
+--
+-- state.config is primed to {} because neo-tree only sets it while
+-- dispatching a mapped command; calling `add` directly would otherwise hit a
+-- nil field in get_folder_node until some neo-tree mapping had run.
+local function neotree_add(state, dest_win)
+  local mgr = require("neo-tree.sources.manager")
+  local renderer = require("neo-tree.ui.renderer")
+  state.config = state.config or {}
+  require("neo-tree.sources.common.commands").add(state, function(path)
+    if state.name == "filesystem" then
+      pcall(require("neo-tree.sources.filesystem").show_new_children, state, path)
+    else
+      if state.name == "dotfiles" then
+        dotfiles_stage(path)
+      end
+      pcall(mgr.refresh, state.name)
+      vim.schedule(function()
+        pcall(renderer.focus_node, state, path, true)
+      end)
+    end
+    open_new_file(path, dest_win)
+  end)
+end
+
+-- <leader>n: new file. Whenever a neo-tree window is open it drives that
+-- tree's new-file dialog -- the popup -- whether the cursor is in the tree or
+-- in an edit pane. From an edit pane the tree cursor is first nudged to the
+-- current file (a no-op if it is not a node in the tree) so the new file
+-- lands beside it. A trailing `/` makes a directory.
+--
+-- With no tree open at all it falls back to a command-line prompt (no popup
+-- vim.ui.input is installed), prefilled with the current buffer's directory
+-- or cwd; it creates any missing parents, writes the file, and opens it. An
+-- existing path is just opened, never rewritten.
+vim.keymap.set("n", "<leader>n", function()
+  local cur_win = vim.api.nvim_get_current_win()
+  local tree_win = vim.bo.filetype == "neo-tree" and cur_win or visible_neotree_win()
+
+  if tree_win then
+    local state = require("neo-tree.sources.manager").get_state_for_window(tree_win)
+    if state and state.tree then
+      if tree_win ~= cur_win then
+        local cur = vim.api.nvim_buf_get_name(0)
+        if cur ~= "" then
+          pcall(require("neo-tree.ui.renderer").focus_node, state, cur, true)
+        end
+      end
+      neotree_add(state, cur_win)
+      return
+    end
+  end
+
+  local here = vim.fn.expand("%:p:h")
+  if here == "" then
+    here = vim.fn.getcwd()
+  end
+
+  vim.ui.input({ prompt = "New file: ", default = here .. "/", completion = "file" }, function(input)
+    if not input or input == "" or input:sub(-1) == "/" then
+      return
+    end
+    local path = vim.fs.normalize(input)
+    if vim.uv.fs_stat(path) then
+      vim.cmd.edit(vim.fn.fnameescape(path))
+      return
+    end
+    vim.fn.mkdir(vim.fs.dirname(path), "p")
+    vim.cmd.edit(vim.fn.fnameescape(path))
+    vim.cmd.write()
+    vim.schedule(vim.cmd.startinsert)
+  end)
+end, { desc = "New file" })
+
 -- Startup layout: `nvim +Neotree` (do NOT pass a directory).
 --
 -- The dotfiles tree has no keymap: it is a whole-session mode rather than
