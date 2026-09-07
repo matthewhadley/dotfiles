@@ -1,6 +1,10 @@
-# directory listing
-alias ls='ls -G'
-alias l='ls -lG'
+# directory listing -- macOS/BSD ls colours with -G, GNU and BusyBox with --color
+if [[ $OSTYPE == darwin* ]]; then
+  alias ls='ls -G'
+else
+  alias ls='ls --color=auto'
+fi
+alias l='ls -l'
 
 # vim for vi
 alias vi=vim
