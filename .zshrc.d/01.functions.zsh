@@ -61,6 +61,18 @@ md() {
 recent() {
   fd -t f -0 . $1 | xargs -0 stat -f "%m%t%Sm %N" | sort -rn | head -n ${2:-20} | cut -f2-
 }
+
+# toggle a caffeinate assertion that keeps the mac awake for remote sessions
+# run once to start, again to stop; the process outlives the shell that ran it
+caff() {
+  if pgrep -xq caffeinate; then
+    pkill -x caffeinate && echo "caffeinate stopped"
+  else
+    caffeinate & disown
+    echo "caffeinate started"
+  fi
+}
+
 # git functions
 
 # echo git branch of current directory
