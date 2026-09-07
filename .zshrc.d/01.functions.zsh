@@ -64,7 +64,12 @@ recent() {
 
 # toggle a caffeinate assertion that keeps the mac awake for remote sessions
 # run once to start, again to stop; the process outlives the shell that ran it
+# `caff status` (or `caff -s`) reports the current state without toggling
 caff() {
+  if [[ $1 == -s || $1 == status ]]; then
+    pgrep -xq caffeinate && echo "caffeinate on" || echo "caffeinate off"
+    return
+  fi
   if pgrep -xq caffeinate; then
     pkill -x caffeinate && echo "caffeinate stopped"
   else
