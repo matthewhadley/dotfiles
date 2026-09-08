@@ -1,3 +1,6 @@
+# dotfiles re-source
+alias reload="source ~/.zshrc"
+
 # directory listing -- macOS/BSD ls colours with -G, GNU and BusyBox with --color
 if [[ $OSTYPE == darwin* ]]; then
   alias ls='ls -G'
