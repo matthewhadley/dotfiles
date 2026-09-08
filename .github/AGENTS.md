@@ -52,7 +52,8 @@ field — `feat`/`fix`/`chore` carry little information once every subject names
 the area it touched, and this repo has no releases to derive from them.
 
 Scopes for this repo: `nvim`, `vim`, `zsh`, `git`, `ghostty`, `herdr`,
-`dotfiles` (the wrapper script), `readme`, `agents` (this file).
+`hammerspoon`, `dotfiles` (the wrapper script), `readme`, `agents` (this
+file).
 
 Comma-separate when a change spans areas (`nvim, zsh: ...`). Merges, reverts
 and the root commit are exempt. A `commit-msg` hook in `.git-templates/hooks/`
