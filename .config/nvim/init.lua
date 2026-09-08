@@ -78,17 +78,70 @@ vim.keymap.set("x", "<LeftRelease>", '"+ygv', { desc = "Copy mouse selection to 
 
 -- Comment toggling. `gcc` (line) and `gc` (motion/visual) are built into
 -- Neovim 0.10+, no plugin needed -- these are just editor-style aliases.
--- remap = true is required: gcc is itself an expr mapping, so a non-recursive
--- map would send the literal keys and do nothing.
 -- <D-/> is Cmd+/ and only fires if the terminal forwards the Super modifier.
 -- <C-_> is what most terminals actually send for Ctrl+/, kept as a fallback.
+
+-- `gcc` is a no-op on a blank line. vim._comment calls a range commented when
+-- every *non-blank* line in it is, so a range of nothing but blank lines
+-- passes that test vacuously, takes the uncomment branch, and finds nothing to
+-- strip. Write the marker in ourselves for that case, indented to match the
+-- nearest code -- above by preference, below when the line opens a block.
+-- Reads the buffer 'commentstring', so unlike gcc this is not injection-aware:
+-- a blank line in a markdown code block gets markdown's comment rather than
+-- the embedded language's.
+local function comment_blank_line()
+  local left, right = vim.bo.commentstring:match("^(.-)%%s(.-)$")
+
+  if not left then
+    return
+  end
+
+  local lnum = vim.fn.line(".")
+  local ref = vim.fn.prevnonblank(lnum - 1)
+
+  if ref == 0 then
+    ref = vim.fn.nextnonblank(lnum + 1)
+  end
+
+  -- Copy the reference line's leading whitespace rather than rebuilding it
+  -- from shiftwidth, so tabs stay tabs. Trimmed parts, matching what
+  -- vim._comment writes for a blank line inside a larger range: `--`, with no
+  -- trailing space left behind.
+  local indent = ref == 0 and "" or vim.fn.getline(ref):match("^%s*")
+  local line = indent .. vim.trim(left) .. vim.trim(right)
+
+  vim.api.nvim_set_current_line(line)
+  vim.api.nvim_win_set_cursor(0, { lnum, #line })
+end
+
+local function is_blank_line()
+  return vim.api.nvim_get_current_line():match("^%s*$") ~= nil
+end
+
 for _, lhs in ipairs({ "<D-/>", "<C-/>", "<C-_>" }) do
-  vim.keymap.set("n", lhs, "gcc", { remap = true, desc = "Toggle comment" })
+  -- Fed back rather than mapped straight to "gcc" so the blank-line case can
+  -- branch first. Mode "m" is the feedkeys equivalent of remap = true, needed
+  -- because gcc is itself an expr mapping -- sent non-recursively the literal
+  -- keys would do nothing. A count means the range reaches past this line, so
+  -- leave those to gcc.
+  vim.keymap.set("n", lhs, function()
+    if vim.v.count == 0 and is_blank_line() then
+      return comment_blank_line()
+    end
+
+    vim.api.nvim_feedkeys(vim.v.count1 .. "gcc", "m", false)
+  end, { desc = "Toggle comment" })
   -- `gcgv`, not just `gc`: the operator drops you into normal mode at the top
   -- of the range, so `gv` reselects the same area and the block stays
   -- highlighted for toggling back and forth.
   vim.keymap.set("x", lhs, "gcgv", { remap = true, desc = "Toggle comment, keep selection" })
-  vim.keymap.set("i", lhs, "<Esc>gccgi", { remap = true, desc = "Toggle comment" })
+  vim.keymap.set("i", lhs, function()
+    if is_blank_line() then
+      return comment_blank_line()
+    end
+
+    vim.api.nvim_feedkeys(vim.keycode("<Esc>gccgi"), "m", false)
+  end, { desc = "Toggle comment" })
 end
 
 -- ── File explorer: neo-tree ──────────────────────────────────────────────
