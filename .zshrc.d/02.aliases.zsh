@@ -20,31 +20,27 @@ alias npm-public='npm --registry https://registry.npmjs.org'
 alias hs="http-server -a 127.0.0.1 -c-1"
 
 # git
+
+# git updating
 alias gp='git push'
-alias gl='git pull'
-alias gpo='git push origin'
 alias gpom='git push origin main'
 alias glo='git pull origin'
 alias glom='git pull origin main'
 alias gfo='git fetch origin'
 alias gfom='git fetch origin main'
-alias gs='git status -sb'
+
+# getting, resetting, adding and committing
+alias gcl='git clone'
+alias gch='git checkout'
 alias ga='git add -A'
-alias gf='git fetch'
-alias grm='git rm'
 alias gc='git commit -m'
 alias gac='git add -A && git commit -m'
+
+# git statuses
+alias gs='git status -sb'
 alias gb='git branch'
 alias gbv='git branch -va'
-alias gbD='git branch -D'
 alias gd='git diff'
-alias gdt='git difftool -y'
-alias gch='git checkout'
-alias gm='git merge'
-alias gmom='git merge origin/main'
-alias gmt='git mergetool'
-alias grp='git remote prune'
-alias gr='git remote'
 
 # git merge branch - for local merging of feature branches into main, creates a merge commit even for a fast forward
 alias gmb='git merge --no-ff'
