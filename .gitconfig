@@ -1,6 +1,5 @@
 [color]
-  us = auto
-  ui = true
+	ui = true
 [user]
 	name = matthewhadley
 	email = matthew.hadley@gmail.com
@@ -9,21 +8,21 @@
 	templateDir = ~/.git-templates
 [core]
 	excludesfile = ~/.gitignore_global
-  # https://github.com/so-fancy/diff-so-fancy
-  pager = diff-so-fancy | less --tabs=1,5 -R
+	# https://github.com/so-fancy/diff-so-fancy
+	pager = diff-so-fancy | less --tabs=1,5 -R
 [includeIf "hasconfig:remote.*.url:git@*.apple.com:*/**"]
 	path = ~/.gitconfig-corp
 [difftool]
-  prompt = false
+	prompt = false
 [mergetool]
-  prompt = false
+	prompt = false
 [push]
-  followTags = true
+	followTags = true
 [filter "lfs"]
-  clean = git-lfs clean -- %f
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
 [pull]
 	rebase = false
 [diff]
