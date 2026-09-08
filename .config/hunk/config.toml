@@ -1,0 +1,253 @@
+theme = "terafox"
+mode = "auto"
+vcs = "git"
+
+# Show agent annotations by default -- the main reason to use Hunk over a plain pager.
+agent_notes = true
+
+watch = false
+line_numbers = true
+tab_width = 2
+wrap_lines = false
+sidebar = "auto"
+
+# Don't ask about saving view preferences on quit.
+prompt_save_view_preferences = false
+
+# ── Theme ────────────────────────────────────────────────────────────────
+# Named `terafox` because that is overwhelmingly what it is: the canvas, chrome
+# surfaces, text, diff accents and every syntax scope come from the nightfox
+# terafox spec. Ghostty contributes nine of the thirty-three colour keys, all
+# of them status chrome -- the file-status badges and the agent-note border --
+# where its ANSI palette is already what the terminal paints git output in.
+#
+# It is not stock terafox, though. Two deliberate departures:
+#
+#   * added rows derive from #6ec47c, the same override ~/.config/nvim/init.lua
+#     applies to GitSignsAdd, because terafox's stock add is a muted teal that
+#     collides with its change colour;
+#   * `muted` is lifted off terafox's comment grey for contrast on panelAlt.
+#
+# `base` supplies the Shiki theme for syntax scopes not overridden below, and --
+# more importantly -- the foreground for tokens no rule matches at all, which no
+# theme key can set. github-dark-default is picked for that: its #e6edf3 is
+# within a hair of terafox's #e6eaea, and it defines few, broad scope rules, so
+# little of it survives the overrides. kanagawa-wave was worse on both counts
+# (a warm #dcd7ba default, plus over-specific rules that outrank overrides).
+[themes.terafox]
+base = "github-dark-default"
+
+# Canvas. Two surfaces, deliberately different:
+#
+#   background -> panel's colour, not terafox bg1. On a wide terminal Hunk
+#                 insets its content and paints the margins with `background`,
+#                 while filling the empty viewport below the last diff row with
+#                 `panel`. When those two differ you get a vertical bar down
+#                 each edge; matching them dissolves the bars into one field.
+#                 There is no layout key for this -- neither the layout nor the
+#                 config reference exposes width, inset or margin controls, so
+#                 colour is the only lever.
+#   contextBg  -> terafox bg1, so rows carrying code still sit on the surface
+#                 nvim uses, now reading as a card on the darker field.
+#
+# The diff tints further down are blends over contextBg, not background, so
+# the two being different does not affect them.
+#
+# Ghostty's #151c23 is the alternative for the code surface, kept as a trailing
+# comment on each line it would change; `grep 'ghostty:'` lists the set. It
+# hides the frame of terminal background that `window-padding-x = 5` leaves
+# around each render, at the cost of Hunk and an nvim split no longer matching.
+# Swap the three lines here and the six tinted rows together -- the tints move
+# with whichever code surface is active.
+background = "#0f1c1e"
+contextBg = "#152528"         # ghostty: #151c23
+contextContentBg = "#152528"  # ghostty: #151c23
+lineNumberBg = "#152528"      # ghostty: #151c23
+
+# Chrome surfaces: terafox's own bg ramp. bg0 for the sidebar rail and the
+# empty viewport (darker, matching how neo-tree divides panes in nvim), bg2 for
+# headers and dialogs, bg4 for borders -- terafox's own border/conceal colour.
+# `background` above tracks this value; change one and the bars come back.
+panel = "#0f1c1e"
+panelAlt = "#1d3337"
+border = "#2d4f56"
+
+# Text: terafox fg1 for code. `muted` is lifted off terafox's comment grey to
+# #8a9ba5 so it clears 4.5:1 on panelAlt, where hunk-header rows paint it.
+# lineNumberFg is terafox fg3, its own line-number colour.
+text = "#e6eaea"
+muted = "#8a9ba5"
+lineNumberFg = "#587b7b"
+
+# Diff signs. Added is #6ec47c, the same override the nvim config applies to
+# GitSignsAdd -- terafox's stock add (#7aa4a1) is a muted teal that collides
+# with its change colour. Removed and the modified accent are terafox stock.
+addedSignColor = "#6ec47c"
+removedSignColor = "#e85c51"
+accent = "#fda47f"
+
+# Row backgrounds tint the canvas toward each sign colour: 0.20 for the whole
+# row, 0.28 for word-level emphasis inside it (Hunk's own dark-theme ratio).
+# Trailing comments are the same blends over the Ghostty canvas.
+addedBg = "#274539"           # ghostty: #273e35
+addedContentBg = "#2e5240"    # ghostty: #2e4b3c
+removedBg = "#3f3030"         # ghostty: #3f292c
+removedContentBg = "#503433"  # ghostty: #502e30
+
+# Moved code: warm, so it reads as neither added nor removed.
+movedAddedBg = "#3a3936"      # ghostty: #3a3232
+movedRemovedBg = "#3a3936"    # ghostty: #3a3232
+
+# Selection: terafox sel1 for selected rows in lists and dialogs, a cyan tint
+# of the canvas for the focused hunk.
+accentMuted = "#425e5e"
+selectedHunk = "#344a4f"      # ghostty: #34434b
+
+# Status chrome: the Ghostty ANSI palette, which is what the terminal already
+# paints git output in. All clear 8:1 against the sidebar.
+badgeAdded = "#bddeab"
+badgeRemoved = "#ffa1a1"
+badgeNeutral = "#929292"
+fileNew = "#bddeab"
+fileDeleted = "#ffa1a1"
+fileModified = "#ffdca0"
+fileRenamed = "#b1d8f6"
+fileUntracked = "#e1c0fa"
+
+# Agent notes. The border is Ghostty's cursor blue -- the colour already spoken
+# for as "look here" in this terminal, and off the diff palette entirely.
+noteBackground = "#1d3337"
+noteBorder = "#5fafff"
+noteTitleBackground = "#254147"
+noteTitleText = "#e6eaea"
+
+# Syntax: terafox's generate_spec, scope by scope.
+#
+# Overrides are appended to the base theme's rule list, so TextMate precedence
+# applies: a more specific base selector still outranks a broader override, and
+# ties go to whichever came last. Two consequences drive the list below --
+#
+#   * every selector github-dark-default defines is restated here, even where
+#     the colour is unremarkable, because anything left out keeps a GitHub blue
+#     or orange that has no business in this palette;
+#   * "source" must stay first. It matches everything at specificity 1, so any
+#     equally broad rule after it (comment, keyword, string) wins over it, and
+#     any rule before it loses.
+[themes.terafox.syntax_scopes]
+# Default text -- terafox fg1. Keep this line first; see above.
+"source" = "#e6eaea"
+"meta.block" = "#e6eaea"
+"meta.object.member" = "#e6eaea"
+"meta.embedded.expression" = "#e6eaea"
+"meta.jsx.children" = "#e6eaea"
+"meta.tag.attributes" = "#e6eaea"
+
+# Comments -- terafox comment.
+"comment" = "#6d7f8b"
+"punctuation.definition.comment" = "#6d7f8b"
+"string.comment" = "#6d7f8b"
+
+# Strings -- terafox string. The quote glyphs get the same colour as the body;
+# github-dark-default leaves punctuation.definition.string to the default fg,
+# which reads as a lighter pair of quotes around a muted string.
+"string" = "#7aa4a1"
+"punctuation.definition.string" = "#7aa4a1"
+"string.other.link" = "#7aa4a1"
+"constant.other.reference.link" = "#7aa4a1"
+"string.regexp" = "#fdb292"
+"source.regexp" = "#fdb292"
+"string.regexp constant.character.escape" = "#ff9664"
+
+# Numbers and constants -- terafox number (orange base) and const (orange
+# bright). variable.language is terafox builtin0: `this`, `super`.
+"constant" = "#ff9664"
+"constant.numeric" = "#ff8349"
+"constant.language" = "#ff9664"
+"constant.character" = "#ff9664"
+"constant.character.escape" = "#ff9664"
+"constant.other.placeholder" = "#ff9664"
+"entity.name.constant" = "#ff9664"
+# Not terafox's const colour, deliberately. The TypeScript grammar tags every
+# `const`-declared name as variable.other.constant, so `const app` would come
+# out orange -- where Tree-sitter calls it @variable and nvim paints it white.
+"variable.other.constant" = "#ebebeb"
+"variable.other.enummember" = "#ff9664"
+"support.constant" = "#ff9664"
+"variable.language" = "#e85c51"
+
+# Keywords -- terafox keyword/statement (magenta base), with conditionals and
+# loops on magenta bright, as terafox splits them. keyword.control.flow is what
+# actually colours `return`; plain "keyword" does not reach it.
+"keyword" = "#ad5c7c"
+"keyword.control" = "#ad5c7c"
+"keyword.control.flow" = "#ad5c7c"
+"keyword.control.import" = "#ad5c7c"
+"keyword.control.conditional" = "#b97490"
+"keyword.control.loop" = "#b97490"
+"keyword.other" = "#ad5c7c"
+"storage" = "#ad5c7c"
+"storage.type" = "#ad5c7c"
+"storage.modifier" = "#ad5c7c"
+"storage.modifier.import" = "#ad5c7c"
+"storage.modifier.package" = "#ad5c7c"
+"storage.type.java" = "#ad5c7c"
+"meta.export.default" = "#ad5c7c"
+
+# Operators, brackets, punctuation -- terafox fg2, which it uses for both its
+# `bracket` and `operator` roles. github-dark-default has no rule for any of
+# these, so without this block they sit at full foreground weight.
+"punctuation" = "#cbd9d8"
+"meta.brace" = "#cbd9d8"
+"keyword.operator" = "#cbd9d8"
+"keyword.operator.type.annotation" = "#cbd9d8"
+"keyword.operator.namespace" = "#cbd9d8"
+
+# Types -- terafox type (yellow base); builtin types on cyan bright.
+"entity" = "#ebebeb"
+"entity.name" = "#fda47f"
+"entity.name.type" = "#fda47f"
+"entity.name.class" = "#fda47f"
+"entity.name.namespace" = "#fda47f"
+"entity.name.type.module" = "#fda47f"
+"entity.other.inherited-class" = "#fda47f"
+"support.type" = "#afd4de"
+"support.class" = "#afd4de"
+"support.class.component" = "#fda47f"
+
+# Functions -- terafox func (blue bright).
+"entity.name.function" = "#73a3b7"
+"support.function" = "#73a3b7"
+"variable.function" = "#73a3b7"
+"meta.function-call" = "#73a3b7"
+
+# Variables and members. terafox separates `variable` (white) from `field`
+# (blue base) -- `app` and `options` stay white, while anything read as a
+# member goes blue. meta.object-literal.key is the one that matters most in
+# practice: it covers `hello:` and `uptime:` in an object literal, which
+# otherwise fall through to plain foreground.
+"variable" = "#ebebeb"
+"variable.other" = "#ebebeb"
+"variable.parameter" = "#ebebeb"
+"variable.parameter.function" = "#ebebeb"
+"meta.definition.variable" = "#ebebeb"
+"variable.other.property" = "#5a93aa"
+"variable.other.object.property" = "#5a93aa"
+"support.variable.property" = "#5a93aa"
+"meta.property-name" = "#5a93aa"
+"meta.object-literal.key" = "#5a93aa"
+"support.type.property-name.json" = "#5a93aa"
+"support" = "#a1cdd8"
+"support.variable" = "#a1cdd8"
+
+# Tags and attributes -- terafox keyword for tags, preproc (pink bright) for
+# attribute names.
+"entity.name.tag" = "#ad5c7c"
+"entity.other.attribute-name" = "#d38d97"
+
+# Diagnostics -- terafox diag.error and its `dep` (deprecated) grey.
+"invalid" = "#e85c51"
+"invalid.broken" = "#e85c51"
+"invalid.illegal" = "#e85c51"
+"invalid.unimplemented" = "#e85c51"
+"invalid.deprecated" = "#587b7b"
+"message.error" = "#e85c51"
