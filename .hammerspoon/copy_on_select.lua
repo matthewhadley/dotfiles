@@ -11,8 +11,13 @@ local M = {}
 -- selection, the copy is a no-op, and the key falls through to the pty with
 -- the Command modifier dropped. Neovim then sees a bare `c` -- in Visual mode
 -- that is `change`, which deletes the selection.
+--
+-- Calendar has no text selection to copy: a drag across the grid creates or
+-- resizes an event and a double-click opens one, so the synthetic `cmd+c`
+-- copies the event instead and clobbers the clipboard.
 local excludedBundleIDs = {
 	["com.mitchellh.ghostty"] = true,
+	["com.apple.iCal"] = true, -- Calendar
 }
 
 local function isExcluded()
