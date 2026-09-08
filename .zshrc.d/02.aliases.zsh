@@ -45,6 +45,9 @@ alias gd='git diff'
 # git merge branch - for local merging of feature branches into main, creates a merge commit even for a fast forward
 alias gmb='git merge --no-ff'
 
+# cat with Neovim's syntax highlighting
+alias ccat='nvcat'
+
 # nvim, with the file tree only when there is no specific file to open.
 #
 #   nv                -> tree on the left, empty edit pane on the right
