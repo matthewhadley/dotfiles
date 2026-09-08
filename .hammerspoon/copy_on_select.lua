@@ -1,8 +1,25 @@
+local application = require("hs.application")
 local eventtap = require("hs.eventtap")
 local eventTypes = eventtap.event.types
 local timer = require("hs.timer")
 
 local M = {}
+
+-- Apps that copy on select by themselves, and are harmed by a second attempt.
+-- Ghostty does it natively via `copy-on-select`, and its `super+c` binding is
+-- performable: with `mouse=a` Neovim owns the drag, so Ghostty holds no
+-- selection, the copy is a no-op, and the key falls through to the pty with
+-- the Command modifier dropped. Neovim then sees a bare `c` -- in Visual mode
+-- that is `change`, which deletes the selection.
+local excludedBundleIDs = {
+	["com.mitchellh.ghostty"] = true,
+}
+
+local function isExcluded()
+	local app = application.frontmostApplication()
+
+	return app ~= nil and excludedBundleIDs[app:bundleID()] == true
+end
 
 local dragCount = 0
 local clickStack = {}
@@ -35,7 +52,7 @@ end
 local function handleMouseUp()
 	local additionalEvents = {}
 
-	if wasDragging() or wasDoubleClick() then
+	if (wasDragging() or wasDoubleClick()) and not isExcluded() then
 		additionalEvents = {
 			eventtap.event.newKeyEvent({ "cmd" }, "c", true),
 			eventtap.event.newKeyEvent({ "cmd" }, "c", false),
