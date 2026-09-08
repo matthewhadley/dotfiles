@@ -170,6 +170,26 @@ _dotfiles_logs() {
     "$@"
 }
 
+_dotfiles_hunk() {
+  # Hunk locates a repo the way git does, so GIT_DIR/GIT_WORK_TREE is all it
+  # needs -- and unlike -C "$HOME", it leaves the cwd alone, so pathspecs still
+  # resolve against wherever the caller is standing.
+  #
+  # --exclude-untracked is not a preference here. Hunk lists untracked files
+  # with `git ls-files --others`, which does not consult
+  # status.showUntrackedFiles, so without it every review would walk the half
+  # million files under $HOME. Only `hunk diff` takes the flag, and it has to
+  # go before any `--` pathspec, so it is spliced in rather than appended.
+  local -a args
+  args=("$@")
+  # Bare, or starting with a flag or a `--` pathspec, means a working tree
+  # review -- so `hunk --staged` and `hunk -- .config` reach hunk as diff
+  # subcommands rather than as a missing one.
+  [[ ${args[1]} == (|-*) ]] && args=(diff "${args[@]}")
+  [[ ${args[1]} == diff ]] && args=(diff --exclude-untracked "${args[@]:1}")
+  GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" hunk "${args[@]}"
+}
+
 _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
@@ -177,6 +197,9 @@ dotfiles git bare repo management at ~/.dotfiles
   edit, nvim     open Neovim showing only the tracked files, as a tree
   list           every tracked file, its status, and the last commit to touch it
   check          fetch, then report ahead/behind and any local changes
+  hunk           open the changes in Hunk; bare `hunk` is the working tree,
+                 otherwise the args are a hunk command (`hunk --staged`,
+                 `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
   logs           the `git logs` alias without the redundant " by <author>"
   scopes         list the commit scopes the hook allows; scan/add/rm/set
   help           this text
@@ -200,6 +223,10 @@ case "$1" in
   logs)
     shift
     _dotfiles_logs "$@"
+    ;;
+  hunk)
+    shift
+    _dotfiles_hunk "$@"
     ;;
   scopes)
     shift
