@@ -51,11 +51,20 @@ colorscheme — say it's unverified rather than inventing a way to test it.
 field — `feat`/`fix`/`chore` carry little information once every subject names
 the area it touched, and this repo has no releases to derive from them.
 
-Scopes for this repo: `nvim`, `vim`, `zsh`, `git`, `ghostty`, `herdr`,
-`hammerspoon`, `dotfiles` (the wrapper script), `readme`, `agents` (this
-file).
+The vocabulary lives in git config, per repo, under `scopedcommits.scopes`.
+Query it rather than working from a list written down anywhere — including
+here, because any such copy drifts:
+
+```sh
+git config --get scopedcommits.scopes      # any repo
+dotfiles scopes                            # this repo; $HOME is not a repo
+```
+
+Set it as one space-separated string, not with `--add`: the hook reads it with
+`--get`, which silently returns only the last value if the key is multi-valued.
+In this repo `dotfiles scopes add|rm|set` handles that correctly. Ask before
+extending the vocabulary — a controlled list is the point of having one.
 
 Comma-separate when a change spans areas (`nvim, zsh: ...`). Merges, reverts
 and the root commit are exempt. A `commit-msg` hook in `.git-templates/hooks/`
-enforces this; `git config scopedcommits.scopes "..."` restricts the
-vocabulary per repo.
+enforces this; leaving `scopedcommits.scopes` unset allows any scope.
