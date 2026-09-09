@@ -4,6 +4,12 @@ onboarding = false
 previous_tab = "prefix+p"
 next_tab = "prefix+n"
 
+[[keys.command]]
+key = "super+p"
+type = "plugin_action"
+command = "vjeantet.palette.open"
+description = "Command palette"
+
 [ui.toast]
 delivery = "herdr"
 
