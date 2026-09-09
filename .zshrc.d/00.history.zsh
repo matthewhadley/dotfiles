@@ -13,9 +13,12 @@ setopt EXTENDED_HISTORY
 SAVEHIST=1000000
 HISTSIZE=1000000
 
-# History per TTY
+# History per TTY. TTY_NUM (00.env.zsh) is empty in a shell with no
+# controlling terminal, because `tty` prints "not a tty" and its `cut -c11-`
+# returns nothing -- without the fallback HISTFILE would name the directory
+# itself and those shells would silently record no history.
 mkdir -p "$HOME/.history.d"
-HISTFILE="$HOME/.history.d/${HOSTNAME:+$HOSTNAME-}${TTY_NUM}"
+HISTFILE="$HOME/.history.d/${TTY_NUM:-no-tty}"
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:white'"
