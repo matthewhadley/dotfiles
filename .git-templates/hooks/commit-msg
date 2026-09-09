@@ -18,7 +18,7 @@
 # Optionally restrict the vocabulary per repo. Unset means any scope is
 # allowed, which is the spec's default:
 #
-#   git config scopedcommits.scopes "nvim vim zsh git ghostty dotfiles treewide"
+#   git config scopedcommits.scopes "api web infra docs treewide"
 
 MSG=$(head -1 "$1" | tr -d '\r')
 
@@ -38,25 +38,11 @@ fi
 scope_re='[a-z0-9._/-]+'
 subject_re="^${scope_re}([[:space:]]*,[[:space:]]*${scope_re})*([[:space:]]\([A-Za-z0-9_-]+\))?:[[:space:]].+$"
 
-# Rejecting discards the message unless you know it is still on disk, so every
-# failure path below says how to get it back.
-#
-# In the dotfiles repo the commands have to go through the wrapper: only this
-# hook has GIT_DIR set, and from a shell $HOME is not a repo, so a bare `git`
-# would fail. Elsewhere plain git is right.
-if [[ $(git rev-parse --absolute-git-dir) == "$HOME/.dotfiles" ]]; then
-	vcs="dotfiles"
-else
-	vcs="git"
-fi
-retry="$vcs commit -eF $(git rev-parse --git-path COMMIT_EDITMSG)"
-
 if ! [[ $MSG =~ $subject_re ]]; then
 	echo "Rejected commit: message format"
 	echo "  wanted:  <scope>: <description>"
 	echo "  got:     $MSG"
 	echo "  see:     scopedcommits.com"
-	echo "  retry:   $retry"
 	exit 1
 fi
 
@@ -71,15 +57,9 @@ if [[ -n $allowed ]]; then
 		s="${raw#"${raw%%[![:space:]]*}"}"
 		s="${s%"${s##*[![:space:]]}"}"
 		if ! [[ " $allowed " == *" $s "* ]]; then
-			if [[ $vcs == "dotfiles" ]]; then
-				add_cmd="dotfiles scopes add $s"
-			else
-				add_cmd="git config scopedcommits.scopes \"$allowed $s\""
-			fi
 			echo "Rejected commit: unknown scope '$s'"
 			echo "  allowed: $allowed"
-			echo "  add it:  $add_cmd"
-			echo "  retry:   $retry"
+			echo "  add it:  git config scopedcommits.scopes \"$allowed $s\""
 			exit 1
 		fi
 	done
