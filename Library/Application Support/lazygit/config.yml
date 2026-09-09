@@ -1,0 +1,171 @@
+# lazygit — terafox.
+#
+# Same approach as ~/.config/hunk/config.toml and ~/.config/yazi/theme.toml:
+# colours come from nightfox's terafox spec (the palette nvim is running), with
+# named departures where terafox has nothing to say or where the stock value
+# fails contrast. Every ratio below is WCAG, measured against terafox bg1
+# (#152528) unless the comment says otherwise.
+#
+# This file is at lazygit's real default path, not ~/.config/lazygit — on macOS
+# `lazygit --print-config-dir` resolves to Library unless XDG_CONFIG_HOME is
+# set, and it isn't. Moving it to ~/.config would mean an LG_CONFIG_FILE export
+# in the shell, i.e. a second path that only sometimes wins, which is the
+# Ghostty trap. One real path instead. `dotfiles add` takes it as-is; the work
+# tree is $HOME, so the ugly path is still a tracked path.
+#
+# Diffs are rendered by delta, themed in ~/.config/git/delta-terafox.gitconfig
+# — see `git.diffRenderers` at the bottom of this file. That is where the
+# syntax highlighting comes from; lazygit itself has no say in it.
+#
+# Also not here: icons. yazi has all five icon lists emptied; lazygit needs no
+# equivalent because `nerdFontsVersion` is empty by default and showFileIcons
+# is a no-op without it.
+
+gui:
+  # ── Borders ──────────────────────────────────────────────────────────────
+  #
+  # `single`, not lazygit's default `rounded`, to match neo-tree's
+  # popup_border_style in ~/.config/nvim/init.lua and the reason given there:
+  # rounded needs glyphs some terminals lack.
+  border: single
+
+  theme:
+    # Focused pane. terafox blue.bright — its `func` colour, and blue is the
+    # one hue git status has no claim on (green added, red removed, yellow
+    # modified, cyan copied, magenta typechange are all taken; see the
+    # unstagedChangesColor note below for why those are ANSI and not mine to
+    # reassign). 5.77:1 against a 1.78:1 inactive border is an unmistakable
+    # step, which is the whole job of this key.
+    activeBorderColor:
+      - '#73a3b7'
+
+    # Unfocused panes. terafox bg4 — what terafox itself designates as border
+    # fg, and what hunk's `border` is set to. 1.78:1: present, not competing.
+    inactiveBorderColor:
+      - '#2d4f56'
+
+    # Filter/search mode. terafox yellow.base, 8.13:1 — warm, so it reads as a
+    # mode change rather than a second kind of focus, and it is the only theme
+    # key that swaps the border out from under you.
+    searchingActiveBorderColor:
+      - '#fda47f'
+
+    # Selected row. terafox bg3, which is *nvim's CursorLine* — so the cursor
+    # in a lazygit list looks like the cursor in a buffer.
+    #
+    # Not sel1 (#425e5e), the obvious "popup sel bg" candidate, and this is the
+    # one place stock terafox is wrong for lazygit. lazygit paints status text
+    # over the selected row, so the selection background has to preserve the
+    # contrast of colours it does not control. On sel1: ANSI red falls to
+    # 2.32:1, cyan to 1.96:1, green to 3.16:1 — the file panel's status column
+    # goes unreadable on exactly the row you are looking at. On bg3 the same
+    # three are 3.60 / 3.05 / 4.92, and default text is 8.99:1.
+    #
+    # The cost is a quieter selection: bg3 is a 1.45:1 lift off bg1, against
+    # sel1's 2.26:1. Worth it, and consistent with how nvim marks the same
+    # thing.
+    selectedLineBgColor:
+      - '#254147'
+
+    # Selected row in an unfocused pane. terafox bg2, a 1.19:1 lift — the same
+    # cursor, dimmed, so the pane still remembers where you were. Replaces
+    # lazygit's default of `bold`, which conveys the same thing by a different
+    # mechanism and so reads as a different kind of state.
+    inactiveViewSelectedLineBgColor:
+      - '#1d3337'
+
+    # Keybinding hints along the bottom. #8a9ba5 rather than terafox's comment
+    # grey (#6d7f8b), which is 3.81:1 and misses AA — the same lift, to the
+    # same value, that hunk's config makes for its `muted` role. 5.51:1.
+    optionsTextColor:
+      - '#8a9ba5'
+
+    # Body text. terafox fg1, 13.05:1. Without this lazygit inherits Ghostty's
+    # foreground (#C2C2C2), which is a visibly cooler, dimmer grey than the one
+    # nvim is drawing two panes over.
+    defaultFgColor:
+      - '#e6eaea'
+
+    # Commits on the cherry-pick clipboard. Dark text on terafox cyan.base,
+    # 10.16:1 — a badge rather than a tint, because these commits need to stay
+    # legible as *marked* whether or not the selection is also on them.
+    cherryPickedCommitFgColor:
+      - '#0f1c1e'
+    cherryPickedCommitBgColor:
+      - '#a1cdd8'
+
+    # The marked base commit for a rebase. Same badge treatment, terafox
+    # yellow.base, 8.96:1. Yellow keeps lazygit's own convention for this key
+    # and stays distinct from the cyan above.
+    markedBaseCommitFgColor:
+      - '#0f1c1e'
+    markedBaseCommitBgColor:
+      - '#fda47f'
+
+    # Left as ANSI `red`, deliberately — this is the one theme key I am
+    # declining to set.
+    #
+    # It looks like "the colour of unstaged changes", but it is half of a pair:
+    # pkg/gui/presentation/files.go hardcodes style.FgGreen for staged/added,
+    # FgYellow for modified, FgCyan for copied and FgMagenta for typechange,
+    # and exposes only the red. Putting terafox's #e85c51 here would give the
+    # status column one terafox glyph sitting next to four Ghostty ANSI ones.
+    # Leaving it means all five come from Ghostty's palette, which is also
+    # where the same information is coloured from on the command line and in
+    # hunk's file badges.
+    #
+    # If lazygit ever exposes the rest, the terafox set is
+    # red #e85c51 / green #7aa4a1 / yellow #fda47f / cyan #a1cdd8 / magenta
+    # #ad5c7c.
+    unstagedChangesColor:
+      - red
+
+  # ── Author initials ──────────────────────────────────────────────────────
+  #
+  # By default lazygit derives an author's colour by hashing their name into
+  # HSL at saturation 0.6–1.0 (presentation/authors/authors.go), which is a
+  # generator for colours this palette does not contain — the loudest thing on
+  # screen, on the least important column.
+  #
+  # '*' catches everyone. terafox blue.base, its `field` colour, which is the
+  # role hunk gives the same hex: secondary, structural, recedes. 4.66:1 on the
+  # canvas, 3.21:1 on a selected row — the low one is two characters of
+  # metadata, and receding is the point. #a1cdd8 (cyan.base, 9.22 / 6.36) if it
+  # turns out to read as too dim.
+  #
+  # Named authors can be added above the wildcard to pick themselves out.
+  authorColors:
+    '*': '#5a93aa'
+
+# ── Diff rendering ─────────────────────────────────────────────────────────
+#
+# delta, which is what actually gives the main panel nvim's syntax
+# highlighting: it colours code with syntect against nightfox's terafox
+# .tmTheme, the same file and the same mechanism as yazi's preview pane.
+# lazygit can't do this itself — it hands the diff to whatever renderer is
+# configured here, and without one shows raw `git diff --color=always`.
+#
+# All of the styling lives in the `terafox` feature in
+# ~/.config/git/delta-terafox.gitconfig, so it can be commented and so it is
+# reusable if delta ever replaces diff-so-fancy as core.pager. Nothing here
+# touches terminal git: `git diff` is still diff-so-fancy.
+#
+# `--paging=never` is required, not cosmetic — delta defaults to paging=auto
+# and would spawn a pager inside lazygit's pane.
+#
+# Two things this does not cover, both lazygit limitations rather than delta's:
+#
+#   * the staging view (`e`) builds its own line-by-line rendering from raw git
+#     output, so it stays unhighlighted;
+#   * delta's `navigate` is unsupported inside lazygit, per delta's own docs,
+#     which is why the feature file leaves it off.
+#
+# `diffRenderers` is a list because `|` cycles through it. A second entry is
+# left commented rather than deleted — plain git output is worth a keypress
+# when delta's rendering is hiding something.
+git:
+  diffRenderers:
+    - command: delta --features=terafox --paging=never
+      name: delta
+    # - type: rawGit
+    #   name: default

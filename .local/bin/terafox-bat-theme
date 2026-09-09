@@ -1,0 +1,61 @@
+#!/bin/sh
+# terafox-bat-theme — regenerate bat/delta's terafox syntax theme from nightfox.
+#
+# bat and delta highlight with syntect, which wants a Sublime .tmTheme rather
+# than a Lua colorscheme. nightfox pre-generates one per variant under extra/,
+# so pointing at it gets the palette nvim is actually running instead of an
+# approximation — the same trick ~/.config/yazi/theme.toml uses for its preview
+# pane, which reads that file directly.
+#
+# This cannot be a symlink to nightfox's copy, because that copy needs one fix:
+#
+#   nightfox exports the `comment` scope as #2d4f56, which is terafox's bg4 --
+#   a *background* shade, and its designated border colour. Against the theme's
+#   own background it measures 1.78:1, and against delta's added-line tint
+#   (#274539) it is 1.18:1, i.e. invisible. terafox's real comment colour is
+#   #6d7f8b (5.36:1 / 3.55:1). Every other scope in the file clears 3:1, so
+#   this is the only patch applied.
+#
+# Hence: copy, patch one value, install, rebuild the cache. Re-run after
+# updating nightfox or switching variants -- bat's cache is a binary snapshot,
+# so nothing picks up an upstream change until it is rebuilt.
+#
+# Consumed by the `terafox` delta feature in
+# ~/.config/git/delta-terafox.gitconfig, which lazygit invokes.
+
+set -eu
+
+VARIANT="${1:-terafox}"
+SRC="$HOME/.local/share/nvim/site/pack/core/opt/nightfox.nvim/extra/$VARIANT/$VARIANT.tmTheme"
+DEST_DIR="$HOME/.config/bat/themes"
+DEST="$DEST_DIR/$VARIANT.tmTheme"
+
+[ -f "$SRC" ] || { echo "no nightfox export at $SRC" >&2; exit 1; }
+
+mkdir -p "$DEST_DIR"
+rm -f "$DEST"   # may be a stale symlink from an earlier setup
+
+python3 - "$SRC" "$DEST" <<'PY'
+import plistlib, sys
+
+src, dest = sys.argv[1], sys.argv[2]
+COMMENT_SCOPE = "comment, punctuation.definition.comment"
+COMMENT_FG = "#6d7f8b"  # terafox's `comment`, per its palette.lua
+
+theme = plistlib.load(open(src, "rb"))
+for entry in theme["settings"]:
+    if entry.get("scope") == COMMENT_SCOPE:
+        entry["settings"]["foreground"] = COMMENT_FG
+        break
+else:
+    # Upstream renamed or resplit the scope: fail loudly rather than silently
+    # installing a theme whose comments are still unreadable.
+    raise SystemExit(f"comment scope {COMMENT_SCOPE!r} not found in {src}")
+
+with open(dest, "wb") as f:
+    plistlib.dump(theme, f)
+PY
+
+bat cache --build >/dev/null
+echo "installed $DEST and rebuilt bat cache"
+delta --list-syntax-themes | grep -q "$VARIANT" && echo "delta sees '$VARIANT'"

@@ -1,0 +1,108 @@
+# delta — terafox.
+#
+# Included from ~/.gitconfig. Defines one named feature and nothing else, so
+# including it changes nothing on its own: `core.pager` is still diff-so-fancy,
+# and this only takes effect where something asks for `--features=terafox`.
+# Right now that is lazygit's `git.diffRenderers` and nothing else.
+#
+# To adopt delta for terminal git too, replace core.pager in ~/.gitconfig with
+#
+#     [core]
+#         pager = delta
+#     [delta]
+#         features = terafox
+#         navigate = true
+#
+# (`navigate` is deliberately not set below — delta's docs say it does not work
+# inside lazygit, so it belongs with the terminal opt-in rather than here.)
+#
+# ── Where the colours come from ─────────────────────────────────────────────
+#
+# `syntax-theme = terafox` is the real payload. delta highlights with syntect,
+# which wants a Sublime .tmTheme rather than a Lua colorscheme, and nightfox
+# pre-generates one per variant under extra/ — so this is literally the same
+# palette nvim is running, by the same mechanism yazi's preview pane already
+# uses (see the syntect_theme note in ~/.config/yazi/theme.toml).
+#
+# delta finds it through bat, not directly: the theme is installed at
+# ~/.config/bat/themes/terafox.tmTheme and registered with `bat cache --build`.
+# That file is generated, not hand-written and not a symlink to the plugin —
+# `~/.local/bin/terafox-bat-theme` copies nightfox's export and patches one
+# value, because nightfox exports the `comment` scope as terafox's bg4
+# (#2d4f56, a background shade) rather than its comment colour (#6d7f8b),
+# which is 1.18:1 against the added-line tint below and so invisible in a diff.
+# The script explains it in full; it is also the only patch needed, every other
+# scope in the export clears 3:1.
+#
+# Re-run it after updating nightfox or switching variants — bat's cache is a
+# binary snapshot, so nothing picks up an upstream change until it is rebuilt:
+#
+#     terafox-bat-theme
+#
+# Ignore the "Catppuccin Macchiato" name inside the .tmTheme; nightfox templated
+# it from Catppuccin's and left the metadata strings alone. The colours are
+# terafox, and delta takes it by name from the cache, so the name never shows.
+#
+# Everything not covered by the .tmTheme — the diff chrome — is set below from
+# the terafox spec. Hex values must stay double-quoted: unquoted, `#` opens a
+# comment in gitconfig and the value silently becomes empty.
+
+[delta "terafox"]
+	syntax-theme = terafox
+	dark = true
+
+	# ── Changed rows ───────────────────────────────────────────────────────
+	#
+	# `syntax` as the foreground means "leave the syntax highlighting alone and
+	# only paint the background", which is the whole point of using delta here.
+	#
+	# The backgrounds are the same four blends ~/.config/hunk/config.toml uses,
+	# so a diff reads identically in hunk and in lazygit: terafox bg1 blended
+	# 0.20 toward the sign colour for the row, 0.28 for the word-level emphasis
+	# inside it.
+	plus-style = syntax "#274539"
+	plus-emph-style = syntax "#2e5240"
+	minus-style = syntax "#3f3030"
+	minus-emph-style = syntax "#503433"
+
+	# Unchanged rows: syntax colours, no background. Deliberately not painted
+	# with terafox bg1 (#152528) even though that is what the .tmTheme assumes
+	# and what hunk sets as its contextBg — delta pads a styled row to the full
+	# width, so tinting context here would draw a hard edge against Ghostty's
+	# #151C23 wherever the diff is narrower than the pane. Same seam the yazi
+	# and hunk configs document; the real fix is Ghostty's background, not this
+	# file.
+	zero-style = syntax
+
+	# ── File and hunk headers ──────────────────────────────────────────────
+	#
+	# terafox cyan.base for the path, bg4 (its own border colour, and hunk's
+	# `border`) for the rules. yellow.base on the line range, matching the
+	# `accent` role hunk gives the same hex.
+	file-style = "#a1cdd8" bold
+	file-decoration-style = "#2d4f56" ul
+	hunk-header-style = file line-number syntax
+	hunk-header-decoration-style = "#2d4f56" box
+	hunk-header-file-style = "#a1cdd8"
+	hunk-header-line-number-style = "#fda47f"
+
+	# ── Line numbers ───────────────────────────────────────────────────────
+	#
+	# terafox fg3 is its own line-number colour, so the gutter matches nvim's.
+	#
+	# The plus marker is #6ec47c, not terafox's stock add (#7aa4a1) — the same
+	# override init.lua applies to GitSignsAdd and hunk to addedSignColor,
+	# because stock is a muted teal that collides with terafox's change colour.
+	line-numbers = true
+	line-numbers-left-style = "#587b7b"
+	line-numbers-right-style = "#587b7b"
+	line-numbers-zero-style = "#587b7b"
+	line-numbers-minus-style = "#e85c51"
+	line-numbers-plus-style = "#6ec47c"
+
+	# Trailing whitespace and other whitespace errors, on terafox red.
+	whitespace-error-style = "#e85c51" reverse
+
+	# Commit header — only shown for `git show`, i.e. lazygit's commit view.
+	commit-style = "#fda47f" bold
+	commit-decoration-style = "#2d4f56" box ul
