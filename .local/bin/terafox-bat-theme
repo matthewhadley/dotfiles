@@ -26,9 +26,20 @@
 set -eu
 
 VARIANT="${1:-terafox}"
-SRC="$HOME/.local/share/nvim/site/pack/core/opt/nightfox.nvim/extra/$VARIANT/$VARIANT.tmTheme"
-DEST_DIR="$HOME/.config/bat/themes"
+# XDG_DATA_HOME rather than a hardcoded ~/.local/share: that is nvim's
+# stdpath("data") on both macOS and Linux, but on Linux it is genuinely
+# relocatable and some setups move it.
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+SRC="$DATA_HOME/nvim/site/pack/core/opt/nightfox.nvim/extra/$VARIANT/$VARIANT.tmTheme"
+DEST_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/bat/themes"
 DEST="$DEST_DIR/$VARIANT.tmTheme"
+
+# On older Debian and Ubuntu, bat's executable is installed as `batcat` because
+# the name `bat` clashes with another package. delta is unaffected — it reads
+# bat's cache off disk rather than shelling out — but `bat cache --build` below
+# is ours, so resolve whichever name exists.
+BAT=$(command -v bat 2>/dev/null || command -v batcat 2>/dev/null || true)
+[ -n "$BAT" ] || { echo "neither 'bat' nor 'batcat' on PATH" >&2; exit 1; }
 
 [ -f "$SRC" ] || { echo "no nightfox export at $SRC" >&2; exit 1; }
 
@@ -56,6 +67,8 @@ with open(dest, "wb") as f:
     plistlib.dump(theme, f)
 PY
 
-bat cache --build >/dev/null
+"$BAT" cache --build >/dev/null
 echo "installed $DEST and rebuilt bat cache"
-delta --list-syntax-themes | grep -q "$VARIANT" && echo "delta sees '$VARIANT'"
+if command -v delta >/dev/null 2>&1; then
+  delta --list-syntax-themes | grep -q "$VARIANT" && echo "delta sees '$VARIANT'"
+fi
