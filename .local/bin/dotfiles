@@ -38,7 +38,9 @@ _dotfiles_scopes() {
   # is NOT tracked and a fresh clone starts with no vocabulary at all. Run
   # `dotfiles scopes set ...` as part of bootstrapping a new machine.
   local -a current
-  current=(${(s: :)"$(_dotfiles_git_home config --get scopedcommits.scopes)"})
+  # --get-all to match the hook: --get returns only the last value, so a
+  # multi-valued key would list short of what is actually enforced.
+  current=(${(s: :)"$(_dotfiles_git_home config --get-all scopedcommits.scopes)"})
 
   local verb="$1"
   [[ -n $verb ]] && shift

@@ -22,6 +22,15 @@
 
 MSG=$(head -1 "$1" | tr -d '\r')
 
+# An unedited message has no subject to check: quitting the editor leaves a
+# blank first line above git's comment block. Git aborts that on its own, with
+# a clearer error than this hook could give, so step aside rather than
+# complaining about the format of something nobody typed. A real subject can
+# never start with the comment char -- git would strip it.
+if [[ -z ${MSG//[[:space:]]/} || $MSG == '#'* ]]; then
+	exit 0
+fi
+
 # The spec exempts special commits: "reverts, merges, etc. can be formatted
 # however you like".
 if [[ $MSG =~ ^(Merge|Revert|fixup!|squash!|amend!) ]]; then
@@ -36,7 +45,9 @@ if ! git rev-parse --verify --quiet HEAD >/dev/null; then
 fi
 
 scope_re='[a-z0-9._/-]+'
-subject_re="^${scope_re}([[:space:]]*,[[:space:]]*${scope_re})*([[:space:]]\([A-Za-z0-9_-]+\))?:[[:space:]].+$"
+# The description must contain something that is not whitespace -- ".+" alone
+# accepts "app:   ", a commit with a scope and no message.
+subject_re="^${scope_re}([[:space:]]*,[[:space:]]*${scope_re})*([[:space:]]\([A-Za-z0-9_-]+\))?:[[:space:]]+[^[:space:]].*$"
 
 if ! [[ $MSG =~ $subject_re ]]; then
 	echo "Rejected commit: message format"
@@ -46,8 +57,10 @@ if ! [[ $MSG =~ $subject_re ]]; then
 	exit 1
 fi
 
-# Validate against the repo's vocabulary, if it declares one.
-allowed=$(git config --get scopedcommits.scopes)
+# Validate against the repo's vocabulary, if it declares one. --get-all so a
+# multi-valued key reads as the whole list: --get would silently return only
+# the last value, quietly shrinking the vocabulary to one entry.
+allowed=$(git config --get-all scopedcommits.scopes | xargs)
 if [[ -n $allowed ]]; then
 	# Strip any " (TICKET)" then split the scope list on commas.
 	scopes=${MSG%%:*}

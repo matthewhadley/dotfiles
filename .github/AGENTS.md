@@ -60,10 +60,10 @@ git config --get scopedcommits.scopes      # any repo
 dotfiles scopes                            # this repo; $HOME is not a repo
 ```
 
-Set it as one space-separated string, not with `--add`: the hook reads it with
-`--get`, which silently returns only the last value if the key is multi-valued.
-In this repo `dotfiles scopes add|rm|set` handles that correctly. Ask before
-extending the vocabulary — a controlled list is the point of having one.
+Either form works: one space-separated string, or `--add` once per scope — the
+hook reads with `--get-all`. In this repo `dotfiles scopes add|rm|set` writes
+the string form. Ask before extending the vocabulary — a controlled list is the
+point of having one.
 
 Comma-separate when a change spans areas (`nvim, zsh: ...`). Merges, reverts
 and the root commit are exempt. A `commit-msg` hook in `.git-templates/hooks/`
