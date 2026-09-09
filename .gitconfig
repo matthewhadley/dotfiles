@@ -8,7 +8,11 @@
 	templateDir = ~/.git-templates
 [core]
 	excludesfile = ~/.gitignore_global
-	pager = delta
+	# Side-by-side only when there is room for two 80-column halves. git runs
+	# the pager through `sh -c` and the pager's stdout is the terminal, so
+	# tput reports the current pane width, re-checked on every invocation.
+	# Not in the terafox feature: lazygit shares that and sizes its own panes.
+	pager = delta $(test $(tput cols) -ge 160 && echo --side-by-side)
 [delta]
 	# Styling lives in the included file below.
 	features = terafox
