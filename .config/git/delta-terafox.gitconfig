@@ -1,20 +1,15 @@
 # delta — terafox.
 #
-# Included from ~/.gitconfig. Defines one named feature and nothing else, so
-# including it changes nothing on its own: `core.pager` is still diff-so-fancy,
-# and this only takes effect where something asks for `--features=terafox`.
-# Right now that is lazygit's `git.diffRenderers` and nothing else.
+# Included from ~/.gitconfig. Defines one named feature, used by two callers:
 #
-# To adopt delta for terminal git too, replace core.pager in ~/.gitconfig with
+#   * `[delta] features = terafox` in ~/.gitconfig, which makes it the styling
+#     for `core.pager = delta` — i.e. `git diff`, `git show`, `git log -p`;
+#   * lazygit's `git.diffRenderers`, which passes `--features=terafox`.
 #
-#     [core]
-#         pager = delta
-#     [delta]
-#         features = terafox
-#         navigate = true
-#
-# (`navigate` is deliberately not set below — delta's docs say it does not work
-# inside lazygit, so it belongs with the terminal opt-in rather than here.)
+# Keeping the styling here rather than under `[delta]` is what lets both share
+# it. Settings that must differ between the two live with their caller, not in
+# this file — `navigate` is the one so far: it belongs in ~/.gitconfig because
+# delta's docs say it does not work inside lazygit.
 #
 # ── Where the colours come from ─────────────────────────────────────────────
 #
@@ -50,6 +45,11 @@
 [delta "terafox"]
 	syntax-theme = terafox
 	dark = true
+
+	# nvim sets tabstop = 4 with expandtab = false, so real tabs are common in
+	# these repos and their width is visible. delta defaults to 8; the pager
+	# this replaced passed `less --tabs=1,5`, which is 4. Match nvim.
+	tabs = 4
 
 	# ── Changed rows ───────────────────────────────────────────────────────
 	#

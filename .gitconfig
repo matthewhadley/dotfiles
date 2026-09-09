@@ -8,12 +8,17 @@
 	templateDir = ~/.git-templates
 [core]
 	excludesfile = ~/.gitignore_global
-	# https://github.com/so-fancy/diff-so-fancy
-	pager = diff-so-fancy | less --tabs=1,5 -R
+	pager = delta
+[delta]
+	# Styling lives in the included file below.
+	features = terafox
+	# n/N to jump between files. Deliberately not in the feature itself:
+	# delta's docs say navigate does not work inside lazygit, and the feature
+	# is shared with lazygit's git.diffRenderers. Needs less >= 551.
+	navigate = true
 [include]
-	# Defines the `terafox` delta feature and nothing else, so this is inert
-	# until something asks for it by name. Today that is only lazygit's
-	# git.diffRenderers; core.pager above is untouched.
+	# Defines the `terafox` delta feature, selected by [delta] above and by
+	# lazygit's git.diffRenderers.
 	path = ~/.config/git/delta-terafox.gitconfig
 [includeIf "hasconfig:remote.*.url:git@*.apple.com:*/**"]
 	path = ~/.gitconfig-corp
