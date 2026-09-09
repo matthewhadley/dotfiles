@@ -6,7 +6,9 @@ keybind = super+arrow_left=text:\x02p
 keybind = super+arrow_right=text:\x02n
 keybind = super+d=new_split:right
 keybind = super+shift+d=text:\x02v
-keybind = super+shift+t=text:\x02c
+keybind = super+w=text:\x02x
+keybind = super+t=text:\x02c
+keybind = super+shift+t=text:\x02v
 keybind = super+shift+arrow_left=text:\x02h
 keybind = super+shift+arrow_right=text:\x02l
 
