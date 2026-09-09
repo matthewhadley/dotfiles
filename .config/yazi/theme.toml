@@ -1,0 +1,174 @@
+# Yazi theme overrides. Layered on top of yazi's own theme-dark.toml /
+# theme-light.toml, which it picks between based on the terminal's mode.
+
+[mgr]
+# Syntax highlighting in the file preview is done by syntect, which wants a
+# Sublime .tmTheme -- not a Lua colorscheme. nightfox pre-generates one per
+# variant under extra/, so this is the same palette nvim is using rather than an
+# approximation of it: the file's background (#152528) and red (#e85c51) are
+# terafox's bg1 and red.base verbatim.
+#
+# Pointed at the plugin's copy rather than a duplicate here, so it can't drift
+# from whatever nightfox is installed. The cost is that this path assumes
+# nightfox stays installed via vim.pack; if it's ever removed, previews fall
+# back to yazi's built-in highlighting rather than breaking.
+#
+# Switching nvim variants (duskfox, carbonfox, ...) means switching the
+# directory below to match -- they all ship a .tmTheme.
+#
+# Absolute rather than ~ because it's unverified whether yazi expands ~ here.
+#
+# Ignore the "Catppuccin Macchiato" name inside the file: nightfox templated its
+# tmTheme from Catppuccin's and left the metadata strings alone. The colours are
+# terafox. syntect takes this by path, so the name is never used.
+syntect_theme = "/Users/mhadley/.local/share/nvim/site/pack/core/opt/nightfox.nvim/extra/terafox/terafox.tmTheme"
+
+# The cwd header defaults to cyan, which read as green against this palette and
+# made the current directory the odd one out. "blue" is the same token the
+# directory rule below uses, so the two match by construction rather than by two
+# hex values that could drift apart.
+cwd = { fg = "blue" }
+
+# The vertical rules between the parent, current and preview panes. A single
+# space, not "" -- an empty string is treated as unset and falls back to the
+# preset "│" (verified: "" left all 76 rules on screen, " " left none).
+border_symbol = " "
+border_style  = { fg = "#152528" }
+
+# The "-> target" after a symlink's name in the file list. The preset italicises
+# it; empty table means no styling at all, so it matches the surrounding names.
+# ({} works here -- unlike border_symbol above, where "" silently reverts to the
+# preset. Style tables and symbol strings behave differently.)
+symlink_target = {}
+
+
+# ── Status bar mode pills ─────────────────────────────────────────────────
+#
+# Both pills -- NOR bottom left and the n/total bottom right -- are drawn with
+# `_main`; the adjoining size and permission segments use `_alt`. Confirmed in
+# yazi's own components/status.lua, where Status:mode() and Status:position()
+# both call :style(style.main).
+#
+# The defaults set only bg ("blue"), and Status:style() starts from
+# fg("reset"):bg("reset"), so the text falls through to the terminal's default
+# foreground -- light grey on mid blue, which measures 2.8:1 and is why the pills
+# were unreadable. Same shape as the WinSeparator problem in init.lua: a
+# half-specified style inheriting the other half from whatever is underneath.
+#
+# So every entry below sets fg *and* bg explicitly. Values are terafox's
+# palette, and each pairing was checked for WCAG AA (4.5:1); ratios noted.
+# bg0 is what terafox designates as its status-line background -- the reds don't
+# reach AA against sel0, which is why the alts sit on bg0.
+
+[mode]
+normal_main = { fg = "#0f1c1e", bg = "#5a93aa", bold = true }  # 5.14:1
+normal_alt  = { fg = "#a1cdd8", bg = "#0f1c1e" }               # 10.16:1
+
+# Select mode
+select_main = { fg = "#0f1c1e", bg = "#fda47f", bold = true }  # 8.96:1
+select_alt  = { fg = "#fda47f", bg = "#0f1c1e" }               # 8.96:1
+
+# Unset mode
+unset_main = { fg = "#0f1c1e", bg = "#e85c51", bold = true }   # 5.05:1
+unset_alt  = { fg = "#eb746b", bg = "#0f1c1e" }                # 6.01:1
+
+# ── Status bar permissions ────────────────────────────────────────────────
+#
+# Defaults colour each class of bit separately (type green, read yellow, write
+# red, exec cyan, separators darkgray), which reads as a colour-coded bitmap.
+# All one colour instead, so it scans as a single field.
+#
+# #e6eaea is terafox's fg1 -- its default text colour, matching nvim, rather
+# than pure #ffffff.
+
+[status]
+perm_sep   = { fg = "#e6eaea" }
+perm_type  = { fg = "#e6eaea" }
+perm_read  = { fg = "#e6eaea" }
+perm_write = { fg = "#e6eaea" }
+perm_exec  = { fg = "#e6eaea" }
+
+# ── Filename colours ─────────────────────────────────────────────────────
+#
+# The preset colours filenames by mime: images yellow, audio/video magenta,
+# archives red, PDFs cyan. That's why two .dmg files showed different colours --
+# .key and .xlsx are ZIP containers, so they matched the archive rule while a
+# plain .dmg matched nothing and fell through to the default fg.
+#
+# Replaced with a catch-all so every file is that same default fg.
+#
+# Rules are first-match, so the specific ones must precede the catch-all:
+#
+#   - orphan and dummy keep a red background. They're broken-state markers, not
+#     file-type decoration, and silently hiding them is worse than a stray
+#     colour.
+#   - directories stay blue. With icons off (below) and every name the same
+#     colour, blue is the only thing left distinguishing a directory from a
+#     file. Change the "*/" rule to #e6eaea if you'd rather they match too.
+
+[filetype]
+rules = [
+	{ url = "*", is = "orphan", bg = "red" },
+	{ url = "*", is = "dummy", bg = "red" },
+	{ url = "*/", is = "dummy", bg = "red" },
+	{ url = "*/", fg = "blue" },
+	{ url = "*", fg = "#e6eaea" },
+]
+
+# ── No file icons ────────────────────────────────────────────────────────
+#
+# Every icon comes from one of these five lists. Emptying all five removes them
+# -- including the `conds` fallbacks, which is what drew the generic document
+# glyph on files the other lists didn't match.
+
+[icon]
+globs = []
+dirs  = []
+files = []
+exts  = []
+conds = []
+
+# ── Background ───────────────────────────────────────────────────────────
+#
+# The preview pane showed the *terminal* background, not nvim's. Those differ:
+# ghostty/config sets background = #151C23, while terafox paints Normal as
+# #152528. Close enough to look like a mistake rather than a choice.
+#
+# This paints yazi's own surface with terafox's bg1 so the preview matches an
+# nvim buffer. It applies to all of yazi, not just the preview -- there's no
+# preview-specific background key.
+#
+# The deeper fix is setting Ghostty's background to #152528, which would also
+# retire the WinSeparator workaround in init.lua -- that seam exists precisely
+# because the terminal background and the colorscheme disagree. That's a change
+# affecting every terminal app though, so it isn't done here.
+
+[app]
+overall = { bg = "#152528" }
+
+# ── Hover indicator ──────────────────────────────────────────────────────
+#
+# preview was { underline = true }, applied to the hovered entry inside the
+# preview pane. Because that span is padded to the pane width it drew as a
+# horizontal rule across the top right rather than an underline under a word.
+# {} for no styling.
+#
+# padding uses the semicircle caps, U+E0B6 opening and U+E0B4 closing -- yazi's
+# default. The trapezoid pair was tried and looked wrong, so this stayed. There is
+# no radius parameter; each cap is a single glyph, so a gentler curve means a
+# different glyph. Alternatives, all in Powerline Extra Symbols and all present
+# in the Symbols Nerd Font that Ghostty embeds. Written as \uXXXX escapes so the
+# glyphs survive editing -- they are invisible in most editors. Swap the pair:
+#
+#   semicircle (current)   U+E0B6 / U+E0B4    fullest curve, yazi default
+#   trapezoid              U+E0D2 / U+E0D4    tried -- rendered wrong, rejected
+#   triangle               U+E0B2 / U+E0B0    pointed, no curve
+#   slant                  U+E0BC / U+E0BA    diagonal cut
+#
+# parent and current keep `reversed`, which is what highlights the row itself.
+
+[indicator]
+parent  = { reversed = true }
+current = { reversed = true }
+preview = {}
+padding = { open = "\ue0b6", close = "\ue0b4" }

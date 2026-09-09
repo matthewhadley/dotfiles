@@ -80,3 +80,27 @@ nv() {
     nvim -- "$@"
   fi
 }
+
+# yazi. q and Q both return you to where you started; only pressing Enter on a
+# directory moves this shell, via the enter-or-open plugin in ~/.config/yazi.
+#
+# Deliberately not yazi's --cwd-file: that needs yazi to cd into the directory
+# first, and the cd repaints the target for one frame before quit lands, which
+# reads as a flash. The plugin writes the path here instead, so yazi never
+# navigates. It also means a plain quit writes nothing, so q needs no rebinding.
+#
+# read -d '' rather than $(cat) because the path may end in whitespace and
+# command substitution would strip it.
+#
+# Files open in nvim via VISUAL from 00.env.zsh.
+y() {
+  local tmp target
+  tmp="$(mktemp -t yazi-cd.XXXXXX)" || return 1
+
+  YAZI_CD_TARGET="$tmp" yazi "$@"
+
+  IFS= read -r -d '' target < "$tmp"
+  [ -n "$target" ] && [ -d "$target" ] && [ "$target" != "$PWD" ] && builtin cd -- "$target"
+
+  rm -f -- "$tmp"
+}

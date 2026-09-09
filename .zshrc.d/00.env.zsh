@@ -10,8 +10,11 @@ TTY_NUM=$(tty|cut -c11-)
 # Prevent tar include "._" file resource forks
 export COPYFILE_DISABLE=true
 
-# Use vim
+# Editor. EDITOR stays vim as the fallback; VISUAL is the variable most tools
+# check first, so nvim wins wherever a tool consults both -- yazi, and git, which
+# has no core.editor set. Typing `vim` or `vi` still gets vim.
 export EDITOR=vim
+export VISUAL=nvim
 
 # Path
 function pathadd {

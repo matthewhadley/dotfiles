@@ -1,0 +1,16 @@
+# Yazi keybindings. Only overrides; everything else comes from yazi's preset.
+
+# Enter on a directory records it and quits, landing the shell there. On anything
+# else it's the normal open. See plugins/enter-or-open.yazi/main.lua -- the
+# condition on directory-ness is why this is a plugin and not a plain binding.
+#
+# Note the preset does not use Enter to navigate into directories: l and <Right>
+# are bound to `enter`, so rebinding Enter costs no navigation.
+#
+# q needs no override: y() doesn't pass --cwd-file, so a plain `quit` writes
+# nothing and leaves the calling shell where it started. Only the plugin above
+# ever records a path.
+[[mgr.prepend_keymap]]
+on = "<Enter>"
+run = "plugin enter-or-open"
+desc = "Directory: cd there and quit; otherwise open"

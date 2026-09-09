@@ -1,0 +1,25 @@
+# Yazi behaviour overrides. Colours live in theme.toml.
+
+[mgr]
+# Pane widths as parent:current:preview.
+ratio = [ 2, 4, 5 ]
+sort_dir_first = true
+sort_by = "natural"
+
+[preview]
+# Defaults are 600x900, which on a Retina display renders image and PDF
+# previews at roughly a third of the available pane -- max_width binds first: a
+# letter-size page at 600 wide comes out 776 tall, under the height cap.
+#
+# These are pixel dimensions of the rasterised preview, not the pane size. Set
+# them near the pane's actual pixel width; larger just burns CPU and cache for
+# detail that gets scaled back down.
+max_width  = 1600
+max_height = 2400
+
+# 75 is visibly soft on text-heavy pages like a PDF of a table.
+image_quality = 90
+
+# triangle is fast but blurry when downscaling a full page to pane width.
+# lanczos3 costs more per preview and is sharper.
+image_filter = "lanczos3"
