@@ -1,11 +1,11 @@
 
-# Nerd Font variant, for the private-use glyphs neo-tree, lualine, bufferline,
-# which-key and obsidian.nvim draw. Ghostty bundles no fonts, so this comes
-# from `brew install --cask font-jetbrains-mono-nerd-font` -- see ~/Brewfile.
-# Named exactly as `ghostty +list-fonts` reports it. Setting it explicitly
-# rather than leaving Ghostty on its default and relying on CoreText fallback
-# to find the glyphs, which works but is not something this config controls.
-font-family = "JetBrainsMono Nerd Font Mono"
+# No font-family. Ghostty's built-in default is JetBrains Mono, embedded in the
+# binary, and it embeds Symbols Nerd Font 3.4.0 alongside it as a fallback --
+# so Nerd Font glyphs render with nothing installed. Verified with
+# `ghostty +show-face --cp=0xF09B`, which reports "Symbols Nerd Font".
+#
+# Neither embedded font appears in `ghostty +list-fonts` or anywhere on disk,
+# which is why this looked for a while like the machine had no Nerd Font at all.
 
 keybind = cmd+v=paste_from_clipboard
 

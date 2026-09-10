@@ -207,17 +207,10 @@ vim.pack.add({
   "https://github.com/nvim-lua/plenary.nvim",
   "https://github.com/MunifTanjim/nui.nvim",
   "https://github.com/nvim-neo-tree/neo-tree.nvim",
-  -- Filetype and folder glyphs, from the Nerd Font private use area. Installed
-  -- here because neo-tree is the first thing to want it, but lualine,
-  -- bufferline and which-key all pick it up too -- each pcall-requires it, so
-  -- one install serves all four. Needs JetBrainsMono Nerd Font, which
-  -- ~/.config/ghostty/config selects; see the Brewfile for how it gets there.
-  "https://github.com/nvim-tree/nvim-web-devicons",
 })
 
--- Stock defaults apart from arrow keys for expand/collapse. The ASCII folder
--- and git symbols that used to be here are gone: they existed only because no
--- Nerd Font was installed, and the stock glyphs now render.
+-- Stock defaults apart from arrow keys for expand/collapse and the icon
+-- component below, which is blanked.
 require("neo-tree").setup({
   -- The defaults plus a custom source in lua/neotree_dotfiles.lua, which
   -- renders the bare dotfiles repo's tracked files as a tree. neo-tree
@@ -225,6 +218,37 @@ require("neo-tree").setup({
   -- runtimepath works. Listing the defaults is required -- naming sources at
   -- all replaces the list rather than adding to it.
   sources = { "filesystem", "buffers", "git_status", "neotree_dotfiles" },
+
+  -- No filetype or folder glyphs. `provider` is the hook that reaches for
+  -- nvim-web-devicons, so overriding it with a no-op stops the lookup rather
+  -- than letting devicons answer and then blanking the result. The folder_*
+  -- strings and `default` cover the paths that never consult the provider,
+  -- and padding = 0 closes the column the glyph used to occupy.
+  --
+  -- git_status and diagnostic symbols carry information rather than
+  -- decoration, so they stay -- but as the letters they stand for. neo-tree's
+  -- defaults for these are Nerd Font glyphs, which is what puts a column of
+  -- boxes down the right-hand edge of the tree.
+  default_component_configs = {
+    icon = {
+      folder_closed = "",
+      folder_open = "",
+      folder_empty = "",
+      default = "",
+      padding = 0,
+      provider = function(icon)
+        icon.text = ""
+        icon.highlight = nil
+      end,
+    },
+    git_status = {
+      symbols = {
+        added = "A", modified = "M", deleted = "D", renamed = "R",
+        untracked = "?", ignored = "", unstaged = "U", staged = "S", conflict = "C",
+      },
+    },
+  },
+
   close_if_last_window = true,   -- don't leave a lone tree holding nvim open
   popup_border_style = "single", -- box-drawing, drawn by Ghostty itself
   enable_git_status = true,
@@ -614,8 +638,8 @@ vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 -- history. It keeps its own store under stdpath("data"); older guides pair it
 -- with kkharji/sqlite.lua, which 1.0 dropped. It requires nvim 0.11.7+ and
 -- refuses to load below that. fd and ripgrep make its workspace listing much
--- faster and are already on PATH; nvim-web-devicons is optional and is
--- installed with neo-tree, so its glyphs show up in these pickers too.
+-- faster and are already on PATH. Devicons glyphs are switched off in
+-- `defaults` below, so results are plain paths.
 vim.pack.add({
   "https://github.com/nvim-telescope/telescope.nvim",
   "https://github.com/nvim-telescope/telescope-ui-select.nvim",
@@ -640,6 +664,13 @@ require("telescope").setup({
     -- these lists are short and have nothing worth previewing, so the full
     -- layout is mostly empty space. get_cursor() is the other reasonable
     -- choice -- it opens at the cursor, which suits code actions, but it is
+  -- Note that `disable_devicons` is NOT a valid `defaults` key -- it appears
+  -- nowhere in telescope's config schema and is only ever read from a picker's
+  -- own opts, so setting it here silently does nothing. What actually keeps
+  -- glyphs out of every picker is nvim-web-devicons not being installed:
+  -- utils.transform_devicons pcall-requires it and returns the plain display
+  -- when it is missing.
+  defaults = {},
     -- cramped for the longer prompt list.
     ["ui-select"] = { require("telescope.themes").get_dropdown({}) },
   },
@@ -647,6 +678,11 @@ require("telescope").setup({
 
 -- Must come after setup(): load_extension reads the extensions table above.
 require("telescope").load_extension("ui-select")
+    -- frecency does not read telescope's `defaults`. It keeps its own option
+    -- of the same name, defaulting to false, and its entry_maker consults that
+    -- -- so <leader>fF kept drawing filetype glyphs while every other picker
+    -- had them off.
+    frecency = { disable_devicons = true },
 -- frecency takes no config here; the defaults are the documented setup.
 require("telescope").load_extension("frecency")
 
@@ -823,9 +859,8 @@ vim.keymap.set("n", "<leader>fc", function()
 end, { desc = "Telescope: changed files, newest first" })
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
--- Picks up nvim-web-devicons (installed with neo-tree) for the filetype glyph.
--- The branch icon and powerline separators are drawn by Ghostty itself, not by
--- devicons, so they worked even before the Nerd Font was installed.
+-- Icons are off (see icons_enabled below). The powerline separators are drawn
+-- by Ghostty itself, not by devicons, so they are unaffected.
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" })
 
 require("lualine").setup({
@@ -837,6 +872,10 @@ require("lualine").setup({
       statusline = { "neo-tree", "toggleterm" },
     },
   },
+    -- No devicons glyphs. The `filetype` component below falls back to the
+    -- filetype as plain text ("markdown"), which is the point -- the name is
+    -- what was wanted, the glyph was not.
+    icons_enabled = false,
   sections = {
     lualine_a = { "mode" },
     lualine_b = { "branch", "diff" },   -- both read gitsigns' status dict
@@ -864,7 +903,7 @@ require("lualine").setup({
         end,
         color = "Special",
       },
-      -- Filetype glyph from devicons alongside the name.
+      -- Filetype as plain text; icons_enabled = false above drops the glyph.
       { "filetype" },
     },
     lualine_y = { "progress" },
@@ -935,8 +974,8 @@ bufferline.setup({
     -- shows which is selected.
     indicator = { style = "none" },
     numbers = "none",
-    -- Filetype glyphs from devicons, installed with neo-tree.
-    show_buffer_icons = true,
+    -- No devicons filetype glyphs on the tabs; the name alone identifies them.
+    show_buffer_icons = false,
     -- A close button on the right edge of each tab. bufferline makes the icon
     -- its own clickable region and runs close_command with the buffer number,
     -- so this needs no keymap -- but it does need `mouse` set, which line 20
@@ -1638,9 +1677,8 @@ end, { desc = "Remove blank lines at end of file" })
 vim.pack.add({ "https://github.com/folke/which-key.nvim" })
 
 require("which-key").setup({
-  -- Per-mapping icons, resolved through nvim-web-devicons (installed with
-  -- neo-tree). They were off while this machine had no Nerd Font.
-  icons = { mappings = true },
+  -- No per-mapping glyphs; the popup is a list of keys and descriptions.
+  icons = { mappings = false },
 })
 
 -- Name the prefix groups; without this the popup just shows "+prefix".
