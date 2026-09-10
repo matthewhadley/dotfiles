@@ -74,9 +74,9 @@ pane_borders = false
 pane_scrollbars = false
 pane_gaps = true
 tab_bar_position = "top"
-
-
 status_indicators = "dots"
+
 [theme]
 name = "gruvbox"
 auto_switch = false
+
