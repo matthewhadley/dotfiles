@@ -1,4 +1,12 @@
 
+# Nerd Font variant, for the private-use glyphs neo-tree, lualine, bufferline,
+# which-key and obsidian.nvim draw. Ghostty bundles no fonts, so this comes
+# from `brew install --cask font-jetbrains-mono-nerd-font` -- see ~/Brewfile.
+# Named exactly as `ghostty +list-fonts` reports it. Setting it explicitly
+# rather than leaving Ghostty on its default and relying on CoreText fallback
+# to find the glyphs, which works but is not something this config controls.
+font-family = "JetBrainsMono Nerd Font Mono"
+
 keybind = cmd+v=paste_from_clipboard
 
 # Herdr forwarding shortcuts. Ghostty uses "super" for the macOS Command key.

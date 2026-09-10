@@ -207,11 +207,17 @@ vim.pack.add({
   "https://github.com/nvim-lua/plenary.nvim",
   "https://github.com/MunifTanjim/nui.nvim",
   "https://github.com/nvim-neo-tree/neo-tree.nvim",
+  -- Filetype and folder glyphs, from the Nerd Font private use area. Installed
+  -- here because neo-tree is the first thing to want it, but lualine,
+  -- bufferline and which-key all pick it up too -- each pcall-requires it, so
+  -- one install serves all four. Needs JetBrainsMono Nerd Font, which
+  -- ~/.config/ghostty/config selects; see the Brewfile for how it gets there.
+  "https://github.com/nvim-tree/nvim-web-devicons",
 })
 
--- Stock defaults apart from two things: ASCII folder symbols (no Nerd Font on
--- this machine, so the default glyphs render as blanks/boxes) and arrow keys
--- for expand/collapse.
+-- Stock defaults apart from arrow keys for expand/collapse. The ASCII folder
+-- and git symbols that used to be here are gone: they existed only because no
+-- Nerd Font was installed, and the stock glyphs now render.
 require("neo-tree").setup({
   -- The defaults plus a custom source in lua/neotree_dotfiles.lua, which
   -- renders the bare dotfiles repo's tracked files as a tree. neo-tree
@@ -220,33 +226,9 @@ require("neo-tree").setup({
   -- all replaces the list rather than adding to it.
   sources = { "filesystem", "buffers", "git_status", "neotree_dotfiles" },
   close_if_last_window = true,   -- don't leave a lone tree holding nvim open
-  popup_border_style = "single", -- "rounded" needs glyphs some terminals lack
+  popup_border_style = "single", -- box-drawing, drawn by Ghostty itself
   enable_git_status = true,
   enable_diagnostics = true,
-
-  default_component_configs = {
-    -- ASCII throughout: no Nerd Font on this machine, so glyphs would be tofu.
-    indent = {
-      with_expanders = false,   -- folder icon alone shows state; avoids "+ + name"
-    },
-    icon = {
-      folder_closed = "+", folder_open = "-", folder_empty = " ",
-      default = " ", highlight = "NeoTreeFileIcon",
-      -- Passthrough provider. neo-tree's default provider pulls filetype
-      -- glyphs from nvim-web-devicons. That plugin is no longer installed, but
-      -- this keeps the plain icons above if anything ever reinstalls it as a
-      -- transitive dependency.
-      provider = function(icon)
-        return icon
-      end,
-    },
-    git_status = {
-      symbols = {
-        added = "A", modified = "M", deleted = "D", renamed = "R",
-        untracked = "?", ignored = "", unstaged = "U", staged = "S", conflict = "C",
-      },
-    },
-  },
 
   window = {
     width = 32,
@@ -632,8 +614,8 @@ vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 -- history. It keeps its own store under stdpath("data"); older guides pair it
 -- with kkharji/sqlite.lua, which 1.0 dropped. It requires nvim 0.11.7+ and
 -- refuses to load below that. fd and ripgrep make its workspace listing much
--- faster and are already on PATH; nvim-web-devicons is optional and
--- deliberately absent here, as everywhere else in this config.
+-- faster and are already on PATH; nvim-web-devicons is optional and is
+-- installed with neo-tree, so its glyphs show up in these pickers too.
 vim.pack.add({
   "https://github.com/nvim-telescope/telescope.nvim",
   "https://github.com/nvim-telescope/telescope-ui-select.nvim",
@@ -841,10 +823,9 @@ vim.keymap.set("n", "<leader>fc", function()
 end, { desc = "Telescope: changed files, newest first" })
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
--- No nvim-web-devicons: it was only ever pulled in for filetype glyphs, which
--- are disabled in both lualine and neo-tree. Both plugins pcall-require it, so
--- its absence is handled cleanly. The branch icon and powerline separators
--- below come from Ghostty's built-in font, not from devicons.
+-- Picks up nvim-web-devicons (installed with neo-tree) for the filetype glyph.
+-- The branch icon and powerline separators are drawn by Ghostty itself, not by
+-- devicons, so they worked even before the Nerd Font was installed.
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" })
 
 require("lualine").setup({
@@ -883,9 +864,8 @@ require("lualine").setup({
         end,
         color = "Special",
       },
-      -- icons_enabled = false only on this component: kills the devicons
-      -- filetype glyph while keeping the branch icon and powerline separators.
-      { "filetype", icons_enabled = false },
+      -- Filetype glyph from devicons alongside the name.
+      { "filetype" },
     },
     lualine_y = { "progress" },
     lualine_z = { "location" },
@@ -955,8 +935,8 @@ bufferline.setup({
     -- shows which is selected.
     indicator = { style = "none" },
     numbers = "none",
-    -- nvim-web-devicons is not installed, so no filetype glyphs.
-    show_buffer_icons = false,
+    -- Filetype glyphs from devicons, installed with neo-tree.
+    show_buffer_icons = true,
     -- A close button on the right edge of each tab. bufferline makes the icon
     -- its own clickable region and runs close_command with the buffer number,
     -- so this needs no keymap -- but it does need `mouse` set, which line 20
@@ -1658,9 +1638,9 @@ end, { desc = "Remove blank lines at end of file" })
 vim.pack.add({ "https://github.com/folke/which-key.nvim" })
 
 require("which-key").setup({
-  -- No Nerd Font on this machine, so per-mapping icons would render as tofu.
-  -- The separator/group symbols it uses are plain Unicode and render fine.
-  icons = { mappings = false },
+  -- Per-mapping icons, resolved through nvim-web-devicons (installed with
+  -- neo-tree). They were off while this machine had no Nerd Font.
+  icons = { mappings = true },
 })
 
 -- Name the prefix groups; without this the popup just shows "+prefix".
@@ -1869,28 +1849,6 @@ if #obsidian_workspaces > 0 then
     -- Already installed and configured above, so pickers, tag lists and
     -- quick-switch all reuse it rather than pulling in a second finder.
     picker = { name = "telescope.nvim" },
-
-    ui = {
-      -- The defaults for these are Nerd Font glyphs, which would render as
-      -- tofu here -- no Nerd Font is installed and Ghostty bundles none, so
-      -- only its built-in Powerline and box-drawing rendering is available.
-      -- These replacements are plain Unicode. `bullets` is left alone; its
-      -- default is already an ordinary bullet.
-      --
-      -- Setting this prints a warn_once at startup saying ui.checkboxes no
-      -- longer controls checkbox *ordering* (that moved to `checkbox.order`,
-      -- left at its default). The chars and highlights below still apply --
-      -- the warning fires on the key being present at all, so there is no way
-      -- to change the glyphs without it.
-      checkboxes = {
-        [" "] = { char = "☐", hl_group = "ObsidianTodo" },
-        ["x"] = { char = "☑", hl_group = "ObsidianDone" },
-        ["~"] = { char = "☒", hl_group = "ObsidianTilde" },
-        ["!"] = { char = "!", hl_group = "ObsidianImportant" },
-        [">"] = { char = "→", hl_group = "ObsidianRightArrow" },
-      },
-      external_link_icon = { char = "↗", hl_group = "ObsidianExtLinkIcon" },
-    },
   })
 
   -- Its extmarks conceal the markdown syntax around links and checkboxes, and
