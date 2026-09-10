@@ -118,6 +118,19 @@ local function is_blank_line()
   return vim.api.nvim_get_current_line():match("^%s*$") ~= nil
 end
 
+-- These are global mappings, so they also fire in buffers that hold no text to
+-- comment -- neo-tree, the minimap, help, quickfix. vim._comment does not
+-- check first: it reports the empty 'commentstring' and then throws E5108
+-- "Buffer is not 'modifiable'" on the write. Swallow the keypress instead.
+--
+-- 'modifiable' is the test rather than 'commentstring' being empty, because
+-- treesitter can resolve a commentstring for the cursor position when the
+-- buffer-local one is unset -- so an empty value does not prove there is
+-- nothing to toggle, whereas a buffer you cannot write to does.
+local function can_comment()
+  return vim.bo.modifiable
+end
+
 for _, lhs in ipairs({ "<D-/>", "<C-/>", "<C-_>" }) do
   -- Fed back rather than mapped straight to "gcc" so the blank-line case can
   -- branch first. Mode "m" is the feedkeys equivalent of remap = true, needed
@@ -125,6 +138,10 @@ for _, lhs in ipairs({ "<D-/>", "<C-/>", "<C-_>" }) do
   -- keys would do nothing. A count means the range reaches past this line, so
   -- leave those to gcc.
   vim.keymap.set("n", lhs, function()
+    if not can_comment() then
+      return
+    end
+
     if vim.v.count == 0 and is_blank_line() then
       return comment_blank_line()
     end
@@ -133,9 +150,20 @@ for _, lhs in ipairs({ "<D-/>", "<C-/>", "<C-_>" }) do
   end, { desc = "Toggle comment" })
   -- `gcgv`, not just `gc`: the operator drops you into normal mode at the top
   -- of the range, so `gv` reselects the same area and the block stays
-  -- highlighted for toggling back and forth.
-  vim.keymap.set("x", lhs, "gcgv", { remap = true, desc = "Toggle comment, keep selection" })
+  -- highlighted for toggling back and forth. Fed back rather than mapped to
+  -- the string so this can be guarded too, matching the other two modes.
+  vim.keymap.set("x", lhs, function()
+    if not can_comment() then
+      return
+    end
+
+    vim.api.nvim_feedkeys("gcgv", "m", false)
+  end, { desc = "Toggle comment, keep selection" })
   vim.keymap.set("i", lhs, function()
+    if not can_comment() then
+      return
+    end
+
     if is_blank_line() then
       return comment_blank_line()
     end
