@@ -3,6 +3,10 @@ onboarding = false
 [keys]
 previous_tab = "prefix+p"
 next_tab = "prefix+n"
+# Reached via Cmd+Up/Cmd+Down, which Ghostty rewrites to these prefix
+# sequences; u/d are just free letters, not meant to be typed directly.
+previous_workspace = "prefix+u"
+next_workspace = "prefix+d"
 
 [[keys.command]]
 key = "super+p"

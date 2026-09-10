@@ -4,6 +4,10 @@ keybind = cmd+v=paste_from_clipboard
 # Herdr forwarding shortcuts. Ghostty uses "super" for the macOS Command key.
 keybind = super+arrow_left=text:\x02p
 keybind = super+arrow_right=text:\x02n
+# Workspace prev/next. Overrides Ghostty's own jump_to_prompt on these two,
+# which is no loss inside Herdr: Herdr owns the scrollback, not Ghostty.
+keybind = super+arrow_up=text:\x02u
+keybind = super+arrow_down=text:\x02d
 keybind = super+d=new_split:right
 keybind = super+shift+d=text:\x02v
 keybind = super+w=text:\x02x
