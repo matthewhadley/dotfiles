@@ -253,6 +253,11 @@ require("neo-tree").setup({
   popup_border_style = "single", -- box-drawing, drawn by Ghostty itself
   enable_git_status = true,
   enable_diagnostics = true,
+  -- Default is false, which sorts by byte value, so every capitalised name
+  -- lands above every lowercase one -- "Zoo.md" before "apple.md". Barely
+  -- noticeable in a code tree; obvious in a vault, where note names are prose
+  -- and the capitalisation is arbitrary.
+  sort_case_insensitive = true,
 
   window = {
     width = 32,
