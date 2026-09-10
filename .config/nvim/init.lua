@@ -832,6 +832,13 @@ for _, key in ipairs({ "<D-S-r>", "<F11>" }) do
     open_grug_project()
   end, { desc = "Find and replace in project" })
 end
+-- Everything changed against HEAD, most recently written first -- see
+-- lua/changed_files.lua for why mtime rather than :Telescope git_status's
+-- alphabetical order. required inside the callback so the module loads on
+-- first press rather than at startup.
+vim.keymap.set("n", "<leader>fc", function()
+  require("changed_files").pick()
+end, { desc = "Telescope: changed files, newest first" })
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
 -- No nvim-web-devicons: it was only ever pulled in for filetype glyphs, which
