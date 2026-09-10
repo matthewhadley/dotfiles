@@ -1669,6 +1669,7 @@ require("which-key").add({
   { "<leader>a", group = "AI / sidekick" },
   { "<leader>as", group = "summarise" },
   { "<leader>f", group = "find" },
+  { "<leader>o", group = "obsidian" },
 })
 
 -- ── AI: sidekick.nvim ────────────────────────────────────────────────────
@@ -1825,3 +1826,107 @@ vim.keymap.set({ "n", "x" }, "<leader>asx", sidekick_summarize("codex"),
 
 vim.keymap.set({ "n", "x" }, "<leader>ai", sidekick_ask,
   { desc = "Sidekick: ask about this file (saves first, adds diagnostics)" })
+
+-- ── Notes: obsidian.nvim ─────────────────────────────────────────────────
+-- Writing and navigating the Obsidian vaults in iCloud without leaving nvim:
+-- `[[` link completion, backlinks, vault-wide search through telescope, and
+-- rename that rewrites every link pointing at the note.
+--
+-- obsidian-nvim/obsidian.nvim, not epwalsh/obsidian.nvim. The latter is the
+-- original and is not archived, so it still turns up first in search results,
+-- but it went unmaintained -- this is the community fork that took over.
+--
+-- The vaults live in the corporate iCloud Drive container, so the paths only
+-- exist on a Mac signed in to that account. Building the workspace list from
+-- the directories that are actually present means this whole block is skipped
+-- elsewhere rather than erroring: setup() rejects an empty `workspaces`.
+local obsidian_vaults = vim.fn.expand("~/Library/Mobile Documents/com~apple~icloud~applecorporate/Documents")
+local obsidian_workspaces = {}
+
+for _, name in ipairs({ "Obsidian", "Reviews" }) do
+  local path = obsidian_vaults .. "/" .. name
+  if vim.fn.isdirectory(path) == 1 then
+    table.insert(obsidian_workspaces, { name = name:lower(), path = path })
+  end
+end
+
+if #obsidian_workspaces > 0 then
+  -- Pinned to 3.x. 4.0.0 removes `legacy_commands`, which is set below, and
+  -- the 3.17.0 notes move the refactoring subcommands to LSP code actions --
+  -- both would change the commands this section binds.
+  vim.pack.add({
+    { src = "https://github.com/obsidian-nvim/obsidian.nvim", version = vim.version.range("3") },
+  })
+
+  require("obsidian").setup({
+    workspaces = obsidian_workspaces,
+
+    -- The old one-command-per-action interface (:ObsidianSearch and friends),
+    -- superseded by `:Obsidian <subcommand>`. Off so only the new form exists
+    -- and 4.0.0 removing it is a no-op here.
+    legacy_commands = false,
+
+    -- Already installed and configured above, so pickers, tag lists and
+    -- quick-switch all reuse it rather than pulling in a second finder.
+    picker = { name = "telescope.nvim" },
+
+    ui = {
+      -- The defaults for these are Nerd Font glyphs, which would render as
+      -- tofu here -- no Nerd Font is installed and Ghostty bundles none, so
+      -- only its built-in Powerline and box-drawing rendering is available.
+      -- These replacements are plain Unicode. `bullets` is left alone; its
+      -- default is already an ordinary bullet.
+      --
+      -- Setting this prints a warn_once at startup saying ui.checkboxes no
+      -- longer controls checkbox *ordering* (that moved to `checkbox.order`,
+      -- left at its default). The chars and highlights below still apply --
+      -- the warning fires on the key being present at all, so there is no way
+      -- to change the glyphs without it.
+      checkboxes = {
+        [" "] = { char = "☐", hl_group = "ObsidianTodo" },
+        ["x"] = { char = "☑", hl_group = "ObsidianDone" },
+        ["~"] = { char = "☒", hl_group = "ObsidianTilde" },
+        ["!"] = { char = "!", hl_group = "ObsidianImportant" },
+        [">"] = { char = "→", hl_group = "ObsidianRightArrow" },
+      },
+      external_link_icon = { char = "↗", hl_group = "ObsidianExtLinkIcon" },
+    },
+  })
+
+  -- Its extmarks conceal the markdown syntax around links and checkboxes, and
+  -- conceal does nothing at the default conceallevel of 0 -- the plugin warns
+  -- on startup if it is left there. Window-local on markdown rather than
+  -- global: conceallevel applies to every filetype, and hiding syntax is only
+  -- wanted in notes.
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    desc = "Let obsidian.nvim's conceal-based rendering take effect",
+    callback = function()
+      vim.opt_local.conceallevel = 2
+    end,
+  })
+
+  -- Inside a vault note the plugin also binds three buffer-local keys of its
+  -- own: <CR> follows a link, toggles a checkbox or folds a heading depending
+  -- on what is under the cursor, and ]o / [o jump between links. Set
+  -- vim.g.obsidian_default_keymap = false to suppress them.
+  local function obsidian(subcommand)
+    return "<cmd>Obsidian " .. subcommand .. "<cr>"
+  end
+
+  vim.keymap.set("n", "<leader>oq", obsidian("quick_switch"), { desc = "Obsidian: quick switch note" })
+  vim.keymap.set("n", "<leader>os", obsidian("search"),       { desc = "Obsidian: grep in vault" })
+  vim.keymap.set("n", "<leader>ob", obsidian("backlinks"),    { desc = "Obsidian: backlinks to this note" })
+  vim.keymap.set("n", "<leader>og", obsidian("tags"),         { desc = "Obsidian: browse tags" })
+  vim.keymap.set("n", "<leader>oc", obsidian("toc"),          { desc = "Obsidian: table of contents" })
+  vim.keymap.set("n", "<leader>on", obsidian("new"),          { desc = "Obsidian: new note" })
+  vim.keymap.set("n", "<leader>ot", obsidian("today"),        { desc = "Obsidian: today's daily note" })
+  vim.keymap.set("n", "<leader>or", obsidian("rename"),       { desc = "Obsidian: rename note, rewriting links" })
+
+  -- Switches between the two vaults; with no argument it prompts.
+  vim.keymap.set("n", "<leader>ow", obsidian("workspace"), { desc = "Obsidian: switch vault" })
+
+  -- Hands the note to the Obsidian app, for the things that need it -- graph
+  -- view, plugins, anything this plugin deliberately does not reimplement.
+  vim.keymap.set("n", "<leader>oo", obsidian("open"), { desc = "Obsidian: open note in Obsidian.app" })
+end
