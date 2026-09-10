@@ -61,6 +61,18 @@ type = "shell"
 command = "herdr plugin action invoke annotate.last && sleep 0.15 && herdr pane focus --direction right"
 description = "review the agent's last reply, focused"
 
+[[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "forkr.tab"
+description = "fork agent conversation into new tab"
+
+[[keys.command]]
+key = "prefix+shift+f"
+type = "plugin_action"
+command = "forkr.split"
+description = "fork agent conversation into split pane"
+
 [ui.toast]
 delivery = "herdr"
 

@@ -19,6 +19,7 @@ command -v jq    >/dev/null || { echo "jq not on PATH" >&2; exit 1; }
 plugins=(
   vjeantet/herdr-palette   # command palette: built-ins + plugin actions (super+p)
   nicosuave/memex          # session desk: search and resume past agent sessions
+  t4t5/herdr-forkr         # fork the focused agent's conversation into a new pane
 )
 
 for plugin in "${plugins[@]}"; do
