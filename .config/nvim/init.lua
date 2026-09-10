@@ -659,6 +659,13 @@ require("telescope").setup({
   -- git_files and friends get --git-dir/--work-tree spelled out. Same shape
   -- as gitsigns' `worktrees` above, and only consulted when ordinary
   -- discovery fails, so it is inert inside a normal project.
+  --
+  -- Note that `disable_devicons` is NOT a valid `defaults` key -- it appears
+  -- nowhere in telescope's config schema and is only ever read from a picker's
+  -- own opts, so setting it here silently does nothing. What actually keeps
+  -- glyphs out of every picker is nvim-web-devicons not being installed:
+  -- utils.transform_devicons pcall-requires it and returns the plain display
+  -- when it is missing.
   defaults = {
     git_worktrees = {
       { toplevel = vim.env.HOME, gitdir = vim.env.HOME .. "/.dotfiles" },
@@ -669,25 +676,18 @@ require("telescope").setup({
     -- these lists are short and have nothing worth previewing, so the full
     -- layout is mostly empty space. get_cursor() is the other reasonable
     -- choice -- it opens at the cursor, which suits code actions, but it is
-  -- Note that `disable_devicons` is NOT a valid `defaults` key -- it appears
-  -- nowhere in telescope's config schema and is only ever read from a picker's
-  -- own opts, so setting it here silently does nothing. What actually keeps
-  -- glyphs out of every picker is nvim-web-devicons not being installed:
-  -- utils.transform_devicons pcall-requires it and returns the plain display
-  -- when it is missing.
-  defaults = {},
     -- cramped for the longer prompt list.
     ["ui-select"] = { require("telescope.themes").get_dropdown({}) },
-  },
-})
-
--- Must come after setup(): load_extension reads the extensions table above.
-require("telescope").load_extension("ui-select")
     -- frecency does not read telescope's `defaults`. It keeps its own option
     -- of the same name, defaulting to false, and its entry_maker consults that
     -- -- so <leader>fF kept drawing filetype glyphs while every other picker
     -- had them off.
     frecency = { disable_devicons = true },
+  },
+})
+
+-- Must come after setup(): load_extension reads the extensions table above.
+require("telescope").load_extension("ui-select")
 -- frecency takes no config here; the defaults are the documented setup.
 require("telescope").load_extension("frecency")
 
@@ -872,15 +872,15 @@ require("lualine").setup({
   options = {
     -- nightfox ships a matching lualine theme, so "auto" resolves to terafox.
     theme = "auto",
+    -- No devicons glyphs. The `filetype` component below falls back to the
+    -- filetype as plain text ("markdown"), which is the point -- the name is
+    -- what was wanted, the glyph was not.
+    icons_enabled = false,
     globalstatus = true,   -- one bar for the whole editor, not one per window
     disabled_filetypes = {
       statusline = { "neo-tree", "toggleterm" },
     },
   },
-    -- No devicons glyphs. The `filetype` component below falls back to the
-    -- filetype as plain text ("markdown"), which is the point -- the name is
-    -- what was wanted, the glyph was not.
-    icons_enabled = false,
   sections = {
     lualine_a = { "mode" },
     lualine_b = { "branch", "diff" },   -- both read gitsigns' status dict
@@ -1892,6 +1892,20 @@ if #obsidian_workspaces > 0 then
     -- Already installed and configured above, so pickers, tag lists and
     -- quick-switch all reuse it rather than pulling in a second finder.
     picker = { name = "telescope.nvim" },
+
+    -- The default is `zettel_id`, which ignores what you type and names the
+    -- file after os.time() plus four random letters -- the title survives only
+    -- as a frontmatter alias. `title_id` uses the title instead: lowercased,
+    -- punctuation stripped, spaces to hyphens, so "Rome July" becomes
+    -- rome-july.md. It is called with the target directory as well, and walks
+    -- rome-july-2, -3 and so on when the name is taken.
+    note_id_func = require("obsidian.builtin").title_id,
+
+    -- Off. The default writes an id/aliases/tags block into every new note,
+    -- and nothing already in these vaults has frontmatter -- they are plain
+    -- markdown. Inline #tags still work and are still what `:Obsidian tags`
+    -- reads; this only stops the YAML header being added.
+    frontmatter = { enabled = false },
   })
 
   -- Its extmarks conceal the markdown syntax around links and checkboxes, and
@@ -1904,6 +1918,26 @@ if #obsidian_workspaces > 0 then
     desc = "Let obsidian.nvim's conceal-based rendering take effect",
     callback = function()
       vim.opt_local.conceallevel = 2
+    end,
+  })
+
+  -- `[[` link completion, `#` tags and `[^` footnotes are served by an
+  -- in-process LSP the plugin starts in vault notes, named obsidian-ls. It
+  -- advertises those as trigger characters, but something has to be listening:
+  -- with no completion plugin in this config -- no nvim-cmp, no blink -- the
+  -- triggers go nowhere and `[[` does nothing. vim.lsp.completion is Neovim's
+  -- own client-side completion, so this needs no plugin.
+  --
+  -- Deliberately scoped to obsidian-ls by name rather than every client that
+  -- supports completion: switching autotrigger on for ts_ls, yamlls, bashls and
+  -- eslint would change how the editor behaves in every other filetype.
+  vim.api.nvim_create_autocmd("LspAttach", {
+    desc = "Autocomplete [[wiki links]] and #tags from obsidian-ls",
+    callback = function(ev)
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and client.name == "obsidian-ls" then
+        vim.lsp.completion.enable(true, ev.data.client_id, ev.buf, { autotrigger = true })
+      end
     end,
   })
 
