@@ -192,6 +192,24 @@ _dotfiles_hunk() {
   GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" hunk "${args[@]}"
 }
 
+_dotfiles_lazygit() {
+  # lazygit refuses a bare repo outright -- "Lazygit does not support bare
+  # repos" -- but its own error text names the way through: pass --git-dir and
+  # --work-tree, the same pair the git fallback at the bottom of this file
+  # uses.
+  #
+  # Deliberately the flags rather than the GIT_DIR/GIT_WORK_TREE pair
+  # _dotfiles_hunk sets. Both reach git the same way in the end, but the flags
+  # are what lazygit documents for this case, and they stay scoped to lazygit
+  # rather than being inherited by every editor and custom command it spawns.
+  #
+  # Untracked files are the same hazard here that they are for hunk -- $HOME
+  # holds half a million of them. Nothing has to be spliced in though: lazygit
+  # reads status.showUntrackedFiles and forwards it as --untracked-files, and
+  # ~/.dotfiles/config sets it to `no`, so the Files panel stays tracked-only.
+  lazygit --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
+}
+
 _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
@@ -202,6 +220,8 @@ dotfiles git bare repo management at ~/.dotfiles
   hunk           open the changes in Hunk; bare `hunk` is the working tree,
                  otherwise the args are a hunk command (`hunk --staged`,
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
+  lazygit        open the repo in lazygit, which needs the git-dir/work-tree
+                 pair spelled out -- it refuses a bare repo on its own
   logs           the `git logs` alias without the redundant " by <author>"
   scopes         list the commit scopes the hook allows; scan/add/rm/set
   help           this text
@@ -229,6 +249,10 @@ case "$1" in
   hunk)
     shift
     _dotfiles_hunk "$@"
+    ;;
+  lazygit)
+    shift
+    _dotfiles_lazygit "$@"
     ;;
   scopes)
     shift
