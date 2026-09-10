@@ -549,8 +549,32 @@ vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 -- plenary.nvim is a hard dependency but is already installed above as a
 -- neo-tree dep, so it isn't repeated here. Uses ripgrep for live_grep and fd
 -- for find_files; both are on PATH.
-vim.pack.add({ "https://github.com/nvim-telescope/telescope.nvim" })
-require("telescope").setup()
+--
+-- telescope-ui-select overrides vim.ui.select, which is otherwise
+-- vim.fn.inputlist() -- a numbered list printed into the message area that you
+-- answer by typing a digit, with no filtering and a hit-enter prompt once the
+-- list is long. Everything that asks you to pick from a list goes through it:
+-- <leader>ca (code actions, where eslint and ts_ls together routinely offer a
+-- dozen), <leader>ap (sidekick's prompts, 18 of them), :TermSelect, and
+-- mason's language filter. It does not touch vim.ui.input.
+vim.pack.add({
+  "https://github.com/nvim-telescope/telescope.nvim",
+  "https://github.com/nvim-telescope/telescope-ui-select.nvim",
+})
+
+require("telescope").setup({
+  extensions = {
+    -- The dropdown theme rather than telescope's default three-pane layout:
+    -- these lists are short and have nothing worth previewing, so the full
+    -- layout is mostly empty space. get_cursor() is the other reasonable
+    -- choice -- it opens at the cursor, which suits code actions, but it is
+    -- cramped for the longer prompt list.
+    ["ui-select"] = { require("telescope.themes").get_dropdown({}) },
+  },
+})
+
+-- Must come after setup(): load_extension reads the extensions table above.
+require("telescope").load_extension("ui-select")
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope: find files" })
