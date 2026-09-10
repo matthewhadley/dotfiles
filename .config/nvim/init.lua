@@ -55,6 +55,33 @@ for _, key in ipairs({ "<Del>", "<BS>" }) do
   vim.keymap.set("x", key, '"_d', { desc = "Delete the selection, keep the clipboard" })
 end
 
+-- The same problem, and the same fix, for the operators you reach for far more
+-- often. 'clipboard=unnamed' makes the unnamed register the system clipboard,
+-- so `x` on a character and `dd` on a line both overwrite whatever you last
+-- copied -- which is never what you meant by "delete this".
+--
+-- The tradeoff, taken deliberately: deleted text is *gone*, not cut, so `dd`
+-- followed by `p` pastes the clipboard rather than the line just removed.
+-- Vim's numbered registers do not rescue it either -- writing to "_ skips them
+-- as well. That is the same bargain every non-modal editor makes, and it is
+-- the one the <Del>/<BS> maps above already made for selections.
+--
+-- Two consequences worth knowing, both verified rather than assumed:
+--
+-- `ddp` -- the swap-this-line-with-the-next idiom -- stops working, and pastes
+-- whatever is on the clipboard instead. Use `:m+1` to move a line down and
+-- `:m-2` to move it up; neither touches a register at all.
+--
+-- Naming a register does NOT opt out. Typing `"add` sends `"a` and then the
+-- mapping's own `"_`, which wins -- the line goes to the black hole and `"ap`
+-- fails with E353. To cut deliberately, go through ex, which never sees the
+-- normal-mode mapping: `:.d a` then `"ap`. Yanking is unaffected, so `"ayy`
+-- also still works.
+for _, key in ipairs({ "x", "X", "d", "D", "c", "C", "s", "S" }) do
+  vim.keymap.set({ "n", "x" }, key, '"_' .. key,
+    { desc = "As " .. key .. ", but keep the clipboard" })
+end
+
 -- Window navigation: <C-h/j/k/l>. Plain Ctrl+letter is a single ASCII control
 -- byte, so it survives Ghostty -> Herdr -> nvim. Both Cmd+Shift+arrow and
 -- Ctrl+arrow were tried first and neither reaches nvim at all (verified with
