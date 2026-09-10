@@ -557,9 +557,19 @@ vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 -- <leader>ca (code actions, where eslint and ts_ls together routinely offer a
 -- dozen), <leader>ap (sidekick's prompts, 18 of them), :TermSelect, and
 -- mason's language filter. It does not touch vim.ui.input.
+--
+-- telescope-frecency ranks files by how often *and* how recently you have
+-- opened them, so the file you keep coming back to floats to the top --
+-- unlike find_files, which walks the directory and knows nothing about your
+-- history. It keeps its own store under stdpath("data"); older guides pair it
+-- with kkharji/sqlite.lua, which 1.0 dropped. It requires nvim 0.11.7+ and
+-- refuses to load below that. fd and ripgrep make its workspace listing much
+-- faster and are already on PATH; nvim-web-devicons is optional and
+-- deliberately absent here, as everywhere else in this config.
 vim.pack.add({
   "https://github.com/nvim-telescope/telescope.nvim",
   "https://github.com/nvim-telescope/telescope-ui-select.nvim",
+  "https://github.com/nvim-telescope/telescope-frecency.nvim",
 })
 
 require("telescope").setup({
@@ -575,6 +585,8 @@ require("telescope").setup({
 
 -- Must come after setup(): load_extension reads the extensions table above.
 require("telescope").load_extension("ui-select")
+-- frecency takes no config here; the defaults are the documented setup.
+require("telescope").load_extension("frecency")
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope: find files" })
@@ -582,6 +594,13 @@ vim.keymap.set("n", "<leader>fg", builtin.live_grep,  { desc = "Telescope: grep 
 vim.keymap.set("n", "<leader>fb", builtin.buffers,    { desc = "Telescope: open buffers" })
 vim.keymap.set("n", "<leader>fh", builtin.help_tags,  { desc = "Telescope: help tags" })
 vim.keymap.set("n", "<leader>fr", builtin.resume,     { desc = "Telescope: resume last picker" })
+
+-- A separate key rather than replacing <leader>ff: the two answer different
+-- questions -- "what is in this project" versus "what have I been working on".
+-- Unqualified, it ranks every file you have ever opened; `:Telescope frecency
+-- workspace=CWD` confines it to the current project, and typing `:CWD:` in the
+-- prompt does the same from inside the picker.
+vim.keymap.set("n", "<leader>fF", "<cmd>Telescope frecency<cr>", { desc = "Telescope: frecent files" })
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
 -- No nvim-web-devicons: it was only ever pulled in for filetype glyphs, which
