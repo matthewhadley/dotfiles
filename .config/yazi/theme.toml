@@ -24,10 +24,16 @@
 syntect_theme = "/Users/mhadley/.local/share/nvim/site/pack/core/opt/nightfox.nvim/extra/terafox/terafox.tmTheme"
 
 # The cwd header defaults to cyan, which read as green against this palette and
-# made the current directory the odd one out. "blue" is the same token the
+# made the current directory the odd one out. #5a93aa is the same literal the
 # directory rule below uses, so the two match by construction rather than by two
 # hex values that could drift apart.
-cwd = { fg = "blue" }
+#
+# A literal, not the named "blue" -- yazi's named colours resolve through the
+# terminal's ANSI palette, and Ghostty's tracked config sets ANSI blue to
+# #97bedc, a different colour than terafox's own blue.base (#5a93aa). Neovim's
+# NeoTreeDirectoryName uses blue.base directly (truecolor, no ANSI slot in the
+# middle), so matching it here means bypassing the terminal palette too.
+cwd = { fg = "#5a93aa" }
 
 # The vertical rules between the parent, current and preview panes. A single
 # space, not "" -- an empty string is treated as unset and falls back to the
@@ -102,16 +108,21 @@ perm_exec  = { fg = "#e6eaea" }
 #   - orphan and dummy keep a red background. They're broken-state markers, not
 #     file-type decoration, and silently hiding them is worse than a stray
 #     colour.
-#   - directories stay blue. With icons off (below) and every name the same
-#     colour, blue is the only thing left distinguishing a directory from a
-#     file. Change the "*/" rule to #e6eaea if you'd rather they match too.
+#   - directories stay blue -- specifically #5a93aa, terafox's blue.base, the
+#     same literal Neo-tree's NeoTreeDirectoryName uses in nvim. Named "blue"
+#     would resolve through the terminal's ANSI palette instead, and Ghostty's
+#     ANSI blue (#97bedc) doesn't match terafox's, which is what made this
+#     look like a different colour than nvim's directory listings. With icons
+#     off (below) and every name the same colour otherwise, blue is the only
+#     thing left distinguishing a directory from a file. Change the "*/" rule
+#     to #e6eaea if you'd rather they match too.
 
 [filetype]
 rules = [
 	{ url = "*", is = "orphan", bg = "red" },
 	{ url = "*", is = "dummy", bg = "red" },
 	{ url = "*/", is = "dummy", bg = "red" },
-	{ url = "*/", fg = "blue" },
+	{ url = "*/", fg = "#5a93aa" },
 	{ url = "*", fg = "#e6eaea" },
 ]
 
@@ -165,10 +176,15 @@ overall = { bg = "#152528" }
 #   triangle               U+E0B2 / U+E0B0    pointed, no curve
 #   slant                  U+E0BC / U+E0BA    diagonal cut
 #
-# parent and current keep `reversed`, which is what highlights the row itself.
+# parent and current highlight the row itself, with #254147 -- terafox's bg3,
+# what nvim's CursorLine (bg = spec.bg3) paints the cursor's line with, so a
+# hovered row in yazi reads the same as one in nvim. Was `reversed = true`,
+# which swaps fg/bg instead of painting a background: a much harsher,
+# higher-contrast bar than nvim ever shows, and a different mechanism
+# entirely from what it was meant to match.
 
 [indicator]
-parent  = { reversed = true }
-current = { reversed = true }
+parent  = { bg = "#254147" }
+current = { bg = "#254147" }
 preview = {}
 padding = { open = "\ue0b6", close = "\ue0b4" }
