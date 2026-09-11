@@ -30,6 +30,11 @@
 	prompt = false
 [mergetool]
 	prompt = false
+	# Otherwise every resolution leaves a <file>.orig beside the original.
+	# In the dotfiles repo those are invisible -- status.showUntrackedFiles is
+	# off there, so they would pile up under $HOME unnoticed rather than show
+	# in `dotfiles status`.
+	keepBackup = false
 [push]
 	followTags = true
 [filter "lfs"]
