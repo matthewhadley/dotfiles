@@ -1712,6 +1712,8 @@ vim.api.nvim_create_user_command("TrimLastLines", function()
   require("mini.trailspace").trim_last_lines()
 end, { desc = "Remove blank lines at end of file" })
 
+vim.api.nvim_create_user_command("Q", "qa", { desc = "Quit all (alias for :qa)" })
+
 -- ── which-key.nvim ───────────────────────────────────────────────────────
 -- Popup listing whatever keys can follow the prefix you just typed.
 vim.pack.add({ "https://github.com/folke/which-key.nvim" })
