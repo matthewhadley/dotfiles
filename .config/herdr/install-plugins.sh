@@ -17,9 +17,10 @@ command -v herdr >/dev/null || { echo "herdr not on PATH" >&2; exit 1; }
 command -v jq    >/dev/null || { echo "jq not on PATH" >&2; exit 1; }
 
 plugins=(
-  vjeantet/herdr-palette   # command palette: built-ins + plugin actions (super+p)
-  nicosuave/memex          # session desk: search and resume past agent sessions
-  t4t5/herdr-forkr         # fork the focused agent's conversation into a new pane
+  vjeantet/herdr-palette         # command palette: built-ins + plugin actions (super+p)
+  nicosuave/memex                # session desk: search and resume past agent sessions
+  t4t5/herdr-forkr               # fork the focused agent's conversation into a new pane
+  devashish2203/herdr-worktrunk  # git worktrees via the wt CLI, with create/teardown hooks
 )
 
 for plugin in "${plugins[@]}"; do
