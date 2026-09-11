@@ -1,0 +1,36 @@
+brew "ripgrep"
+brew "fd"
+brew "tree-sitter-cli"
+brew "diff-so-fancy"
+brew "git-lfs"
+brew "herdr"
+brew "yazi"
+
+# yazi shells out to ffmpeg for video file previews (thumbnail extraction).
+# Not a hard dependency -- yazi runs fine without it, previews just don't
+# render for video files.
+brew "ffmpeg"
+
+# Required by .config/herdr/install-plugins.sh, which already hard-fails
+# without it on PATH -- was relied on but never actually declared anywhere.
+brew "jq"
+
+# Referenced by .zshrc.d/00.env.zsh for FPATH, same story as jq above.
+brew "zsh-completions"
+
+brew "dnsmasq"
+brew "gh"
+brew "git"
+brew "git-delta"
+brew "gron"
+brew "htmlq"
+brew "hunk"
+brew "lazygit"
+brew "moreutils"
+brew "mosh"
+brew "neovim"
+brew "shellcheck"
+brew "tree"
+brew "watch"
+brew "yq"
+brew "worktrunk"
