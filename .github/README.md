@@ -26,3 +26,38 @@ when working on this repo.
 brew install ripgrep fd tree-sitter-cli diff-so-fancy git-lfs herdr
 ```
 
+### `ccat` / `nvcat`
+
+The `ccat` alias requires [nvcat](https://github.com/brianhuster/nvcat), which
+prints files using Neovim's syntax highlighting. Install its prebuilt macOS
+binary into `~/.local/bin` (already on the dotfiles shell's PATH):
+
+```sh
+(
+  set -eu
+  version=0.1.5
+  case "$(uname -m)" in
+    arm64) arch=arm64 ;;
+    x86_64) arch=amd64 ;;
+    *) echo "Unsupported macOS architecture" >&2; exit 1 ;;
+  esac
+  archive="nvcat_${version}_darwin_${arch}.tar.gz"
+  release="https://github.com/brianhuster/nvcat/releases/download/v${version}"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  cd "$tmp"
+  curl -fL "$release/$archive" -o "$archive"
+  curl -fL "$release/nvcat_${version}_checksums.txt" -o checksums.txt
+  awk -v file="$archive" '$2 == file' checksums.txt > checksum.txt
+  test -s checksum.txt
+  shasum -a 256 -c checksum.txt
+  tar -xzf "$archive" nvcat
+  mkdir -p "$HOME/.local/bin"
+  install -m 755 nvcat "$HOME/.local/bin/nvcat"
+)
+rehash
+ccat text.md
+```
+
+For other platforms, use the matching upstream release, or build with Go 1.22+:
+`GOBIN="$HOME/.local/bin" go install github.com/brianhuster/nvcat@v0.1.5`.
