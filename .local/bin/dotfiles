@@ -210,6 +210,33 @@ _dotfiles_lazygit() {
   lazygit --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
 }
 
+_dotfiles_brew() {
+  # `brew bundle` has no post-install hook, and formulae that need one-time
+  # setup after installing (catchup's `install-skill` commands, say) have
+  # nowhere else to declare that. brew-post-install.d/<formula> covers it
+  # generically: drop an executable there named after the formula -- the
+  # short name, not tap-qualified (`catchup`, not `wilbeibi/tap/catchup`) --
+  # and it runs automatically whenever that formula's line in `brew bundle
+  # install`'s own output says "Installing" or "Upgrading". "Using" (already
+  # current) is skipped, so re-running this doesn't redo one-time setup on
+  # every call -- only when the formula's contents actually just changed.
+  local brewfile="$HOME/.config/dotfiles/Brewfile"
+  local post_install_dir="$HOME/.config/dotfiles/brew-post-install.d"
+  local line name script
+
+  brew bundle install --file "$brewfile" | while IFS= read -r line; do
+    print -r -- "$line"
+    case "$line" in
+      "Installing "*|"Upgrading "*)
+        name="${${line#* }:t}"
+        script="$post_install_dir/$name"
+        [[ -x "$script" ]] && { print -r -- "==> post-install: $name"; "$script" }
+        ;;
+    esac
+  done
+  return "${pipestatus[1]}"
+}
+
 _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
@@ -217,6 +244,8 @@ dotfiles git bare repo management at ~/.dotfiles
   edit, nvim     open Neovim showing only the tracked files, as a tree
   list           every tracked file, its status, and the last commit to touch it
   check          fetch, then report ahead/behind and any local changes
+  brew           brew bundle install from .config/dotfiles/Brewfile, then run
+                 any matching .config/dotfiles/brew-post-install.d/<formula>
   hunk           open the changes in Hunk; bare `hunk` is the working tree,
                  otherwise the args are a hunk command (`hunk --staged`,
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
@@ -241,6 +270,10 @@ case "$1" in
   check)
     shift
     _dotfiles_check "$@"
+    ;;
+  brew)
+    shift
+    _dotfiles_brew "$@"
     ;;
   logs)
     shift

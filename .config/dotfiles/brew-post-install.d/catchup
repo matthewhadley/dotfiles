@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Registers catchup's context-handoff skill with each agent host it supports
+# on this machine. Re-running is safe: install-skill just rewrites the same
+# SKILL.md file.
+set -euo pipefail
+
+catchup install-skill claude
+catchup install-skill codex
