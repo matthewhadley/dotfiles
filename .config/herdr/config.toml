@@ -38,11 +38,28 @@ type = "plugin_action"
 command = "annotate.manage"
 description = "manage annotations"
 
+
+# The plannotator-tui split pane needs a focus event to trigger its first
+# proper redraw -- confirmed: it renders wonky until clicked, and a mouse
+# click's only relevant side effect is giving it focus. `type = "shell"`
+# chains the plugin action with a `herdr pane focus` call so one keypress
+# does what a keypress-then-click used to. `--direction right` matches
+# plannotator-tui's split_direction = "right" in its own config.toml; if
+# that ever changes, update the direction here too. The sleep is a guess at
+# how long pane creation takes to register before focus can target it --
+# unverified, since this needs a live TUI to test; shorten or lengthen it if
+# the focus fires too early/late.
 [[keys.command]]
-key = "prefix+o"
-type = "plugin_action"
-command = "annotate.open"
-description = "review documents in this folder"
+key = "prefix+shift+o"
+type = "shell"
+command = "herdr plugin action invoke annotate.last && sleep 0.15 && herdr pane focus --direction right"
+description = "review the agent's last reply, focused"
+
+[[keys.command]]
+key = "super+shift+a"
+type = "shell"
+command = "herdr plugin action invoke annotate.last && sleep 0.15 && herdr pane focus --direction right"
+description = "review the agent's last reply, focused"
 
 [ui.toast]
 delivery = "herdr"
