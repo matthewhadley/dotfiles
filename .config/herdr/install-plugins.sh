@@ -16,10 +16,20 @@ set -euo pipefail
 command -v herdr >/dev/null || { echo "herdr not on PATH" >&2; exit 1; }
 command -v jq    >/dev/null || { echo "jq not on PATH" >&2; exit 1; }
 
+# wilbeibi.catchup shells out to a `catchup` binary that herdr cannot install:
+# it ships as its own release, not as part of the plugin repo. The plugin still
+# installs and loads without it, so warn rather than exit — the rest of the list
+# is worth installing either way.
+command -v catchup >/dev/null || cat >&2 <<'EOF'
+warning: catchup not on PATH — every wilbeibi.catchup action will fail.
+  brew install wilbeibi/tap/catchup
+  or grab a release binary: https://github.com/wilbeibi/catchup/releases
+EOF
+
 plugins=(
   vjeantet/herdr-palette         # command palette: built-ins + plugin actions (super+p)
   nicosuave/memex                # session desk: search and resume past agent sessions
-  t4t5/herdr-forkr               # fork the focused agent's conversation into a new pane
+  wilbeibi/herdr-catchup         # summarize/fork/hand this pane's session to another agent
   devashish2203/herdr-worktrunk  # git worktrees via the wt CLI, with create/teardown hooks
 )
 
