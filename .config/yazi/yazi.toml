@@ -7,6 +7,9 @@ sort_dir_first = true
 sort_by = "natural"
 
 [preview]
+# Default is "no" -- long lines get cut at the pane edge instead of wrapping.
+wrap = "yes"
+
 # Defaults are 600x900, which on a Retina display renders image and PDF
 # previews at roughly a third of the available pane -- max_width binds first: a
 # letter-size page at 600 wide comes out 776 tall, under the height cap.
