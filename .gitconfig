@@ -43,14 +43,23 @@
     # Rebasing replays each commit separately, so one conflicting file can ask
     # the same question once per commit. Record each resolution and reapply it.
     enabled = true
-[diff]
-	tool = nvimdiff
 [merge]
-	tool = nvimdiff
+	# No merge.tool is set, deliberately. nvimdiff's four panes were more
+	# clutter than help, and every alternative tried was worse for this repo:
+	# lazygit's conflict panel cannot syntax-highlight (it renders the file
+	# itself rather than through a pager), and any nvim-based tool is crippled
+	# exactly when it is needed most -- nvim cannot load a config that does not
+	# parse, and ~/.config/nvim/init.lua is the file that conflicts most often.
+	#
+	# So conflicts are resolved by editing the markers directly, which is what
+	# conflictStyle below is for. `git mergetool` will prompt for a tool if it
+	# is ever wanted for a one-off.
+	#
 	# zdiff3 adds the common ancestor to the markers. Without it a conflict is
 	# just "mine" against "theirs", which is unreadable when one side moved or
 	# reindented a region and the other inserted into it -- the same lines show
-	# on both sides and nothing says who changed what.
+	# on both sides and nothing says who changed what. Note it means four
+	# marker lines per conflict, not three: <<<<<<< ||||||| ======= >>>>>>>.
 	conflictStyle = zdiff3
 [alias]
 	logs = log --pretty=format:'%C(yellow bold)%h%Creset - %s %C(white)%cr by %an%Creset'
