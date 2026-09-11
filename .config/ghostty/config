@@ -47,3 +47,6 @@ palette = 12=#b1d8f6
 palette = 13=#fbdaff
 palette = 14=#1ab2a8
 palette = 15=#ffffff
+
+# Neovim search/replace: forward Cmd+Shift+F as F12 through Herdr.
+keybind = super+shift+f=text:\x1b[24~

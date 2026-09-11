@@ -530,6 +530,9 @@ vim.cmd.colorscheme("terafox")
 -- On ColorScheme because :colorscheme resets every highlight group; setting it
 -- directly would be wiped the next time a scheme loads.
 local function theme_tweaks()
+  -- Used only by the source window while the Match dialog is open.
+  vim.api.nvim_set_hl(0, "MatchSearch", { fg = "#202020", bg = "#FFE066" })
+  vim.api.nvim_set_hl(0, "MatchCurrentSearch", { fg = "#202020", bg = "#FFF59D", bold = true })
   local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
   vim.api.nvim_set_hl(0, "WinSeparator", { fg = normal.bg, bg = normal.bg })
 
@@ -681,6 +684,89 @@ vim.keymap.set("n", "<leader>fr", builtin.resume,     { desc = "Telescope: resum
 -- workspace=CWD` confines it to the current project, and typing `:CWD:` in the
 -- prompt does the same from inside the picker.
 vim.keymap.set("n", "<leader>fF", "<cmd>Telescope frecency<cr>", { desc = "Telescope: frecent files" })
+
+-- ── Search and replace: match.nvim ──────────────────────────────────────
+vim.pack.add({ "https://github.com/ankushbhagats/match.nvim" })
+require("match").setup({ border = "rounded" })
+
+-- Temporarily remap search colours in the source window, preserving its
+-- original mappings and leaving other windows and global search groups alone.
+local function open_match(text)
+  local source_win = vim.api.nvim_get_current_win()
+  local original_winhl = vim.wo[source_win].winhl
+  local previous_windows = {}
+  for _, win in ipairs(vim.api.nvim_list_wins()) do previous_windows[win] = true end
+
+  vim.api.nvim_cmd({ cmd = "Match", args = text and { text } or {} }, {})
+
+  local dialog_windows = {}
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if not previous_windows[win] and vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "match" then
+      dialog_windows[win] = true
+    end
+  end
+  if not next(dialog_windows) then return end
+
+  local mappings = {}
+  for entry in original_winhl:gmatch("[^,]+") do
+    local group = entry:match("^([^:]+):")
+    if group ~= "Search" and group ~= "CurSearch" and group ~= "IncSearch" then
+      table.insert(mappings, entry)
+    end
+  end
+  vim.list_extend(mappings, {
+    "Search:MatchSearch", "CurSearch:MatchCurrentSearch", "IncSearch:MatchCurrentSearch",
+  })
+  vim.wo[source_win].winhl = table.concat(mappings, ",")
+
+  vim.api.nvim_create_autocmd("WinClosed", {
+    callback = function(event)
+      local closed_win = tonumber(event.match)
+      dialog_windows[closed_win] = nil
+      if closed_win == source_win or not next(dialog_windows) then
+        if vim.api.nvim_win_is_valid(source_win) then
+          vim.wo[source_win].winhl = original_winhl
+        end
+        return true -- Remove this dialog's cleanup callback.
+      end
+    end,
+  })
+end
+
+vim.keymap.set("n", "<leader>fs", function() open_match() end, { desc = "Find and replace in current file" })
+-- Capture the active selection without changing the clipboard or yank registers.
+vim.keymap.set("x", "<leader>fs", function()
+  local lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), {
+    type = vim.fn.mode(),
+    exclusive = vim.o.selection == "exclusive",
+  })
+  if #lines ~= 1 then
+    vim.notify("match.nvim supports single-line search text; select text on one line.", vim.log.levels.INFO)
+    return
+  end
+  vim.cmd.normal({ args = { vim.keycode("<Esc>") }, bang = true })
+  open_match(lines[1])
+  local search_win = vim.api.nvim_get_current_win()
+  -- Let Match finish its scheduled search update before focusing Replace.
+  vim.schedule(function()
+    if vim.api.nvim_win_is_valid(search_win) and vim.api.nvim_get_current_win() == search_win then
+      local switch = vim.fn.maparg("<Tab>", "i", false, true)
+      if type(switch.callback) == "function" then switch.callback() end
+    end
+  end)
+end, { desc = "Find and replace selected text in current file" })
+
+-- Native macOS shortcut; Ghostty forwards the same shortcut as F12 through Herdr.
+for _, key in ipairs({ "<D-S-f>", "<F12>" }) do
+  for _, mode in ipairs({ "n", "x" }) do
+    local mapping = vim.fn.maparg("<leader>fs", mode, false, true)
+    vim.keymap.set(mode, key, mapping.callback, { desc = mapping.desc })
+  end
+  vim.keymap.set("i", key, function()
+    vim.cmd.stopinsert()
+    open_match()
+  end, { desc = "Find and replace in current file" })
+end
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
 -- No nvim-web-devicons: it was only ever pulled in for filetype glyphs, which
