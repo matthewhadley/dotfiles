@@ -624,6 +624,16 @@ require("gitsigns").setup({
 -- gutter decoration, fugitive is whole-repo operations.
 vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 
+-- ── Merge conflicts: diffview.nvim ───────────────────────────────────────
+-- A file panel listing every conflicted file plus a three-way view, with
+-- per-conflict choose ours/theirs/both/base -- the part git mergetool's
+-- four-pane nvimdiff leaves you to do by hand. :DiffviewOpen during a rebase
+-- picks up the conflict set on its own, so it needs no arguments. No setup()
+-- call: the commands come from the plugin's own plugin/ dir and the defaults
+-- are what we want. plenary.nvim is a dependency, already installed above as
+-- a neo-tree dep, so it is not repeated here.
+vim.pack.add({ "https://github.com/sindrets/diffview.nvim" })
+
 -- ── Fuzzy finder: telescope.nvim ─────────────────────────────────────────
 -- plenary.nvim is a hard dependency but is already installed above as a
 -- neo-tree dep, so it isn't repeated here. Uses ripgrep for live_grep and fd
