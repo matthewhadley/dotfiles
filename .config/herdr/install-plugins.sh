@@ -16,6 +16,10 @@ set -euo pipefail
 command -v herdr >/dev/null || { echo "herdr not on PATH" >&2; exit 1; }
 command -v jq    >/dev/null || { echo "jq not on PATH" >&2; exit 1; }
 
+# add agent integrations
+herdr integration install claude
+herdr integration install codex
+
 # wilbeibi.catchup shells out to a `catchup` binary that herdr cannot install:
 # it ships as its own release, not as part of the plugin repo. The plugin still
 # installs and loads without it, so warn rather than exit — the rest of the list
