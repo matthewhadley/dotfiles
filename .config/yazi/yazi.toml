@@ -23,3 +23,13 @@ image_quality = 90
 # triangle is fast but blurry when downscaling a full page to pane width.
 # lanczos3 costs more per preview and is sharper.
 image_filter = "lanczos3"
+
+[opener]
+# Yazi's built-in "edit" opener is hardcoded to `${EDITOR:-vi}`, not $VISUAL --
+# confirmed by extracting the embedded default config from the yazi binary.
+# 00.env.zsh sets EDITOR=vim as a plain fallback and VISUAL=nvim for tools
+# that check both, but yazi doesn't check both, so without this override it
+# opens vim instead of nvim.
+edit = [
+  { run = "${VISUAL:-vi} %s", desc = "$VISUAL", for = "unix", block = true },
+]

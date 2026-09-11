@@ -11,8 +11,12 @@ TTY_NUM=$(tty|cut -c11-)
 export COPYFILE_DISABLE=true
 
 # Editor. EDITOR stays vim as the fallback; VISUAL is the variable most tools
-# check first, so nvim wins wherever a tool consults both -- yazi, and git, which
-# has no core.editor set. Typing `vim` or `vi` still gets vim.
+# check first, so nvim wins wherever a tool consults both -- git, which has no
+# core.editor set, is one. Typing `vim` or `vi` still gets vim.
+#
+# yazi is NOT one of these: its built-in edit opener is hardcoded to
+# ${EDITOR:-vi} and never looks at VISUAL, so it needs its own override --
+# see the [opener] block in ~/.config/yazi/yazi.toml.
 export EDITOR=vim
 export VISUAL=nvim
 
