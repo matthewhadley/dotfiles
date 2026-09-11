@@ -237,6 +237,43 @@ _dotfiles_brew() {
   return "${pipestatus[1]}"
 }
 
+_dotfiles_resolve() {
+  # Open the conflicted files of an in-progress merge or rebase in diffview.
+  #
+  # diffview shells out to git like everything else, so the GIT_DIR/GIT_WORK_TREE
+  # pair _dotfiles_hunk sets is all it needs to find the bare repo -- there is no
+  # flag equivalent the way lazygit has one. The subshell cd to $HOME makes nvim's
+  # cwd the work tree so diffview's paths and the file panel agree, same reasoning
+  # as `dotfiles edit`.
+  #
+  # Mid-rebase, "ours" is upstream and "theirs" is the commit being replayed --
+  # backwards from a merge, because rebase checks out the upstream base and
+  # replays your commits onto it. <leader>cb takes both, which is what most of
+  # these conflicts want.
+  #
+  # A conflict in a git config file is its own trap: git parses those before it
+  # does anything, so while one holds conflict markers EVERY git command fails --
+  # the check below, and everything diffview would run. Only a plain editor can
+  # get out of that, so say so rather than opening a diffview that cannot work.
+  local out
+  if ! out=$(_dotfiles_git_home diff --name-only --diff-filter=U 2>&1); then
+    print -u2 -- "dotfiles: git cannot run: $out"
+    if [[ $out == *"bad config line"* ]]; then
+      print -u2 -- "dotfiles: conflict markers in a git config file break every git"
+      print -u2 -- "dotfiles: command. Clear them in a plain editor first, then retry."
+    fi
+    return 1
+  fi
+  if [[ -z $out ]]; then
+    print -- "dotfiles: nothing conflicted"
+    return 0
+  fi
+  print -- "dotfiles: ${#${(f)out}} conflicted:"
+  print -- "  ${(pj:\n  :)${(f)out}}"
+  ( cd -- "$HOME" \
+    && GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" nvim "+DiffviewOpen" "$@" )
+}
+
 _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
@@ -252,6 +289,7 @@ dotfiles git bare repo management at ~/.dotfiles
   lazygit        open the repo in lazygit, which needs the git-dir/work-tree
                  pair spelled out -- it refuses a bare repo on its own
   logs           the `git logs` alias without the redundant " by <author>"
+  resolve        open the conflicted files of a merge or rebase in diffview
   scopes         list the commit scopes the hook allows; scan/add/rm/set
   help           this text
 
@@ -286,6 +324,10 @@ case "$1" in
   lazygit)
     shift
     _dotfiles_lazygit "$@"
+    ;;
+  resolve)
+    shift
+    _dotfiles_resolve "$@"
     ;;
   scopes)
     shift
