@@ -262,7 +262,12 @@ require("neo-tree").setup({
 })
 
 vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<CR>", { desc = "Toggle neo-tree" })
-vim.keymap.set("n", "<leader>f", "<cmd>Neotree reveal<CR>", { desc = "Reveal current file in tree" })
+-- Reveal is <leader>fe, not <leader>f: a bare <leader>f leaf collides with the
+-- <leader>f "find" group (ff, fg, ...). vim treats <leader>f as complete but
+-- waits 'timeoutlen' for a continuation, so a slightly slow <leader>ff instead
+-- fired reveal -- opening the filesystem tree rooted at $HOME. Folding it into
+-- the group as "find: reveal in explorer" leaves <leader>f a pure prefix.
+vim.keymap.set("n", "<leader>fe", "<cmd>Neotree reveal<CR>", { desc = "Reveal current file in tree" })
 
 -- Stage a path into the dotfiles bare repo, with the same
 -- --git-dir/--work-tree invocation lua/neotree_dotfiles.lua uses. A no-op on
@@ -601,6 +606,18 @@ vim.pack.add({
 })
 
 require("telescope").setup({
+  -- The dotfiles bare repo lives at ~/.dotfiles with its work tree at $HOME,
+  -- and $HOME has no ~/.git -- so from there telescope's git builtins cannot
+  -- infer a repo and fall back to walking the whole home directory. This is
+  -- the documented escape hatch: when cwd sits under one of these toplevels,
+  -- git_files and friends get --git-dir/--work-tree spelled out. Same shape
+  -- as gitsigns' `worktrees` above, and only consulted when ordinary
+  -- discovery fails, so it is inert inside a normal project.
+  defaults = {
+    git_worktrees = {
+      { toplevel = vim.env.HOME, gitdir = vim.env.HOME .. "/.dotfiles" },
+    },
+  },
   extensions = {
     -- The dropdown theme rather than telescope's default three-pane layout:
     -- these lists are short and have nothing worth previewing, so the full
@@ -617,8 +634,43 @@ require("telescope").load_extension("ui-select")
 require("telescope").load_extension("frecency")
 
 local builtin = require("telescope.builtin")
-vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope: find files" })
-vim.keymap.set("n", "<leader>fg", builtin.live_grep,  { desc = "Telescope: grep in project" })
+
+-- `dotfiles edit` launches nvim with cwd $HOME so the tabline and :Neotree
+-- filesystem line up with the dotfiles tree's root. The cost is that an
+-- unscoped find_files/live_grep from there walks every untracked file under
+-- $HOME -- thousands of them -- instead of the ~three dozen tracked ones. It
+-- sets DOTFILES_EDIT so the two project pickers can scope themselves to the
+-- bare repo: git_files reads its tracked list (via the git_worktrees entry
+-- above), and live_grep is handed that same list as explicit paths, since it
+-- is not a git builtin and has no other way to be told.
+if vim.env.DOTFILES_EDIT then
+  local home = assert(vim.env.HOME)
+
+  local function tracked_files()
+    local res = vim.system({
+      "git", "--git-dir=" .. home .. "/.dotfiles", "--work-tree=" .. home,
+      "ls-files", "--full-name",
+    }, { cwd = home, text = true }):wait()
+    local paths = {}
+    for _, rel in ipairs(vim.split(vim.trim(res.stdout or ""), "\n", { plain = true })) do
+      if rel ~= "" then
+        paths[#paths + 1] = home .. "/" .. rel
+      end
+    end
+    return paths
+  end
+
+  vim.keymap.set("n", "<leader>ff", function()
+    builtin.git_files({ cwd = home })
+  end, { desc = "Telescope: find tracked dotfiles" })
+  vim.keymap.set("n", "<leader>fg", function()
+    builtin.live_grep({ cwd = home, search_dirs = tracked_files() })
+  end, { desc = "Telescope: grep tracked dotfiles" })
+else
+  vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope: find files" })
+  vim.keymap.set("n", "<leader>fg", builtin.live_grep,  { desc = "Telescope: grep in project" })
+end
+
 vim.keymap.set("n", "<leader>fb", builtin.buffers,    { desc = "Telescope: open buffers" })
 vim.keymap.set("n", "<leader>fh", builtin.help_tags,  { desc = "Telescope: help tags" })
 vim.keymap.set("n", "<leader>fr", builtin.resume,     { desc = "Telescope: resume last picker" })

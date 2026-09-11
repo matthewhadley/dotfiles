@@ -265,7 +265,11 @@ case "$1" in
     # telescope, :Neotree filesystem and the paths in the tabline all agree
     # with the tree's own root. The subshell leaves the calling shell's cwd
     # alone, same as nv does for a directory.
-    ( cd -- "$HOME" && nvim "+Neotree dotfiles left" "$@" )
+    #
+    # DOTFILES_EDIT tells init.lua to scope <leader>ff and <leader>fg to the
+    # bare repo's tracked files -- from $HOME they would otherwise walk every
+    # untracked file in the home directory.
+    ( cd -- "$HOME" && DOTFILES_EDIT=1 nvim "+Neotree dotfiles left" "$@" )
     ;;
   *)
     # Two -c overrides, and deliberately not -C "$HOME".
