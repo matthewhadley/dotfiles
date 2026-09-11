@@ -292,7 +292,7 @@ _dotfiles_help() {
   cat <<'EOF'
 dotfiles git bare repo management at ~/.dotfiles
 
-  edit, nvim     open Neovim showing only the tracked files, as a tree
+  edit, nvim, nv open Neovim showing only the tracked files, as a tree
   list           every tracked file, its status, and the last commit to touch it
   check          fetch, then report ahead/behind and any local changes
   brew           brew bundle install from .config/dotfiles/Brewfile, then run
@@ -353,7 +353,7 @@ case "$1" in
     shift
     _dotfiles_scopes "$@"
     ;;
-  nvim|edit)
+  nvim|edit|nv)
     shift
     # The neo-tree source resolves the repo itself, so this does not need to
     # run from $HOME -- but cd'ing there makes nvim's cwd the work tree, so
