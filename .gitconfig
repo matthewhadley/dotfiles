@@ -38,7 +38,11 @@
 	process = git-lfs filter-process
 	required = true
 [pull]
-	rebase = false
+    rebase = true
+[rerere]
+    # Rebasing replays each commit separately, so one conflicting file can ask
+    # the same question once per commit. Record each resolution and reapply it.
+    enabled = true
 [diff]
 	tool = nvimdiff
 [merge]
