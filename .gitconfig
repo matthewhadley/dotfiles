@@ -47,5 +47,10 @@
 	tool = nvimdiff
 [merge]
 	tool = nvimdiff
+	# zdiff3 adds the common ancestor to the markers. Without it a conflict is
+	# just "mine" against "theirs", which is unreadable when one side moved or
+	# reindented a region and the other inserted into it -- the same lines show
+	# on both sides and nothing says who changed what.
+	conflictStyle = zdiff3
 [alias]
 	logs = log --pretty=format:'%C(yellow bold)%h%Creset - %s %C(white)%cr by %an%Creset'
