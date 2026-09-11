@@ -30,9 +30,10 @@ image_filter = "lanczos3"
 [opener]
 # Yazi's built-in "edit" opener is hardcoded to `${EDITOR:-vi}`, not $VISUAL --
 # confirmed by extracting the embedded default config from the yazi binary.
-# 00.env.zsh sets EDITOR=vim as a plain fallback and VISUAL=nvim for tools
-# that check both, but yazi doesn't check both, so without this override it
-# opens vim instead of nvim.
+# 00.env.zsh now points both EDITOR and VISUAL at nvim, so the built-in would
+# do the right thing unaided; this stays because $VISUAL is the more accurate
+# variable for a full-screen editor, and it keeps yazi right if EDITOR is ever
+# pointed elsewhere again.
 edit = [
   { run = "${VISUAL:-vi} %s", desc = "$VISUAL", for = "unix", block = true },
 ]

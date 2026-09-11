@@ -10,14 +10,15 @@ TTY_NUM=$(tty|cut -c11-)
 # Prevent tar include "._" file resource forks
 export COPYFILE_DISABLE=true
 
-# Editor. EDITOR stays vim as the fallback; VISUAL is the variable most tools
-# check first, so nvim wins wherever a tool consults both -- git, which has no
-# core.editor set, is one. Typing `vim` or `vi` still gets vim.
+# Editor. Both point at nvim. EDITOR was vim for a while, on the reasoning that
+# VISUAL is what most tools check first so nvim would win anyway -- but the
+# tools that read only EDITOR then get vim, and each one needs its own override:
+# yazi's edit opener is hardcoded to ${EDITOR:-vi} and never looks at VISUAL,
+# lazygit's `e` is the same. Setting both retires that class of workaround.
 #
-# yazi is NOT one of these: its built-in edit opener is hardcoded to
-# ${EDITOR:-vi} and never looks at VISUAL, so it needs its own override --
-# see the [opener] block in ~/.config/yazi/yazi.toml.
-export EDITOR=vim
+# Nothing is lost by it: typing `vim` or `vi` runs those binaries directly and
+# never consults either variable.
+export EDITOR=nvim
 export VISUAL=nvim
 
 # lazygit resolves its config dir through adrg/xdg: ~/.config on Linux, but
