@@ -50,3 +50,14 @@ palette = 15=#ffffff
 
 # Neovim search/replace: forward Cmd+Shift+F as F12 through Herdr.
 keybind = super+shift+f=text:\x1b[24~
+
+# Neovim project search/replace: forward Cmd+Shift+R as F11 through Herdr.
+#
+# Was F13 originally. Confirmed via a scratch nvim pane and `herdr pane
+# send-keys`: F12 (used by the mapping above) fires correctly through
+# Herdr's real keystroke pipeline, F13 never does, regardless of which
+# physical key triggers it -- Herdr itself doesn't forward F13, unrelated to
+# Ghostty, nvim, or any hotkey conflict on Cmd+Shift+R (also ruled out by
+# testing Cmd+Shift+K, which failed identically). F11 was verified working
+# the same way before switching to it.
+keybind = super+shift+r=text:\x1b[23~

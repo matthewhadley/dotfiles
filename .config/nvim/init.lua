@@ -530,9 +530,14 @@ vim.cmd.colorscheme("terafox")
 -- On ColorScheme because :colorscheme resets every highlight group; setting it
 -- directly would be wiped the next time a scheme loads.
 local function theme_tweaks()
-  -- Used only by the source window while the Match dialog is open.
-  vim.api.nvim_set_hl(0, "MatchSearch", { fg = "#202020", bg = "#FFE066" })
-  vim.api.nvim_set_hl(0, "MatchCurrentSearch", { fg = "#202020", bg = "#FFF59D", bold = true })
+  -- Match uses these only in its source window; grug-far has dedicated groups
+  -- for its results and source preview. Keep both search UIs on one palette.
+  for _, group in ipairs({ "MatchSearch", "GrugFarResultsMatch", "GrugFarResultsMatchRemoved" }) do
+    vim.api.nvim_set_hl(0, group, { fg = "#202020", bg = "#FFE066" })
+  end
+  for _, group in ipairs({ "MatchCurrentSearch", "GrugFarCurrentMatch" }) do
+    vim.api.nvim_set_hl(0, group, { fg = "#202020", bg = "#FFF59D", bold = true })
+  end
   local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
   vim.api.nvim_set_hl(0, "WinSeparator", { fg = normal.bg, bg = normal.bg })
 
@@ -766,6 +771,39 @@ for _, key in ipairs({ "<D-S-f>", "<F12>" }) do
     vim.cmd.stopinsert()
     open_match()
   end, { desc = "Find and replace in current file" })
+end
+
+-- grug-far complements Match with project-wide search and replacement. Its
+-- buffer-local actions use localleader; keep that on the familiar backslash.
+vim.g.maplocalleader = vim.g.maplocalleader or "\\"
+vim.pack.add({ "https://github.com/MagicDuck/grug-far.nvim" })
+require("grug-far").setup({ icons = { enabled = false } })
+
+local function open_grug_project()
+  require("grug-far").open()
+end
+
+local function open_grug_project_selection()
+  local instance = require("grug-far").with_visual_selection()
+  instance:when_ready(function() instance:goto_input("replacement") end)
+end
+
+vim.keymap.set("n", "<leader>fS", open_grug_project, { desc = "Find and replace in project" })
+vim.keymap.set("x", "<leader>fS", open_grug_project_selection,
+  { desc = "Find and replace selected text in project" })
+
+-- Native macOS shortcut; Ghostty forwards it as F11 through Herdr. Was F13:
+-- Herdr's own keystroke pipeline doesn't forward that one through at all
+-- (confirmed with a scratch pane and `herdr pane send-keys`, independent of
+-- Ghostty or which physical key triggers it), so this mirrors <F12> above.
+for _, key in ipairs({ "<D-S-r>", "<F11>" }) do
+  vim.keymap.set("n", key, open_grug_project, { desc = "Find and replace in project" })
+  vim.keymap.set("x", key, open_grug_project_selection,
+    { desc = "Find and replace selected text in project" })
+  vim.keymap.set("i", key, function()
+    vim.cmd.stopinsert()
+    open_grug_project()
+  end, { desc = "Find and replace in project" })
 end
 
 -- ── Statusline: lualine.nvim ─────────────────────────────────────────────
