@@ -1,0 +1,88 @@
+#!/bin/zsh
+
+# Control Amphetamine sessions, including closed-lid sleep prevention.
+# amp toggles; amp MINUTES starts a fresh timed session.
+action=${1:-toggle}
+
+if (( $# > 1 )); then
+  print -u2 'Usage: amp [on|off|status|MINUTES]'
+  exit 2
+fi
+
+case "$action" in
+  toggle|on|off|status) ;;
+  <->)
+    if [[ "$action" != *[1-9]* ]]; then
+      print -u2 'amp: MINUTES must be a positive integer.'
+      exit 2
+    fi
+    ;;
+  *)
+    print -u2 'Usage: amp [on|off|status|MINUTES]'
+    exit 2
+    ;;
+esac
+
+exec /usr/bin/osascript - "$action" <<'APPLESCRIPT'
+on run argv
+  set action to item 1 of argv
+  set minuteCount to 0
+  if action is not in {"toggle", "on", "off", "status"} then
+    set minuteCount to action as integer
+    if minuteCount < 1 then error "MINUTES must be a positive integer."
+    set action to "timed"
+  end if
+
+  tell application "Amphetamine"
+    set activeSession to session is active
+
+    if action is "status" then
+      if not activeSession then return "Amphetamine: off"
+      set remainingSeconds to session time remaining
+      if remainingSeconds is -3 then return "Amphetamine: off"
+      if remainingSeconds > 0 then
+        set remainingMinutes to remainingSeconds div 60
+        set extraSeconds to remainingSeconds mod 60
+        set timerText to (remainingMinutes as text) & "m " & (extraSeconds as text) & "s remaining"
+      else if remainingSeconds is 0 then
+        set timerText to "indefinite"
+      else if remainingSeconds is -1 then
+        set timerText to "Trigger-based"
+      else if remainingSeconds is -2 then
+        set timerText to "app/date-based; timer unavailable"
+      else
+        set timerText to "timer unavailable"
+      end if
+      set closedMode to closed display mode enabled
+      return "Amphetamine: on; " & timerText & "; closed-lid sleep prevention: " & (closedMode as text)
+    end if
+
+    if action is "toggle" then
+      if activeSession then
+        set action to "off"
+      else
+        set action to "on"
+      end if
+    end if
+
+    if action is "off" then
+      end session
+      if (session is active) then return "Session still active; check Amphetamine Triggers."
+      return "Amphetamine: off"
+    end if
+
+    if action is "timed" then
+      start new session with options {duration:minuteCount, interval:minutes, displaySleepAllowed:true}
+    else if not activeSession then
+      start new session with options {duration:0, interval:0, displaySleepAllowed:true}
+    end if
+
+    if not (closed display mode enabled) then enable closed display mode
+    set closedMode to closed display mode enabled
+    if action is "timed" then
+      return "Amphetamine: on for " & (minuteCount as text) & " minutes; closed-lid sleep prevention: " & (closedMode as text)
+    end if
+    return "Amphetamine: on; closed-lid sleep prevention: " & (closedMode as text)
+  end tell
+end run
+APPLESCRIPT
