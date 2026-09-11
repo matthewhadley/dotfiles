@@ -237,6 +237,20 @@ _dotfiles_brew() {
   return "${pipestatus[1]}"
 }
 
+_dotfiles_deps() {
+  # One entrypoint for everything this machine's package/plugin state depends
+  # on. brew and herdr each reconcile differently -- brew bundle diffs the
+  # Brewfile itself, herdr has no declarative manifest so install-plugins.sh
+  # is the record of intent (see its own header) -- so this just sequences
+  # the two rather than unifying their logic. Brew runs first: install-plugins.sh
+  # hard-fails without jq on PATH, and jq is a Brewfile formula.
+  local herdr_script="$HOME/.config/herdr/install-plugins.sh"
+  _dotfiles_brew || return
+  echo
+  echo "==> herdr plugins"
+  "$herdr_script"
+}
+
 _dotfiles_resolve() {
   # Open the conflicted files of an in-progress merge or rebase in diffview.
   #
@@ -283,6 +297,8 @@ dotfiles git bare repo management at ~/.dotfiles
   check          fetch, then report ahead/behind and any local changes
   brew           brew bundle install from .config/dotfiles/Brewfile, then run
                  any matching .config/dotfiles/brew-post-install.d/<formula>
+  deps           brew, then herdr's install-plugins.sh -- everything this
+                 machine's package/plugin state depends on, in one call
   hunk           open the changes in Hunk; bare `hunk` is the working tree,
                  otherwise the args are a hunk command (`hunk --staged`,
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
@@ -312,6 +328,10 @@ case "$1" in
   brew)
     shift
     _dotfiles_brew "$@"
+    ;;
+  deps)
+    shift
+    _dotfiles_deps "$@"
     ;;
   logs)
     shift

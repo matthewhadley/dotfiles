@@ -15,6 +15,12 @@ brew "ffmpeg"
 # without it on PATH -- was relied on but never actually declared anywhere.
 brew "jq"
 
+# uvx (from uv) is what vjeantet.palette's scripts/check-compat.sh uses to
+# validate commands.json against its schema -- install-plugins.sh runs that
+# script every time and aborts (set -e) if neither uvx nor check-jsonschema
+# is on PATH, which also skips the `herdr server reload-config` at the end.
+brew "uv"
+
 # Referenced by .zshrc.d/00.env.zsh for FPATH, same story as jq above.
 brew "zsh-completions"
 
