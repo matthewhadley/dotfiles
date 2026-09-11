@@ -495,12 +495,37 @@ local function refuse(buf, file)
     end
   end, 4000)
   -- Scheduled: wiping a buffer from inside its own read event leaves the
-  -- window without one. By the time this runs there is an alternate to fall
-  -- back to. Never `:q` -- that closes the window, and the last one quits.
+  -- window without one. nvim_buf_delete with force = true, unlike :bdelete,
+  -- closes any window that would otherwise be left showing nothing rather
+  -- than falling back to the alternate buffer -- confirmed by reproducing
+  -- headlessly: a two-window split where this window's buffer gets replaced
+  -- by a refused path left that window invalid, and the sibling window (e.g.
+  -- neo-tree) inherited its space, which is what "the file tree grows huge"
+  -- actually was. So point every window showing this buffer at something
+  -- else first, same pattern as close_buffer_keep_window below.
   vim.schedule(function()
-    if vim.api.nvim_buf_is_valid(buf) then
-      pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    if not vim.api.nvim_buf_is_valid(buf) then
+      return
     end
+
+    local alt = vim.fn.bufnr("#")
+    if alt == buf or alt == -1 or not (vim.api.nvim_buf_is_valid(alt) and vim.bo[alt].buflisted) then
+      alt = nil
+      for _, b in ipairs(vim.api.nvim_list_bufs()) do
+        if b ~= buf and vim.bo[b].buflisted and vim.api.nvim_buf_get_name(b) ~= "" then
+          alt = b
+          break
+        end
+      end
+    end
+
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_buf(win) == buf then
+        vim.api.nvim_win_set_buf(win, alt or vim.api.nvim_create_buf(true, false))
+      end
+    end
+
+    pcall(vim.api.nvim_buf_delete, buf, { force = true })
   end)
 end
 
