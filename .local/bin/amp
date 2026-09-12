@@ -2,10 +2,35 @@
 
 # Control Amphetamine sessions, including closed-lid sleep prevention.
 # amp toggles; amp MINUTES starts a fresh timed session.
+#
+# "off" quits Amphetamine instead of just ending the session, so its menu
+# bar icon disappears with the process (macOS only shows a status item while
+# its owning app is running -- there's no supported way to hide it
+# independent of that). Two real tradeoffs versus just ending the session:
+#
+#   - Trigger-based auto-start (Amphetamine's own condition-driven sessions)
+#     stops working while the app is quit -- nothing is running to watch for
+#     those conditions.
+#   - A cold `tell application "Amphetamine"` launch takes a moment before
+#     the app is actually up and closed-lid mode is re-enabled. Starting a
+#     session and immediately closing the lid risks the Mac beginning to
+#     sleep before that assertion lands. Fine if sessions are normally
+#     started from a stable, lid-open state; risky otherwise.
+#
+# `application "Amphetamine" is running` (used below) is the one AppleScript
+# check that never launches the app, unlike any `tell application` block or
+# property/command access -- without it, even a plain `amp status` would
+# resurrect the icon on a quit app, defeating the point.
+if [[ "$OSTYPE" != darwin* ]]; then
+  print -u2 'amp: macOS only (needs osascript and the Amphetamine app).'
+  exit 1
+fi
+
 action=${1:-toggle}
+[[ "$action" == "-s" ]] && action=status
 
 if (( $# > 1 )); then
-  print -u2 'Usage: amp [on|off|status|MINUTES]'
+  print -u2 'Usage: amp [on|off|status|-s|MINUTES]'
   exit 2
 fi
 
@@ -18,7 +43,7 @@ case "$action" in
     fi
     ;;
   *)
-    print -u2 'Usage: amp [on|off|status|MINUTES]'
+    print -u2 'Usage: amp [on|off|status|-s|MINUTES]'
     exit 2
     ;;
 esac
@@ -33,11 +58,12 @@ on run argv
     set action to "timed"
   end if
 
-  tell application "Amphetamine"
-    set activeSession to session is active
+  set appRunning to application "Amphetamine" is running
 
-    if action is "status" then
-      if not activeSession then return "Amphetamine: off"
+  if action is "status" then
+    if not appRunning then return "Amphetamine: off"
+    tell application "Amphetamine"
+      if not (session is active) then return "Amphetamine: off"
       set remainingSeconds to session time remaining
       if remainingSeconds is -3 then return "Amphetamine: off"
       if remainingSeconds > 0 then
@@ -55,25 +81,46 @@ on run argv
       end if
       set closedMode to closed display mode enabled
       return "Amphetamine: on; " & timerText & "; closed-lid sleep prevention: " & (closedMode as text)
-    end if
+    end tell
+  end if
 
-    if action is "toggle" then
-      if activeSession then
-        set action to "off"
-      else
-        set action to "on"
-      end if
+  if action is "toggle" then
+    if not appRunning then
+      set action to "on"
+    else
+      tell application "Amphetamine"
+        if session is active then
+          set action to "off"
+        else
+          set action to "on"
+        end if
+      end tell
     end if
+  end if
 
-    if action is "off" then
+  if action is "off" then
+    -- Already not running: already off, and no session to have addressed.
+    if not appRunning then return "Amphetamine: off"
+    tell application "Amphetamine"
       end session
-      if (session is active) then return "Session still active; check Amphetamine Triggers."
-      return "Amphetamine: off"
-    end if
+      set stillActive to session is active
+    end tell
+    if stillActive then return "Session still active; check Amphetamine Triggers."
+    -- Removing the icon needs the process gone, and Amphetamine ignores the
+    -- standard AppleScript `quit` command -- confirmed live: it returns
+    -- success with no error, but the PID never changes. `killall` sends a
+    -- real signal instead, bypassing whatever swallows the Apple Event.
+    do shell script "killall Amphetamine"
+    return "Amphetamine: off"
+  end if
 
+  -- "on" or "timed": `tell application` launches Amphetamine automatically
+  -- if it isn't running, and AppleScript waits for that synchronously
+  -- before the next line runs -- no explicit launch/wait step needed here.
+  tell application "Amphetamine"
     if action is "timed" then
       start new session with options {duration:minuteCount, interval:minutes, displaySleepAllowed:true}
-    else if not activeSession then
+    else if not (session is active) then
       start new session with options {duration:0, interval:0, displaySleepAllowed:true}
     end if
 
