@@ -1,0 +1,13 @@
+[[command]]
+id        = "open-project"
+title     = "Open project and apply workspace layout"
+argv      = ["/bin/bash", "/Users/mhadley/.config/herdr/scripts/open-project.sh"]
+placement = "split"
+hold      = true
+
+[[command]]
+id        = "new-worktree"
+title     = "New worktree and apply workspace layout"
+argv      = ["/bin/bash", "/Users/mhadley/.config/herdr/scripts/new-worktree.sh"]
+placement = "split"
+hold      = true

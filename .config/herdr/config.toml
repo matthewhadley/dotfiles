@@ -61,6 +61,55 @@ type = "shell"
 command = "herdr plugin action invoke annotate.last && sleep 0.15 && herdr pane focus --direction right"
 description = "review the agent's last reply, focused"
 
+# Overrides herdr's built-in "new worktree" on the same key with worktrunk's
+# switch/create picker (hooks + auto-layout via herdr-plugin-workspace-manager).
+[[keys.command]]
+key = "prefix+shift+g"
+type = "plugin_action"
+command = "worktrunk.open"
+description = "Worktree: switch / create from default branch"
+
+[[keys.command]]
+key = "prefix+shift+d"
+type = "plugin_action"
+command = "worktrunk.remove"
+description = "Worktree: remove"
+
+[[keys.command]]
+key = "prefix+shift+m"
+type = "plugin_action"
+command = "worktrunk.merge"
+description = "Worktree: merge into the target branch"
+
+# Pick a directory under ~/dev, open it as a workspace, and force-apply the
+# workspace-manager layout (bypasses its claim guard, unlike the automatic hook).
+[[keys.command]]
+key = "prefix+o"
+type = "popup"
+command = "bash ~/.config/herdr/scripts/open-project.sh"
+description = "Open project and apply workspace layout"
+width = "60%"
+height = "50%"
+
+[[keys.command]]
+key = "super+o"
+type = "popup"
+command = "bash ~/.config/herdr/scripts/open-project.sh"
+description = "Open project and apply workspace layout"
+width = "60%"
+height = "50%"
+
+# From inside an existing repo's workspace: worktrunk's switch/create picker
+# (same as worktrunk.open), then force-apply the layout even to an
+# already-claimed worktree.
+[[keys.command]]
+key = "prefix+shift+n"
+type = "popup"
+command = "bash ~/.config/herdr/scripts/new-worktree.sh"
+description = "New worktree and apply workspace layout"
+width = "60%"
+height = "50%"
+
 [ui.toast]
 delivery = "herdr"
 

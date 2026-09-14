@@ -1,0 +1,5 @@
+# Explicit declaration of wt's own built-in default -- confirmed via live
+# testing (with and without HERDR_ENV, no other config anywhere) that this
+# is what it already does implicitly. Written out so it's a stated choice
+# rather than something that only happens to be true today.
+worktree-path = "{{ repo_path }}/../{{ repo }}.{{ branch | sanitize }}"
