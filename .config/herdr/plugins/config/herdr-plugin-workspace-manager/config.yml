@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/razajamil/herdr-plugin-workspace-manager/main/schema.json
+layouts:
+  - id: standard
+    tabs:
+      - title: agent
+        panes:
+          - title: agent
+            agent: claude
+      - title: nvim
+        panes:
+          - title: nvim
+            command: nv
+      - title: lazygit
+        panes:
+          - title: lazygit
+            command: lazygit
+            persist: false
+      - title: hunk
+        panes:
+          - title: hunk
+            command: hunk diff --watch
+
+# Fallback for any repo below with no workspaces: entry of its own. Only
+# fires for a genuinely NEW linked worktree (never the repo's main checkout,
+# and never a workspace that already has more than 1 tab/pane) -- see
+# is_linked_worktree in src/main.rs. So this gives every new worktree you
+# create (e.g. via worktrunk's `wt`) the standard layout for free; it does
+# nothing for a project's already-existing primary checkout.
+globalLayout: standard
+
+# workspaces: per-repo overrides go here when a project wants something other
+# than globalLayout (e.g. `- repo: ~/dev/some-project, defaultLayout: other`).
+# Omitted entirely: not needed just to opt a normal repo INTO the shared
+# layout, since globalLayout already covers that.
+
+# No `workspaces:` entry for dotfiles: it's a bare repo at ~/.dotfiles whose
+# work tree is $HOME (via `dotfiles`'s --git-dir/--work-tree flags), which
+# plain git discovery never sees ($HOME has no .git). herdr therefore never
+# reports a worktree.repo_root for a pane cd'd into $HOME, so no `repo:`
+# entry could ever match it -- the automatic worktree.created/workspace.*
+# hooks are inert here regardless of what's listed below.
+#
+# Use this layout for dotfiles by naming it explicitly instead:
+#   herdr-workspace-manager apply standard
+# or the prefix+shift+l keybinding with HERDR_WSM_LAYOUT=standard set.
