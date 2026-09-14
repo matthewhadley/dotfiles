@@ -42,6 +42,16 @@ for plugin in "${plugins[@]}"; do
   herdr plugin install "$plugin" --yes
 done
 
+# --- Local plugin: "custom" -------------------------------------------------
+#
+# Not GitHub-sourced, so not in the plugins array above. Its files live in
+# this repo (~/.config/herdr/plugins/local/custom/), but plugin registration
+# is machine-local state (~/.config/herdr/plugins.json, not tracked), so a
+# fresh machine needs this to actually pick it up. `herdr plugin link` is
+# idempotent, same as install above.
+
+herdr plugin link ~/.config/herdr/plugins/local/custom
+
 # --- Post-install: nicosuave.memex skill install ------------------------------
 #
 # The plugin gives herdr the memex integration, but the memex-search skill
