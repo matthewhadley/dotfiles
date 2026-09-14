@@ -31,10 +31,11 @@ warning: catchup not on PATH — every wilbeibi.catchup action will fail.
 EOF
 
 plugins=(
-  vjeantet/herdr-palette         # command palette: built-ins + plugin actions (super+p)
-  nicosuave/memex                # session desk: search and resume past agent sessions
-  wilbeibi/herdr-catchup         # summarize/fork/hand this pane's session to another agent
-  devashish2203/herdr-worktrunk  # git worktrees via the wt CLI, with create/teardown hooks
+  vjeantet/herdr-palette                     # command palette: built-ins + plugin actions (super+p)
+  nicosuave/memex                            # session desk: search and resume past agent sessions
+  wilbeibi/herdr-catchup                     # summarize/fork/hand this pane's session to another agent
+  devashish2203/herdr-worktrunk              # git worktrees via the wt CLI, with create/teardown hooks
+  razajamil/herdr-plugin-workspace-manager   # declarative tab/pane layouts, applied by the "custom" plugin's scripts
 )
 
 for plugin in "${plugins[@]}"; do
