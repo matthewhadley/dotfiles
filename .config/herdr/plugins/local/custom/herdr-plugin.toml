@@ -1,0 +1,34 @@
+id = "custom"
+name = "Custom"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Personal fzf-driven workspace/worktree helpers with workspace-manager layout auto-apply."
+platforms = ["macos", "linux"]
+
+[[actions]]
+id = "open-project"
+title = "Open project"
+contexts = ["workspace"]
+command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint open-project"]
+
+[[actions]]
+id = "new-worktree"
+title = "New/Open worktree"
+contexts = ["workspace"]
+command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint new-worktree"]
+
+[[panes]]
+id = "open-project"
+title = "Open project"
+placement = "popup"
+width = "60%"
+height = "50%"
+command = ["bash", "open-project.sh"]
+
+[[panes]]
+id = "new-worktree"
+title = "New/Open worktree"
+placement = "popup"
+width = "60%"
+height = "50%"
+command = ["bash", "new-worktree.sh"]

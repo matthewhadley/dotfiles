@@ -12,6 +12,19 @@
 # so an exit code alone can't tell them apart.
 set -uo pipefail
 
+# As a plugin pane, $PWD starts at this plugin's own root (dev-scripts/), not
+# the pane you actually invoked this from -- unlike the old bare popup
+# keybinding, which inherited the originating pane's cwd directly. Resolve
+# the real origin via HERDR_PLUGIN_CONTEXT_JSON's focused_pane_id (confirmed
+# empirically by other plugins -- popup panes don't get HERDR_PANE_ID) and cd
+# there first; everything below (the git check, worktrunk's picker.sh) needs
+# to run against the actual repo, not wherever this plugin happens to live.
+origin_pane=$(jq -r '.focused_pane_id // empty' <<<"${HERDR_PLUGIN_CONTEXT_JSON:-{}}")
+if [[ -n $origin_pane ]]; then
+  origin_cwd=$(herdr pane get "$origin_pane" 2>/dev/null | jq -r '.result.pane.cwd // empty')
+  [[ -n $origin_cwd && -d $origin_cwd ]] && cd "$origin_cwd"
+fi
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   printf '\033[31mnew-worktree: not a git repository: %s\033[0m\n' "$PWD"
   sleep 2

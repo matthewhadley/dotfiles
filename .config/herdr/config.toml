@@ -82,33 +82,31 @@ command = "worktrunk.merge"
 description = "Worktree: merge into the target branch"
 
 # Pick a directory under ~/dev, open it as a workspace, and force-apply the
-# workspace-manager layout (bypasses its claim guard, unlike the automatic hook).
+# workspace-manager layout (bypasses its claim guard, unlike the automatic
+# hook). Backed by the local "custom" plugin (see
+# ~/.config/herdr/plugins/local/custom/) rather than a bare popup command,
+# so the popup gets a real title and it's dispatchable/discoverable from
+# vjeantet.palette like any other plugin action.
 [[keys.command]]
 key = "prefix+o"
-type = "popup"
-command = "bash ~/.config/herdr/scripts/open-project.sh"
+type = "plugin_action"
+command = "custom.open-project"
 description = "Open project and apply workspace layout"
-width = "60%"
-height = "50%"
 
 [[keys.command]]
 key = "super+o"
-type = "popup"
-command = "bash ~/.config/herdr/scripts/open-project.sh"
+type = "plugin_action"
+command = "custom.open-project"
 description = "Open project and apply workspace layout"
-width = "60%"
-height = "50%"
 
 # From inside an existing repo's workspace: worktrunk's switch/create picker
 # (same as worktrunk.open), then force-apply the layout even to an
 # already-claimed worktree.
 [[keys.command]]
 key = "prefix+shift+n"
-type = "popup"
-command = "bash ~/.config/herdr/scripts/new-worktree.sh"
-description = "New worktree and apply workspace layout"
-width = "60%"
-height = "50%"
+type = "plugin_action"
+command = "custom.new-worktree"
+description = "New/Open worktree and apply workspace layout"
 
 [ui.toast]
 delivery = "herdr"
