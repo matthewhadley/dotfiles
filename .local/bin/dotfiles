@@ -224,7 +224,7 @@ _dotfiles_brew() {
   local post_install_dir="$HOME/.config/dotfiles/brew-post-install.d"
   local line name script
 
-  brew bundle install --file "$brewfile" | while IFS= read -r line; do
+  brew bundle install --verbose --file "$brewfile" | while IFS= read -r line; do
     print -r -- "$line"
     case "$line" in
       "Installing "*|"Upgrading "*)
