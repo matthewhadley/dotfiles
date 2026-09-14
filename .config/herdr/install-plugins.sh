@@ -42,6 +42,24 @@ for plugin in "${plugins[@]}"; do
   herdr plugin install "$plugin" --yes
 done
 
+# --- Post-install: nicosuave.memex skill install ------------------------------
+#
+# The plugin gives herdr the memex integration, but the memex-search skill
+# itself is installed separately by the memex binary into the agent skill
+# dirs it detects — nothing `herdr plugin install` touches. Both target
+# installs are idempotent (install never overwrites a differing skill file),
+# so safe to run every time.
+
+command -v memex >/dev/null || cat >&2 <<'EOF'
+warning: memex not on PATH — skipping memex-search skill install.
+  brew install nicosuave/tap/memex
+EOF
+
+if command -v memex >/dev/null; then
+  memex skill install --target claude
+  memex skill install --target shared
+fi
+
 # --- Local patch: vjeantet.palette's declared protocol -----------------------
 #
 # commands.json pins the herdr API protocol it was built against and shows a

@@ -41,5 +41,10 @@ brew "watch"
 brew "yq"
 brew "worktrunk"
 
+# worktrunk's picker falls back to a plain prompt without it, but the
+# "custom" herdr plugin (~/.config/herdr/plugins/local/custom/) requires it
+# outright.
+brew "fzf"
+
 tap "wilbeibi/tap"
 brew "wilbeibi/tap/catchup"
