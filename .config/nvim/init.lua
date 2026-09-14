@@ -24,6 +24,15 @@ vim.opt.backup = false
 vim.opt.modeline = false
 vim.opt.undofile = true       -- undo history survives closing the file
 
+-- Reload buffers on external edits. Neovim 0.12 has no filesystem watcher for
+-- this, so poll for it at the usual trigger points; 0.13 does autoread via a
+-- real watcher, so once on 0.13 this autocmd can go and `autoread` alone will
+-- pick up changes in real time.
+vim.opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  command = "checktime",
+})
+
 -- ── Indentation ──────────────────────────────────────────────────────────
 vim.opt.tabstop = 4           -- a tab character renders 4 wide
 vim.opt.shiftwidth = 4        -- >> and << shift by 4
@@ -86,15 +95,13 @@ end
 -- byte, so it survives Ghostty -> Herdr -> nvim. Both Cmd+Shift+arrow and
 -- Ctrl+arrow were tried first and neither reaches nvim at all (verified with
 -- Ctrl-V literal-insert: nothing arrives) -- the multiplexer eats modified
--- special keys. This also matches sidekick's own terminal nav keys.
+-- special keys.
 -- Insert mode is deliberately NOT mapped: <C-h> is byte 0x08, the same as
 -- Backspace in many terminals, so mapping it there would break backspace.
 -- Universal fallbacks that always work: <C-w>hjkl, or <C-w> then an arrow.
 for lhs, dir in pairs({ ["<C-h>"] = "h", ["<C-j>"] = "j", ["<C-k>"] = "k", ["<C-l>"] = "l" }) do
   vim.keymap.set({ "n", "x" }, lhs, "<C-w>" .. dir, { desc = "Window: move " .. dir })
 end
--- Inside the Claude pane, sidekick maps its own <C-h> (nav left), <C-z> (blur),
--- <C-.> (hide) and <C-q> (normal mode) -- no terminal-mode mapping needed here.
 
 -- Mouse drag-select copies to the system clipboard, matching what Ghostty and
 -- Herdr do on their own. Needed because mouse=a makes nvim capture the drag,
@@ -669,7 +676,7 @@ vim.pack.add({ "https://github.com/sindrets/diffview.nvim" })
 -- answer by typing a digit, with no filtering and a hit-enter prompt once the
 -- list is long. Everything that asks you to pick from a list goes through it:
 -- <leader>ca (code actions, where eslint and ts_ls together routinely offer a
--- dozen), <leader>ap (sidekick's prompts, 18 of them), :TermSelect, and
+-- dozen), <leader>at (herdr-sidekick's other-agent picker), :TermSelect, and
 -- mason's language filter. It does not touch vim.ui.input.
 --
 -- telescope-frecency ranks files by how often *and* how recently you have
@@ -920,29 +927,7 @@ require("lualine").setup({
     lualine_a = { "mode" },
     lualine_b = { "branch", "diff" },   -- both read gitsigns' status dict
     lualine_c = { { "filename", path = 1 } },
-    -- Which sidekick CLI sessions are live. status.cli() returns one entry per
-    -- attached session, each with a `tool` name, so this names them rather
-    -- than showing a glyph and a count -- with only claude and codex
-    -- configured, "claude" is more use than a 1.
-    --
-    -- The other half of sidekick's statusline API, status.get(), reports
-    -- Copilot LSP progress. Not wired up: nes is disabled because
-    -- copilot-language-server is not installed, so it would always be nil.
     lualine_x = {
-      {
-        function()
-          local tools = {}
-          for _, session in ipairs(require("sidekick.status").cli()) do
-            tools[#tools + 1] = session.tool
-          end
-          table.sort(tools)
-          return table.concat(tools, " ")
-        end,
-        cond = function()
-          return #require("sidekick.status").cli() > 0
-        end,
-        color = "Special",
-      },
       -- Filetype as plain text; icons_enabled = false above drops the glyph.
       { "filetype" },
     },
@@ -1181,8 +1166,9 @@ vim.keymap.set("n", "<leader>X", function()
 end, { desc = "Delete this buffer's file (to Trash), close buffer" })
 
 -- ── toggleterm.nvim ──────────────────────────────────────────────────────
--- Toggleable terminal windows. Separate from sidekick's Claude pane: that one
--- runs a specific tool, this is for a general shell.
+-- Toggleable terminal windows. Separate from herdr-sidekick's agent pane:
+-- that one runs a specific tool in its own herdr pane, this is a plain shell
+-- inside nvim.
 vim.pack.add({ "https://github.com/akinsho/toggleterm.nvim" })
 
 require("toggleterm").setup({
@@ -1218,7 +1204,7 @@ vim.keymap.set("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle termina
 -- which is a heavy global change to editing behaviour. A split just takes its
 -- own column, which suits a layout that already has neo-tree on the left.
 vim.g.neominimap = {
-  auto_enable = true,
+  auto_enable = false, -- disabled for now; toggle on demand with <leader>m
   layout = "split",
   split = {
     -- 14 = 12 columns of map + a 2-column sign gutter for the git bars.
@@ -1682,7 +1668,7 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = {
     "neo-tree", "toggleterm", "help", "man", "lazy", "mason", "checkhealth",
     "qf", "fugitive", "gitcommit", "TelescopePrompt", "TelescopeResults",
-    "neominimap", "sidekick_terminal",
+    "neominimap",
   },
   callback = function(ev)
     vim.b[ev.buf].miniindentscope_disable = true
@@ -1712,7 +1698,7 @@ vim.api.nvim_create_user_command("TrimLastLines", function()
   require("mini.trailspace").trim_last_lines()
 end, { desc = "Remove blank lines at end of file" })
 
-vim.api.nvim_create_user_command("Q", "qa", { desc = "Quit all (alias for :qa)" })
+vim.api.nvim_create_user_command("Q", "qa<bang>", { bang = true, desc = "Quit all (alias for :qa)" })
 
 -- ── which-key.nvim ───────────────────────────────────────────────────────
 -- Popup listing whatever keys can follow the prefix you just typed.
@@ -1726,166 +1712,172 @@ require("which-key").setup({
 -- Name the prefix groups; without this the popup just shows "+prefix".
 -- Leaf keys pick up their label from the `desc` on each vim.keymap.set call.
 require("which-key").add({
-  { "<leader>a", group = "AI / sidekick" },
-  { "<leader>as", group = "summarise" },
+  { "<leader>a", group = "herdr-sidekick" },
   { "<leader>f", group = "find" },
   { "<leader>o", group = "obsidian" },
 })
 
--- ── AI: sidekick.nvim ────────────────────────────────────────────────────
-vim.pack.add({ "https://github.com/folke/sidekick.nvim" })
+-- ── AI: herdr-sidekick ───────────────────────────────────────────────────
+-- Replaces folke/sidekick.nvim + UN-9BOT/sidekick_herdr. Both embedded the
+-- CLI tool in a Neovim `:terminal` (sidekick's default) or tried to patch in
+-- a herdr backend against an API herdr no longer exposes (`herdr agent start`
+-- used to accept --cwd and create its own pane; 0.9.0 requires an existing
+-- --pane already at a shell prompt, plus --kind -- confirmed against the
+-- installed herdr, not assumed). herdr-sidekick is a from-scratch replacement
+-- that only ever talks to the current herdr CLI, so the agent is a first-class
+-- herdr agent (visible to annotate, catchup, memex, herdr-topbar, `herdr
+-- agent list`) from the moment it starts. See ~/dev/herdr-sidekick.
+--
+-- Local dev checkout, not vim.pack: the plugin has no GitHub remote yet.
+-- Swap this for `vim.pack.add({ "https://github.com/<you>/herdr-sidekick" })`
+-- once it has one.
+vim.opt.rtp:prepend(vim.fn.expand("~/dev/herdr-sidekick"))
 
-require("sidekick").setup({
-  -- Next Edit Suggestions are off: they require the copilot-language-server
-  -- LSP, which isn't installed. The CLI terminal below is independent of it.
-  nes = { enabled = false },
+-- The current buffer is often a UI buffer, not a file -- e.g. the neo-tree
+-- sidebar, if that's what was focused when the agent started. Falls back to
+-- the most recently used real file buffer instead of reporting something
+-- like "neo-tree filesystem [1]" as the open file.
+---@return string?
+local function herdr_sidekick_open_file()
+  local buf = vim.api.nvim_get_current_buf()
+  if vim.bo[buf].buftype == "" and vim.api.nvim_buf_get_name(buf) ~= "" then
+    return vim.api.nvim_buf_get_name(buf)
+  end
+  local best, best_time
+  for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+    if vim.bo[info.bufnr].buftype == "" and info.name ~= "" then
+      if not best_time or info.lastused > best_time then
+        best, best_time = info.name, info.lastused
+      end
+    end
+  end
+  return best
+end
 
-  cli = {
-    prompts = {
-      -- Added to sidekick's built-ins (explain, review, fix, tests...), all
-      -- pickable with <leader>ap.
-      --
-      -- A prompt may be a function of the context. {file} expands to a bare
-      -- reference (`@path`); {line} adds the selected range (`@path :L3-L20`).
-      -- Both are references Claude resolves by reading the file itself, so
-      -- neither pastes the buffer into the prompt -- which is what you want:
-      -- pasting spends tokens on the whole file up front, and a reference lets
-      -- Claude read only the parts it needs.
-      --
-      -- {selection} is the option that *does* inline the text verbatim. It is
-      -- deliberately not used here; the only case it wins is asking about
-      -- unsaved edits, since a reference reads what is on disk.
-      summarize = function(ctx)
-        return ctx.range and "Summarise {line}" or "Summarise {file}"
+-- Built fresh each start (not a static string): the open-file line has to
+-- reflect whatever buffer is current the moment the agent actually starts,
+-- not whatever happened to be open when this config was loaded.
+local function herdr_sidekick_orientation()
+  local prompt = "You are running in a herdr pane opened from Neovim"
+  local open_file = herdr_sidekick_open_file()
+  if open_file then
+    prompt = prompt .. " with open file: " .. vim.fn.fnamemodify(open_file, ":.")
+  end
+  return prompt
+end
+
+require("herdr-sidekick").setup({
+  -- More than one entry means start_sidekick_agent_pane() with no explicit kind
+  -- shows a vim.ui.select chooser instead of starting `claude` directly.
+  -- `cmd` is extra CLI args for the kind's own canonical executable, not
+  -- the binary name again -- `herdr agent start --kind claude` already
+  -- runs `claude`.
+  --
+  -- Both tools' cmd sends the same orientation text, but through different
+  -- mechanisms verified against each CLI (not assumed): claude's
+  -- --append-system-prompt is documented; codex has no such flag, but `-c
+  -- developer_instructions=...` was confirmed with `codex debug
+  -- prompt-input` to land as its own role:"developer" message
+  -- (generic.developer_instructions) ahead of the user's turn, same
+  -- placement class as claude's flag. Both are invisible in the transcript
+  -- and not a turn -- unlike a greeting pasted into the input box (tried and
+  -- reverted: it just sat there needing to be cleared before typing).
+  --
+  -- json_encode produces a quoted, escaped string that's also valid TOML
+  -- basic-string syntax, which is what `-c key=value` expects for a string
+  -- value (see its own examples, e.g. `-c model="o3"`).
+  tools = {
+    claude = {
+      cmd = function()
+        -- --append-system-prompt-file, not --append-system-prompt: `herdr
+        -- agent start` types the launch command into the pane's shell
+        -- keystroke by keystroke, so the whole prompt text otherwise sits
+        -- there wrapped across several lines of scrollback above the TUI,
+        -- persisting after launch. A short file path keeps the typed line
+        -- to one. Verified the flag is real (not guessed) by pointing it at
+        -- a missing file and getting a file-not-found error rather than an
+        -- unknown-option one.
+        local path = vim.fn.tempname()
+        vim.fn.writefile({ herdr_sidekick_orientation() }, path)
+        return { "--append-system-prompt-file", path }
       end,
     },
-    context = {
-      -- Why not just use the built-in {diagnostics}: when a buffer is clean it
-      -- resolves to nothing, and sidekick treats an empty replacement as a
-      -- failed render -- it drops the whole message and reports "Nothing to
-      -- send". Fine for the dedicated `diagnostics` prompt (you only pick it
-      -- when there are errors), fatal for a general-purpose "ask about this
-      -- file" prompt. This variant always yields a line, so it is safe to
-      -- include unconditionally.
-      diags = function(ctx)
-        local diags = require("sidekick.cli.context.diagnostics").get(ctx)
-        if not diags or vim.tbl_isempty(diags) then
-          return "No diagnostics reported for this file."
-        end
-        return diags
+    codex = {
+      -- No file-based or env-var equivalent found (checked
+      -- `developer_instructions_file` and a CODEX_DEVELOPER_INSTRUCTIONS
+      -- env var against `codex debug prompt-input`; neither did anything),
+      -- so this one unavoidably types out in full and wraps in scrollback.
+      cmd = function()
+        return { "-c", "developer_instructions=" .. vim.fn.json_encode(herdr_sidekick_orientation()) }
       end,
     },
   },
+  -- Silently pre-assign the default sidekick agent at startup when there's
+  -- an unambiguous one to pick (this pane's own tab, or failing that the
+  -- workspace's first tab) -- see herdr-sidekick's own README for the exact
+  -- rules. Otherwise unset until <leader>ad or the first <leader>ap/\an.
+  auto_assign_default = true,
 })
 
--- Ask the attached AI CLI about the file you are looking at, in free text.
---
--- Agent-agnostic on purpose: `cli.send` routes to whichever tool is currently
--- attached (Claude, Codex, or any other sidekick tool) and applies that tool's
--- own reference formatting -- claude.lua rewrites `:L1-L9` to `#L1-9`, codex
--- takes the plain form. Nothing here needs to know which is running.
---
--- Sidekick sends *references* (`@path/to/file :L12:C5`), not buffer contents,
--- and the agent reads the file from disk -- so an unwritten change is invisible
--- to it. Writing first is what makes "review this" mean what is on screen. It is
--- cheaper than inlining the buffer, and it keeps the agent's own file reads
--- authoritative.
---
--- Diagnostics need no such help: nvim-lint above runs on TextChanged/InsertLeave
--- and LSP servers see the live buffer, so vim.diagnostic is already current for
--- unsaved text.
-local function sidekick_ask()
-  local Context = require("sidekick.cli.context")
-
-  -- Snapshot context BEFORE opening the input box. sidekick picks its target
-  -- window by most-recently-visited, so the input float would otherwise become
-  -- "the file you are looking at" and the reference would point at nothing.
-  local context = Context.get()
-  local buf = context.ctx.buf
-
-  if
-    vim.bo[buf].modified
-    and vim.bo[buf].buftype == ""
-    and vim.bo[buf].modifiable
-    and vim.api.nvim_buf_get_name(buf) ~= ""
-  then
-    vim.api.nvim_buf_call(buf, function()
-      -- A plain write, not `noautocmd`: this should behave exactly as if you
-      -- had pressed :w, so BufWritePre hooks (vim-strip-trailing-whitespace)
-      -- still run and the file the agent reads is the file you would have saved.
-      vim.cmd("silent write")
-    end)
-  end
-
-  -- Name the attached tool in the prompt when there is one, so it is obvious
-  -- whether this is going to Claude or Codex. Falls back to a neutral label:
-  -- send() will attach (and may show a picker) if nothing is running yet.
-  local attached = require("sidekick.cli.state").get({ attached = true })[1]
-  local label = attached and attached.tool and attached.tool.name or "agent"
-
-  vim.ui.input({ prompt = "Ask " .. label .. ": " }, function(input)
-    if not input or input:match("^%s*$") then
-      return
-    end
-    -- {this} becomes {position} in a real file and falls back to {selection}
-    -- elsewhere; {diags} is the always-renders wrapper defined in setup above.
-    local _, text = context:render({ msg = input .. "\n\n{this}\n{diags}" })
-    if text then
-      require("sidekick.cli").send({ text = text })
-    end
-  end)
-end
-
--- `claude` is one of sidekick's built-in tools, so no cmd config is needed --
--- it runs the claude binary already on your PATH in a scratch terminal.
 vim.keymap.set({ "n", "x" }, "<leader>ac", function()
-  require("sidekick.cli").toggle({ name = "claude", focus = true })
-end, { desc = "Sidekick: toggle Claude" })
+  require("herdr-sidekick").start_sidekick_agent_pane({ kind = "claude" })
+end, { desc = "Open Claude pane" })
 
 vim.keymap.set({ "n", "x" }, "<leader>ax", function()
-  require("sidekick.cli").toggle({ name = "codex", focus = true })
-end, { desc = "Sidekick: toggle Codex" })
+  require("herdr-sidekick").start_sidekick_agent_pane({ kind = "codex" })
+end, { desc = "Open Codex pane" })
 
--- filter = { installed = true } trims the picker to tools whose binary is
--- actually on PATH. Sidekick ships configs for twelve -- aider, amazon_q,
--- crush, cursor, gemini, grok, opencode, pi, qwen and the rest -- and without
--- this they all appear, so the list is mostly things that cannot run.
---
--- Filtering rather than pruning cli.tools: the tools table is merged with
--- tbl_deep_extend, so omitting a key does not remove it, and `installed` keeps
--- itself current if a tool is added or removed later.
 vim.keymap.set({ "n", "x" }, "<leader>aa", function()
-  require("sidekick.cli").select({ filter = { installed = true } })
-end, { desc = "Sidekick: pick a CLI tool" })
+  require("herdr-sidekick").start_sidekick_agent_pane()
+end, { desc = "Open agent pane" })
 
 vim.keymap.set({ "n", "x" }, "<leader>ap", function()
-  require("sidekick.cli").prompt()
-end, { desc = "Sidekick: send a prompt (with buffer context)" })
+  require("herdr-sidekick").prompt()
+end, { desc = "Prompt agent" })
 
--- <leader>as is a group rather than a mapping: the trailing letter picks the
--- tool, matching <leader>ac / <leader>ax above. Both send unsubmitted, so the
--- prompt lands in the tool's input for you to edit or confirm with <CR> --
--- worth having when the message is a bare reference and you often want to add
--- "...focusing on X". focus = true puts the cursor there to do it.
-local function sidekick_summarize(name)
-  return function()
-    require("sidekick.cli").send({
-      name = name,
-      prompt = "summarize",
-      submit = false,
-      focus = true,
-    })
-  end
-end
+vim.keymap.set("x", "<leader>as", function()
+  require("herdr-sidekick").send_selection()
+end, { desc = "Send selection reference to agent" })
 
-vim.keymap.set({ "n", "x" }, "<leader>asc", sidekick_summarize("claude"),
-  { desc = "Sidekick: summarise -- Claude" })
+vim.keymap.set("n", "<leader>as", function()
+  require("herdr-sidekick").send()
+end, { desc = "Send selection to agent" })
 
-vim.keymap.set({ "n", "x" }, "<leader>asx", sidekick_summarize("codex"),
-  { desc = "Sidekick: summarise -- Codex" })
+-- <leader>at, mirroring ap/as: sends to a *different* running herdr agent
+-- instead of the one tied to this project (e.g. handing a selection to a
+-- review session someone else has open). Sends directly when there is
+-- exactly one other agent, otherwise shows a picker. herdr-sidekick focuses
+-- the target automatically (no option needed here for it), but only when
+-- it turns out to share this pane's tab -- which excludes most
+-- send_to_agent() targets by its own default (exclude_self), but not
+-- necessarily all of them.
+vim.keymap.set("x", "<leader>at", function()
+  require("herdr-sidekick").send_selection_to_agent()
+end, { desc = "Send selection to other agent" })
 
-vim.keymap.set({ "n", "x" }, "<leader>ai", sidekick_ask,
-  { desc = "Sidekick: ask about this file (saves first, adds diagnostics)" })
+vim.keymap.set("n", "<leader>at", function()
+  require("herdr-sidekick").send_to_agent()
+end, { desc = "Send selection to other agent" })
+
+-- <leader>an: annotate the selection (or the cursor line with none) with a
+-- short comment, without sending anything yet -- build up several of these
+-- while reading through code, then batch-send them from <leader>al's list
+-- view. <leader>al opens that list.
+vim.keymap.set({ "n", "x" }, "<leader>an", function()
+  require("herdr-sidekick").annotate()
+end, { desc = "Annotate selection/line" })
+
+vim.keymap.set("n", "<leader>al", function()
+  require("herdr-sidekick").annotation_list()
+end, { desc = "List annotations" })
+
+-- <leader>ad: pin a specific running agent (any tab/workspace) as the one
+-- send()/prompt()/annotate() target by default from now on, overriding the
+-- normal "whichever agent is in this tab" lookup -- until it stops running,
+-- at which point the picker comes back up automatically on the next send.
+vim.keymap.set("n", "<leader>ad", function()
+  require("herdr-sidekick").assign_default_agent()
+end, { desc = "Assign default sidekick agent" })
 
 -- ── Notes: obsidian.nvim ─────────────────────────────────────────────────
 -- Writing and navigating the Obsidian vaults in iCloud without leaving nvim:

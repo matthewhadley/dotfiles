@@ -82,10 +82,6 @@
       "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
       "src": "https://github.com/nvim-lua/plenary.nvim"
     },
-    "sidekick.nvim": {
-      "rev": "208e1c5b8170c01fd1d07df0139322a76479b235",
-      "src": "https://github.com/folke/sidekick.nvim"
-    },
     "telescope-frecency.nvim": {
       "rev": "5479d8a269e30479280c59e44f805396127653e6",
       "src": "https://github.com/nvim-telescope/telescope-frecency.nvim"
