@@ -33,7 +33,7 @@ command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --p
 
 [[actions]]
 id = "new-worktree"
-title = "New/Open worktree"
+title = "Open worktree"
 contexts = ["workspace"]
 command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint new-worktree"]
 
@@ -47,7 +47,7 @@ command = ["bash", "open-project.sh"]
 
 [[panes]]
 id = "new-worktree"
-title = "New/Open worktree"
+title = "Open worktree"
 placement = "popup"
 width = "60%"
 height = "50%"

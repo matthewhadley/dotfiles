@@ -107,7 +107,7 @@ description = "Open project and apply workspace layout"
 key = "prefix+shift+n"
 type = "plugin_action"
 command = "custom.new-worktree"
-description = "New/Open worktree and apply workspace layout"
+description = "Open worktree and apply workspace layout"
 
 [ui.toast]
 delivery = "herdr"
