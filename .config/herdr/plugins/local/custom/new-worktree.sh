@@ -45,6 +45,41 @@ HERDR_PLUGIN_ROOT="$worktrunk_root" bash "$worktrunk_root/picker.sh" --create-ba
 after=$(herdr workspace list | jq -r '.result.workspaces[] | select(.focused) | .workspace_id')
 
 if [[ -n $after && $after != "$before" ]]; then
+  # Only force an apply the plugin isn't already doing itself. Its event hook
+  # lays out a brand-new linked worktree on workspace.created/focused, and
+  # `apply` is NOT idempotent -- plan.rs has no adopt-or-reuse path, it builds
+  # the layout fresh -- so running both against one workspace gives it two of
+  # everything. That is exactly what happened to ~/dev/herdr-bar.grok: nine
+  # tabs, and the hook's `agent start` losing the claude-w12 name to the
+  # agent our own apply had just started.
+  #
+  # Polled rather than checked once, because at this instant the hook may be
+  # mid-flight in another process and the workspace looks equally bare either
+  # way. Waiting for a second tab distinguishes them: execute_plan creates
+  # tabs back-to-back over the socket with nothing blocking in between (the
+  # slow parts -- the 15s shell-ready wait, the 60s agent start -- all come
+  # after the loop), so if the hook has this workspace, tab two lands within
+  # a fraction of a second. Note the count goes 1 -> 1 -> 2: the layout's
+  # first tab REPLACES the workspace's root tab, so a rising count, not a
+  # changed tab id, is the signal.
+  #
+  # Two seconds is that latency with a wide margin for a cold binary start --
+  # observation bears it out: in the herdr-bar.grok incident the tabs were all
+  # up long before the run's 15s pause, which was the shell-ready timeout
+  # sitting on Claude's "do you trust this folder" prompt. Nothing appearing
+  # in the window means no hook is coming -- the claim for this checkout path
+  # was taken the first time round and the hook skipped -- which is the one
+  # case this force-apply exists for, and the only case that pays the full
+  # wait. A worktree whose workspace is already open and arranged exits on
+  # the first poll.
+  deadline=$((SECONDS + 2))
+  while :; do
+    tabs=$(herdr tab list --workspace "$after" 2>/dev/null | jq '.result.tabs | length')
+    (( ${tabs:-1} > 1 )) && exit 0
+    (( SECONDS >= deadline )) && break
+    sleep 0.1
+  done
+
   wsm_root=$(jq -r '.[] | select(.plugin_id == "herdr-plugin-workspace-manager") | .plugin_root' ~/.config/herdr/plugins.json)
   wsm_config_dir=$(herdr plugin config-dir herdr-plugin-workspace-manager)
   # HERDR_WSM_CONFIG: calling the binary directly bypasses herdr's own
