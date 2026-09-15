@@ -29,13 +29,25 @@
 # bare-repo branch and anything else cost one grep.
 grep -qE ' (refs/heads/main|refs/remotes/origin/main)$' || exit 0
 
-reporter=$HOME/.config/herdr/plugins/local/custom/dotfiles-status.sh
-[ -r "$reporter" ] || exit 0
+command -v herdr >/dev/null 2>&1 || exit 0
 
+# Invoked as a plugin action rather than by running dotfiles-status.sh
+# directly, for the audit trail: herdr records every action run with its exit
+# code and captured stderr, so a refresh that silently does nothing can still
+# be found afterwards --
+#
+#   herdr plugin log list --plugin custom --limit 5 \
+#     | jq -c '.result.logs[] | {action_id, exit_code, stderr}'
+#
+# which a direct call would give no record of at all. One extra process, and
+# nothing waits on either. The trail lives inside herdr, so it needs no log
+# file of its own to grow or rotate; the blind spot is herdr being down, which
+# is also the one case where there would be nothing useful to report.
+#
 # Backgrounded with its output closed. The reporter talks to herdr over a
 # socket; a wedged or restarting server would otherwise stall every commit and
 # fetch in $HOME until the CLI times out. The redirect earns its place as much
 # as the &: a child inheriting the hook's stdout can leave git waiting for EOF
 # long after the hook itself has exited.
-(bash "$reporter" >/dev/null 2>&1 &)
+(herdr plugin action invoke custom.dotfiles-status >/dev/null 2>&1 &)
 exit 0
