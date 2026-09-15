@@ -125,21 +125,26 @@ tab_bar_position = "top"
 status_indicators = "dots"
 
 # Default is [["state_icon", "workspace"], ["branch", "git_status"]]. The extra
-# token is workspace metadata reported by the custom plugin's
+# tokens are workspace metadata reported by the custom plugin's
 # dotfiles-status.sh. The branch this Space shows is the landing worktree's own
 # `bare-repo`, which is the right label but has no upstream, so its git_status
-# is always empty -- the unpushed count belongs to `main` over in $HOME. Every
-# other Space leaves the token unset, where it renders as nothing.
+# is always empty -- the ahead/behind worth seeing belongs to `main` over in
+# $HOME. Every other Space leaves them unset, where they render as nothing.
 #
-# The colour is the gruvbox palette's `green` (src/app/state.rs), which is what
-# sidebar.rs paints a built-in ahead count with; `behind` would be red. fg
-# wants a hex here: the palette names theme.custom.* accepts are rejected, and
-# nothing exposes the live palette, so the value is written out and only holds
-# while the theme does.
+# The colours are the gruvbox palette's `green` and `red` (src/app/state.rs),
+# which is what sidebar.rs paints a built-in ahead/behind marker with, in that
+# order. fg wants a hex here: the palette names theme.custom.* accepts are
+# rejected, and nothing exposes the live palette, so the values are written out
+# and only hold while the theme does.
 [ui.sidebar.spaces]
 rows = [
   ["state_icon", "workspace"],
-  ["branch", "git_status", { token = "$dotfiles_ahead", fg = "#b8bb26" }],
+  [
+    "branch",
+    "git_status",
+    { token = "$dotfiles_ahead", fg = "#b8bb26" },
+    { token = "$dotfiles_behind", fg = "#fb4934" },
+  ],
 ]
 
 [theme]

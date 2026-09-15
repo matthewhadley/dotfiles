@@ -1,0 +1,41 @@
+#!/bin/sh
+# Refreshes the herdr sidebar's dotfiles ahead/behind token whenever the refs
+# that token is derived from actually move. Symlinked to
+# ~/.dotfiles/hooks/reference-transaction by `dotfiles deps`, so edits here
+# take effect with no reinstall.
+#
+# Why a hook at all: herdr re-reads every repo's git status on a 1.5s tick
+# (GIT_REMOTE_STATUS_REFRESH_INTERVAL), guarded by an mtime fingerprint, so
+# ordinary repos keep accurate markers with no help. It can only do that for
+# repos it can discover, and this one's work tree is $HOME, which git
+# discovery never sees. The Space herdr does see is the landing worktree on
+# `bare-repo`, so `main`'s ahead/behind has to be reported in as workspace
+# metadata -- see dotfiles-status.sh.
+#
+# Why reference-transaction and not post-commit: it is the only hook that also
+# catches a push (via the local refs/remotes/origin/main update -- git has no
+# post-push) and a fetch, and it fires however the ref moved: the wrapper,
+# lazygit, raw `git --git-dir=`, or an agent that never applied the AGENTS.md
+# rule about using the wrapper.
+#
+# THE STATE FILTER MUST STAY FIRST. This hook also runs in the "preparing" and
+# "prepared" states, where a non-zero exit ABORTS the transaction -- failing
+# the commit or fetch outright. Only in "committed" is the exit status
+# ignored, and only then do the refs actually hold their new values.
+[ "$1" = committed ] || exit 0
+
+# stdin is "<old-oid> <new-oid> <ref>" lines. Only the two refs the count is
+# derived from are worth a refresh; AUTO_MERGE, the landing worktree's own
+# bare-repo branch and anything else cost one grep.
+grep -qE ' (refs/heads/main|refs/remotes/origin/main)$' || exit 0
+
+reporter=$HOME/.config/herdr/plugins/local/custom/dotfiles-status.sh
+[ -r "$reporter" ] || exit 0
+
+# Backgrounded with its output closed. The reporter talks to herdr over a
+# socket; a wedged or restarting server would otherwise stall every commit and
+# fetch in $HOME until the CLI times out. The redirect earns its place as much
+# as the &: a child inheriting the hook's stdout can leave git waiting for EOF
+# long after the hook itself has exited.
+(bash "$reporter" >/dev/null 2>&1 &)
+exit 0

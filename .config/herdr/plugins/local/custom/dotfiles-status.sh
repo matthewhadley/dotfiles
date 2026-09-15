@@ -1,7 +1,7 @@
 #!/bin/bash
-# Pushes the dotfiles repo's unpushed-commit count into the herdr sidebar, as
-# the $dotfiles_ahead workspace metadata token rendered by
-# ui.sidebar.spaces.rows (see ~/.config/herdr/config.toml).
+# Pushes the dotfiles repo's ahead/behind counts into the herdr sidebar, as
+# the $dotfiles_ahead and $dotfiles_behind workspace metadata tokens rendered
+# by ui.sidebar.spaces.rows (see ~/.config/herdr/config.toml).
 #
 # Why anything is needed: the sidebar's built-in `branch` and `git_status`
 # tokens come from git discovery at the workspace's own path, and for this
@@ -17,8 +17,13 @@
 # ~/.dotfiles is bare -- herdr lists it with no `branch` field at all. Nothing
 # to point a cwd at, so the count is reported in instead.
 #
-# Only the count: the branch name is the one thing the sidebar already gets
+# Only the counts: the branch name is the one thing the sidebar already gets
 # right, now that the orphan branch is named `bare-repo`.
+#
+# Run from ~/.config/dotfiles/hooks/reference-transaction on every relevant
+# ref change, from herdr's [[startup]] hook, on workspace.focused (which
+# populates a freshly opened workspace, tokens being keyed by workspace id),
+# and from the `Refresh dotfiles status` action.
 #
 # Read-only ref queries, so this calls git with --git-dir directly rather than
 # going through the `dotfiles` wrapper: no work tree is involved, no pathspec
@@ -39,22 +44,34 @@ ws=$(herdr worktree list --cwd "$landing_worktree" 2>/dev/null \
 [[ -n $ws ]] || exit 0
 
 # HEAD of the bare repo, i.e. whatever branch $HOME's work tree is on -- not
-# the landing worktree's. Empty when the branch has no upstream. Only refs are
-# walked, so this stays cheap enough to run on every workspace switch, unlike a
-# `status` over $HOME -- which is why no dirty marker is reported here.
-ahead=$(git --git-dir="$git_dir" rev-list --count '@{u}..HEAD' 2>/dev/null)
+# the landing worktree's. Both counts come from one walk; empty when the
+# branch has no upstream. Only refs are walked, so this stays cheap enough for
+# a hook that fires on every ref transaction, unlike a `status` over $HOME --
+# which is why no dirty marker is reported here.
+#
+# Behind is only ever as fresh as the last fetch: origin/main is a local ref,
+# so another machine's push is invisible until something here fetches. The
+# reference-transaction hook covers that too, since a fetch moves the ref.
+counts=$(git --git-dir="$git_dir" rev-list --left-right --count '@{u}...HEAD' 2>/dev/null)
+behind=$(printf '%s' "$counts" | awk '{print $1}')
+ahead=$(printf '%s' "$counts" | awk '{print $2}')
 
 # One stable --source: a workspace accepts sequenced token reports from at most
 # 32 distinct sources in its lifetime, and clearing or expiry does not give a
-# slot back. No --ttl-ms, so the value survives until the next report rather
+# slot back. No --ttl-ms, so a value survives until the next report rather
 # than blanking out between refreshes; this script is the only writer.
 #
-# Cleared rather than reported empty when there is nothing to push, so the row
-# doesn't keep a stale "↑" or an orphaned separator.
-if [[ ${ahead:-0} -gt 0 ]]; then
-  herdr workspace report-metadata "$ws" --source dotfiles \
-    --token "dotfiles_ahead=↑$ahead" >/dev/null
-else
-  herdr workspace report-metadata "$ws" --source dotfiles \
-    --clear-token dotfiles_ahead >/dev/null
-fi
+# Cleared rather than reported empty when a count is zero, so the row doesn't
+# keep a stale arrow or an orphaned separator.
+report() {
+  if [[ ${2:-0} -gt 0 ]]; then
+    herdr workspace report-metadata "$ws" --source dotfiles \
+      --token "$1=$3$2" >/dev/null
+  else
+    herdr workspace report-metadata "$ws" --source dotfiles \
+      --clear-token "$1" >/dev/null
+  fi
+}
+
+report dotfiles_ahead "${ahead:-0}" '↑'
+report dotfiles_behind "${behind:-0}" '↓'

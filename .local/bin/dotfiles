@@ -237,6 +237,29 @@ _dotfiles_brew() {
   return "${pipestatus[1]}"
 }
 
+_dotfiles_hooks() {
+  # Hooks live in the git dir, which is not tracked, so each machine has to
+  # grow its own copy from the tracked source. Symlinked rather than copied so
+  # editing the tracked file takes effect at once, with no reinstall step to
+  # forget and no second copy to drift.
+  #
+  # Only reference-transaction is managed here. commit-msg is left alone: it
+  # arrives from ~/.git-templates/hooks at clone time, and is shared with every
+  # other repo on the machine.
+  local src="$HOME/.config/dotfiles/hooks"
+  local dst="$HOME/.dotfiles/hooks"
+  local hook
+  [[ -d $dst ]] || mkdir -p "$dst"
+  for hook in reference-transaction; do
+    if [[ ! -r $src/$hook ]]; then
+      echo "missing tracked hook: $src/$hook" >&2
+      return 1
+    fi
+    ln -sfn "$src/$hook" "$dst/$hook" || return 1
+    echo "linked $dst/$hook -> $src/$hook"
+  done
+}
+
 _dotfiles_deps() {
   # One entrypoint for everything this machine's package/plugin state depends
   # on. brew and herdr each reconcile differently -- brew bundle diffs the
@@ -249,6 +272,9 @@ _dotfiles_deps() {
   echo
   echo "==> herdr plugins"
   "$herdr_script"
+  echo
+  echo "==> git hooks"
+  _dotfiles_hooks
 }
 
 _dotfiles_resolve() {
@@ -297,8 +323,9 @@ dotfiles git bare repo management at ~/.dotfiles
   check          fetch, then report ahead/behind and any local changes
   brew           brew bundle install from .config/dotfiles/Brewfile, then run
                  any matching .config/dotfiles/brew-post-install.d/<formula>
-  deps           brew, then herdr's install-plugins.sh -- everything this
-                 machine's package/plugin state depends on, in one call
+  deps           brew, then herdr's install-plugins.sh, then link this repo's
+                 git hooks -- everything this machine's package/plugin state
+                 depends on, in one call
   hunk           open the changes in Hunk; bare `hunk` is the working tree,
                  otherwise the args are a hunk command (`hunk --staged`,
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
