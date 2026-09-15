@@ -24,6 +24,14 @@ brew "uv"
 # Referenced by .zshrc.d/00.env.zsh for FPATH, same story as jq above.
 brew "zsh-completions"
 
+# bat's config and terafox theme are tracked under .config/bat/, but a theme in
+# themes/ does nothing until it is compiled into bat's binary cache -- and that
+# cache is keyed to the bat version that wrote it, so an upgrade silently drops
+# back to the stock theme. brew-post-install.d/bat rebuilds it, which is why bat
+# needs declaring here at all: hooks only run for formulae in this file. Was
+# installed on this machine but never declared, same story as jq above.
+brew "bat"
+
 brew "dnsmasq"
 brew "gh"
 brew "git"

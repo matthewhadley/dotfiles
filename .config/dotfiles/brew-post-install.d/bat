@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Rebuild bat's theme cache after bat itself is installed or upgraded.
+#
+# themes/terafox.tmTheme is inert on its own: bat only reads themes out of a
+# binary cache, and that cache records the version that wrote it in
+# ~/.cache/bat/metadata.yaml. A bat that does not match ignores it, so an
+# upgrade silently drops back to the stock theme with nothing to indicate why.
+# The two occasions this hook fires are exactly the two that need it -- a fresh
+# machine, where the checkout supplies the theme file but no cache, and an
+# upgrade, which invalidates the cache already there. "Using" (already current)
+# is skipped by the runner, so the rest of the time this costs nothing.
+#
+# git-delta reads bat's cache off disk rather than shelling out to bat, so this
+# is also what keeps lazygit's terafox diff theme working across a bat upgrade.
+#
+# Rebuilding only. Regenerating the theme from nightfox is terafox-bat-theme's
+# job, and that needs nvim to have installed nightfox first -- not something
+# that can be assumed at brew time on a fresh machine, where the tracked
+# .tmTheme is the authority anyway.
+set -euo pipefail
+
+bat cache --build
