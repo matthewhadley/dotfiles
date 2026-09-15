@@ -49,7 +49,7 @@ alias gd='git diff'
 alias gmb='git merge --no-ff'
 
 # cat with Neovim's syntax highlighting
-alias ccat='nvcat'
+alias ccat='bat -p'
 
 # nvim, with the file tree only when there is no specific file to open.
 #
