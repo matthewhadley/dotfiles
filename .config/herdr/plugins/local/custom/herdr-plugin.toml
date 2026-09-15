@@ -5,6 +5,26 @@ min_herdr_version = "0.8.0"
 description = "Personal fzf-driven workspace/worktree helpers with workspace-manager layout auto-apply."
 platforms = ["macos", "linux"]
 
+# Keep the dotfiles workspace's $dotfiles sidebar token current. Reported once
+# when the server restores its session, then refreshed on every workspace
+# switch -- there is no event for "you committed", and a focus hook is the
+# cheapest thing that fires often enough to stay roughly true. The script exits
+# immediately when the dotfiles workspace isn't open, and does only ref reads
+# otherwise.
+[[startup]]
+command = ["bash", "dotfiles-status.sh"]
+
+[[events]]
+on = "workspace.focused"
+command = ["bash", "dotfiles-status.sh"]
+
+# Manual refresh, for when a commit or push should show up without waiting for
+# the next workspace switch.
+[[actions]]
+id = "dotfiles-status"
+title = "Refresh dotfiles status"
+command = ["bash", "dotfiles-status.sh"]
+
 [[actions]]
 id = "open-project"
 title = "Open project"
