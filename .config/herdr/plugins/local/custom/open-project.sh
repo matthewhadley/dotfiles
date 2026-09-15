@@ -169,13 +169,13 @@ if [[ -n $open_ws ]]; then
 fi
 
 # ~/dev/dotfiles is a linked worktree of the bare ~/.dotfiles repo on an orphan
-# `docs` branch -- an ordinary directory under ~/dev as far as the browser
+# `bare-repo` branch -- an ordinary directory under ~/dev as far as the browser
 # above is concerned, so basename already labels it "dotfiles" and nothing
 # needs normalising. Only the layout has to be named: the plugin matches
 # workspaces on worktree.checkout_path/repo_root, which herdr does not report,
 # so a bare `apply` would fall through to globalLayout and hand it `standard`
 # -- whose hunk and zsh panes would then resolve `dotfiles` pathspecs against
-# the docs worktree instead of $HOME.
+# the landing worktree instead of $HOME.
 layout=
 [[ $dir == "$HOME/dev/dotfiles" ]] && layout=dotfiles
 

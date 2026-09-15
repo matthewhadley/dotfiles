@@ -24,7 +24,7 @@ layouts:
             command: hunk diff --watch
 
   # standard, but for the dotfiles bare repo. Applied to a workspace rooted at
-  # ~/dev/dotfiles -- a linked worktree of ~/.dotfiles on an orphan `docs`
+  # ~/dev/dotfiles -- a linked worktree of ~/.dotfiles on an orphan `bare-repo`
   # branch holding only README.md and AGENTS.md. That directory exists to be a
   # project root: $HOME is the real work tree but a poor root, and ~/.dotfiles
   # is a bare git dir with nothing in it but objects/ and refs/.
@@ -98,8 +98,8 @@ globalLayout: standard
 # That is doubly true of the dotfiles repo. Its work tree is $HOME, which git
 # discovery never sees, so even a herdr that did report worktrees would report
 # none for a pane standing there. ~/dev/dotfiles IS a discoverable worktree --
-# but on the orphan `docs` branch, so matching it by repo_root would resolve
-# the whole dotfiles setup to a two-file docs checkout.
+# but on the orphan `bare-repo` branch, so matching it by repo_root would
+# resolve the whole dotfiles setup to a two-file landing checkout.
 #
 # The dotfiles layout is therefore selected by name, not by matching:
 #   HERDR_WSM_LAYOUT=dotfiles herdr-workspace-manager apply

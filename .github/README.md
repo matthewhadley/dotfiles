@@ -8,9 +8,9 @@ Tracked in a **bare git repo** at `~/.dotfiles` whose work tree is `$HOME`
 git clone --bare git@github.com:matthewhadley/dotfiles.git "$HOME/.dotfiles"
 git --git-dir="$HOME/.dotfiles" config status.showUntrackedFiles no
 git --git-dir="$HOME/.dotfiles" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
-git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" checkout bare-repo
+git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" checkout main
 git --git-dir="$HOME/.dotfiles" fetch origin
-git --git-dir="$HOME/.dotfiles" branch --set-upstream-to=origin/bare-repo bare-repo
+git --git-dir="$HOME/.dotfiles" branch --set-upstream-to=origin/main main
 exec zsh -l
 dotfiles scopes set nvim vim zsh git ghostty herdr dotfiles readme agents
 ```
