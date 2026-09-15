@@ -92,6 +92,50 @@ local function tracked_files()
   return paths
 end
 
+-- Watch the repo, so status changed outside this nvim lands in the tree.
+--
+-- The write subscription in setup() only catches edits made here. Committing,
+-- staging or checking out from a shell writes no buffer, so the markers sat
+-- stale until the next manual refresh -- a fully committed tree could still be
+-- showing M against every file.
+--
+-- Deliberately a watcher of its own rather than neo-tree.git.watch. That one
+-- registers through fs_watch's shared registry, which is reference counted and
+-- keyed by git dir, and the filesystem source's stop_watchers decrements that
+-- count for every worktree whose root contains its own path -- $HOME contains
+-- every project, so ours matches every time. Only git.status() increments it,
+-- and that never runs for this worktree, so the count would drift down until
+-- the watcher stopped. Owning the handle keeps it off that ledger.
+--
+-- Watching the git dir itself, not recursively: a commit rewrites the index at
+-- the top level, which is enough to catch commits, stages, resets and
+-- checkouts alike, while recursion would fire once per loose object written.
+local git_watcher
+local function watch_repo(home)
+  if git_watcher then
+    return
+  end
+  local handle = (vim.uv or vim.loop).new_fs_event()
+  if not handle then
+    return
+  end
+  git_watcher = handle
+
+  handle:start(home .. "/.dotfiles", {}, function(err, fname)
+    -- index.lock and its siblings churn throughout every git command. Acting
+    -- on them means refreshing mid-write, against a half-written index.
+    if err or (fname and vim.endswith(fname, ".lock")) then
+      return
+    end
+    vim.schedule(function()
+      -- One git command touches several files; collapse the burst.
+      utils.debounce("dotfiles_git_status", function()
+        manager.refresh(M.name)
+      end, 100, utils.debounce_strategy.CALL_LAST_ONLY)
+    end)
+  end)
+end
+
 -- Register $HOME as a git worktree, so the git_status component has something
 -- to find for these nodes.
 --
@@ -152,6 +196,9 @@ local function load_git_status(home)
     -- what neo-tree does for its own.
     git._upward_worktree_cache = setmetatable({}, { __mode = "kv" })
   end
+
+  -- Lazily, so a session that never opens this tree never starts a watcher.
+  watch_repo(home)
 
   return true
 end
