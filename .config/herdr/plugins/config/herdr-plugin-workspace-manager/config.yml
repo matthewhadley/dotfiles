@@ -2,9 +2,9 @@
 layouts:
   - id: standard
     tabs:
-      - title: agent
+      - title: claude
         panes:
-          - title: agent
+          - title: claude
             agent: claude
       - title: zsh
         panes:
@@ -48,9 +48,9 @@ layouts:
   #                  works fine; only Grep/Glob need an explicit path.
   - id: dotfiles
     tabs:
-      - title: agent
+      - title: claude
         panes:
-          - title: agent
+          - title: claude
             agent: claude
       - title: zsh
         panes:
