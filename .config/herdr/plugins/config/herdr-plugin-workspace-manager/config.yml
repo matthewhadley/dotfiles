@@ -6,9 +6,12 @@ layouts:
         panes:
           - title: agent
             agent: claude
-      - title: nvim
+      - title: zsh
         panes:
-          - title: nvim
+          - title: zsh
+      - title: neovim
+        panes:
+          - title: neovim
             command: nv
       - title: lazygit
         panes:
@@ -19,6 +22,56 @@ layouts:
         panes:
           - title: hunk
             command: hunk diff --watch
+
+  # standard, but for the dotfiles bare repo. Applied to a workspace rooted at
+  # ~/dev/dotfiles -- a linked worktree of ~/.dotfiles on an orphan `docs`
+  # branch holding only README.md and AGENTS.md. That directory exists to be a
+  # project root: $HOME is the real work tree but a poor root, and ~/.dotfiles
+  # is a bare git dir with nothing in it but objects/ and refs/.
+  #
+  # Consequence: the workspace cwd is NOT the work tree, and panes cannot set
+  # their own cwd (the schema gives them only title/command/env/agent/split --
+  # no cwd), so each pane below deals with it in the way that suits it:
+  #
+  #   nvim, lazygit  nothing to do. `dotfiles nv` cds to $HOME in a subshell
+  #                  of its own, and `dotfiles lazygit` passes --git-dir and
+  #                  --work-tree, so both are cwd-independent already.
+  #   hunk, zsh      `cd ~` first. The wrapper deliberately omits -C "$HOME"
+  #                  so pathspecs resolve against the caller -- which is what
+  #                  makes `cd ~/.config/ghostty && dotfiles add config` work,
+  #                  and what would otherwise send these two looking under
+  #                  ~/dev/dotfiles/. Joined with "; " ahead of the plugin's
+  #                  `exec "$SHELL" -i` handback, so the cd survives into the
+  #                  interactive shell.
+  #   agent          stays at ~/dev/dotfiles, and reads the AGENTS.md there.
+  #                  Reaching the real dotfiles is by absolute path, which
+  #                  works fine; only Grep/Glob need an explicit path.
+  - id: dotfiles
+    tabs:
+      - title: agent
+        panes:
+          - title: agent
+            agent: claude
+      - title: zsh
+        panes:
+          - title: zsh
+            command: cd ~
+      - title: neovim
+        panes:
+          - title: neovim
+            command: dotfiles nv
+      - title: lazygit
+        panes:
+          - title: lazygit
+            command: dotfiles lazygit
+            persist: false
+      - title: hunk
+        panes:
+          - title: hunk
+            # Splices to `hunk diff --exclude-untracked --watch`. The exclude
+            # is load-bearing: $HOME holds half a million untracked files and
+            # hunk's `git ls-files --others` ignores status.showUntrackedFiles.
+            command: cd ~ && dotfiles hunk --watch
 
 # Fallback for any repo below with no workspaces: entry of its own. Only
 # fires for a genuinely NEW linked worktree (never the repo's main checkout,
@@ -32,14 +85,23 @@ globalLayout: standard
 # than globalLayout (e.g. `- repo: ~/dev/some-project, defaultLayout: other`).
 # Omitted entirely: not needed just to opt a normal repo INTO the shared
 # layout, since globalLayout already covers that.
-
-# No `workspaces:` entry for dotfiles: it's a bare repo at ~/.dotfiles whose
-# work tree is $HOME (via `dotfiles`'s --git-dir/--work-tree flags), which
-# plain git discovery never sees ($HOME has no .git). herdr therefore never
-# reports a worktree.repo_root for a pane cd'd into $HOME, so no `repo:`
-# entry could ever match it -- the automatic worktree.created/workspace.*
-# hooks are inert here regardless of what's listed below.
 #
-# Use this layout for dotfiles by naming it explicitly instead:
-#   herdr-workspace-manager apply standard
-# or the prefix+shift+l keybinding with HERDR_WSM_LAYOUT=standard set.
+# Worth knowing before adding one: on this machine `herdr workspace list`
+# emits no `worktree` object at all, even for an ordinary repo. The plugin
+# sources target.cwd from worktree.checkout_path (apply_core.rs resolve_target)
+# and match_score needs Some(checkout_path) for a `path:` rule and
+# Some(repo_root) for a `repo:` rule (config.rs), so NO workspaces entry can
+# currently match anything -- match_workspace_layout always falls through to
+# globalLayout. An entry added here would be inert; name the layout explicitly
+# instead.
+#
+# That is doubly true of the dotfiles repo. Its work tree is $HOME, which git
+# discovery never sees, so even a herdr that did report worktrees would report
+# none for a pane standing there. ~/dev/dotfiles IS a discoverable worktree --
+# but on the orphan `docs` branch, so matching it by repo_root would resolve
+# the whole dotfiles setup to a two-file docs checkout.
+#
+# The dotfiles layout is therefore selected by name, not by matching:
+#   HERDR_WSM_LAYOUT=dotfiles herdr-workspace-manager apply
+# The custom plugin's open-project.sh does exactly that when the directory
+# picked is ~/dev/dotfiles, so `Open project` -> `dotfiles` just works.
