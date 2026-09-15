@@ -301,10 +301,20 @@ require("neo-tree").setup({
       -- open directory would collapse it. Hence the guard.
       -- Use `open`, not `toggle_directory`: the filesystem source wraps `open`
       -- with the scan callback, the bare common `toggle_directory` no-ops.
+      --
+      -- Through state.commands, which is how neo-tree resolves a mapping given
+      -- as a plain string -- so each source gets its own `open`. Naming the
+      -- filesystem module directly imposes its command on every tree, and the
+      -- dotfiles source cannot run it: that `open` rescans the real directory
+      -- and reads state.filtered_items, which only the filesystem source's
+      -- config populates, so it errors with
+      --   ignored.lua:81: attempt to index field 'filtered_items'
+      -- on any click that expands a folder. See lua/neotree_dotfiles.lua, which
+      -- builds its commands off the common set for exactly this reason.
       ["<Right>"] = function(state)
         local node = state.tree:get_node()
         if node.type == "directory" and node:is_expanded() then return end
-        require("neo-tree.sources.filesystem.commands").open(state)
+        state.commands.open(state)
       end,
       -- close_node already does both halves: collapse an expanded directory,
       -- otherwise collapse the parent and move focus up to it.
@@ -317,13 +327,13 @@ require("neo-tree").setup({
       -- release the node under the cursor is the one that was clicked.
       --
       -- Guarded, because a separator drag also ends in a release -- see
-      -- mouse_dragged above.
+      -- mouse_dragged above. state.commands.open for the reason under <Right>.
       ["<LeftRelease>"] = function(state)
         if mouse_dragged then
           mouse_dragged = false
           return
         end
-        require("neo-tree.sources.filesystem.commands").open(state)
+        state.commands.open(state)
       end,
     },
   },
