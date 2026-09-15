@@ -16,10 +16,14 @@
 -- nothing else.
 
 local common_commands = require("neo-tree.sources.common.commands")
+local events = require("neo-tree.events")
 local file_items = require("neo-tree.sources.common.file-items")
+local git = require("neo-tree.git")
+local git_parser = require("neo-tree.git.parser")
 local log = require("neo-tree.log")
 local manager = require("neo-tree.sources.manager")
 local renderer = require("neo-tree.ui.renderer")
+local utils = require("neo-tree.utils")
 
 -- Commands built from the common set rather than the filesystem source's.
 --
@@ -88,6 +92,70 @@ local function tracked_files()
   return paths
 end
 
+-- Register $HOME as a git worktree, so the git_status component has something
+-- to find for these nodes.
+--
+-- The component takes nothing off `state`: it calls git.find_existing_worktree
+-- to walk a module-global registry that git.status() populates. git.status()
+-- cannot populate it here, because it locates the repo by running rev-parse
+-- from the path -- and $HOME holds no .git, the repo being bare at
+-- ~/.dotfiles. Discovery fails, no worktree is ever registered, and every node
+-- renders without a marker. Hence building the entry by hand.
+--
+-- Writing to that global registry is safe because it is keyed by worktree root
+-- and find_existing_worktree returns the *longest* root containing the path. A
+-- project under ~/dev keeps its own status; only paths with no nearer worktree
+-- fall through to this entry, and for those the dotfiles status is the right
+-- answer rather than a leak. This is the opposite of the .neotreeignore
+-- problem described at the top: that one imposed $HOME's rules on subtrees
+-- that had their own, this one is shadowed by them.
+--
+-- -uno rather than leaning on the repo's own status.showUntrackedFiles=no: an
+-- untracked path bubbles "?" up to its parent directories, and those
+-- directories are in this tree even when the file that explains the marker is
+-- not.
+---@return boolean? ok
+---@return string? err
+local function load_git_status(home)
+  local res = vim.system({
+    "git",
+    "--git-dir=" .. home .. "/.dotfiles",
+    "--work-tree=" .. home,
+    "status",
+    "--porcelain=v1",
+    "-z",
+    "-uno",
+  }, { cwd = home, text = true }):wait()
+
+  if res.code ~= 0 then
+    return nil, vim.trim(res.stderr or "git status failed")
+  end
+
+  -- -z gives NUL-terminated records with paths unquoted and relative to the
+  -- work tree root; the parser makes them absolute and bubbles each status up
+  -- to the parent directories, which is what colours a collapsed folder.
+  local status =
+    git_parser.parse_status_porcelain(1, home, utils.gsplit_plain(res.stdout or "", "\0"), false)
+
+  local worktree = git.worktrees[home]
+  if worktree then
+    worktree.status = status
+  else
+    git.worktrees[home] = {
+      git_dir = home .. "/.dotfiles",
+      status = status,
+      status_diff = {},
+      status_progress = {},
+    }
+    -- Misses are memoised as `false`, so any path probed before now is pinned
+    -- at "no worktree above this". Dropping the cache on a new registration is
+    -- what neo-tree does for its own.
+    git._upward_worktree_cache = setmetatable({}, { __mode = "kv" })
+  end
+
+  return true
+end
+
 ---@param state neotree.State
 M.navigate = function(state, path, path_to_reveal, callback, async)
   local home = assert(vim.env.HOME)
@@ -124,6 +192,14 @@ M.navigate = function(state, path, path_to_reveal, callback, async)
     table.insert(state.default_expanded_nodes, id)
   end
 
+  -- Non-fatal: a tree with no markers still lists the right files, so a git
+  -- failure should not cost you the tree. Must run before show_nodes, which is
+  -- what invokes the components.
+  local _, git_err = load_git_status(home)
+  if git_err then
+    log.error("dotfiles: " .. git_err)
+  end
+
   file_items.advanced_sort(root.children, state)
   renderer.show_nodes({ root }, state)
 
@@ -132,6 +208,36 @@ M.navigate = function(state, path, path_to_reveal, callback, async)
   end
 end
 
-M.setup = function(config, global_config) end
+-- Refresh on write, so the markers do not go stale the moment you save.
+--
+-- navigate() is the only thing that loads the git status, and nothing else
+-- calls it. The filesystem source stays current via FS_EVENT from a libuv
+-- watcher, which is not available here: a watcher watches a directory, and
+-- this tree's contents come from a git query rather than any one directory.
+-- That leaves the write event, which is what neo-tree falls back to when the
+-- watcher is off.
+--
+-- VIM_BUFFER_CHANGED is neo-tree's name for BufWritePost, debounced 200ms, so
+-- a flurry of saves collapses into one git call.
+--
+-- Cheap when the tree is closed: manager.refresh skips any state whose window
+-- does not exist, flagging it dirty instead, so saves in unrelated projects do
+-- not trigger a git query -- and the tree still reloads when next opened.
+M.setup = function(config, global_config)
+  if global_config.enable_refresh_on_write == false then
+    return
+  end
+
+  manager.subscribe(M.name, {
+    event = events.VIM_BUFFER_CHANGED,
+    handler = function(arg)
+      -- Rejects neo-tree's own buffers and every non-empty buftype. Without
+      -- it, writing any scratch or plugin buffer would spend a git status.
+      if utils.is_real_file(arg.afile or "") then
+        manager.refresh(M.name)
+      end
+    end,
+  })
+end
 
 return M
