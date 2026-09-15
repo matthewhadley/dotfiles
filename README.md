@@ -23,7 +23,10 @@ adds.
 **Run them from `$HOME`, not from here.** The wrapper deliberately does not
 pass `-C "$HOME"`, so pathspecs resolve against the current directory — that is
 what makes `cd ~/.config/ghostty && dotfiles add config` work. Run from this
-directory, the same command looks under `~/dev/dotfiles/` instead.
+directory they resolve into this worktree, where git skips them as belonging
+to a nested repo: `dotfiles add README.md` stages nothing and still exits 0.
+`dotfiles add .` does not fail quietly but does worse, staging `dev/dotfiles`
+onto `bare-repo` as an embedded git repository.
 
 ## Two inherited quirks
 

@@ -9,9 +9,12 @@ What is specific to this directory, and the reason this file exists at all:
 
 **Run `dotfiles` commands from `$HOME`, not from here.** The wrapper does not
 pass `-C "$HOME"` — deliberately, so pathspecs resolve against the caller's
-directory. This directory is a linked worktree on an orphan `docs` branch, so
-`dotfiles add foo` run here targets `~/dev/dotfiles/foo` rather than the file
-you meant. `cd ~` first.
+directory, which is what makes `cd ~/.config/ghostty && dotfiles add config`
+work. Run from here they resolve into this worktree instead, and git skips
+paths inside a nested repo: `dotfiles add README.md` stages nothing and still
+exits 0, with no output to say so. `dotfiles add .` fails less quietly but
+worse — it stages `dev/dotfiles` onto `bare-repo` as an embedded git
+repository. `cd ~` first.
 
 **Nothing tracked on `bare-repo` is reachable from this directory.** Editing
 the dotfiles means absolute paths into `$HOME` — `~/.config/nvim/init.lua`,
