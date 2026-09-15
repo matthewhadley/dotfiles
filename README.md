@@ -3,8 +3,9 @@
 A landing pad, not the repo's contents. The dotfiles live in a bare repo at
 `~/.dotfiles` whose work tree is `$HOME`, so every tracked file sits at its
 real path — no copies, no symlinks. This directory is a linked worktree of
-that same repo on an orphan `docs` branch, holding nothing but these two
-files.
+that same repo on an orphan `bare-repo` branch, holding nothing but these
+two files — named for what this directory is, since it carries no line of
+work of its own.
 
 It exists so the setup has somewhere to *open*. `$HOME` is the correct work
 tree but a poor project root, and `~/.dotfiles` is a bare git dir — `objects/`,
@@ -26,7 +27,7 @@ what makes `cd ~/.config/ghostty && dotfiles add config` work. Run from this
 directory they resolve into this worktree, where git skips them as belonging
 to a nested repo: `dotfiles add README.md` stages nothing and still exits 0.
 `dotfiles add .` does not fail quietly but does worse, staging `dev/dotfiles`
-onto `bare-repo` as an embedded git repository.
+onto `main` as an embedded git repository.
 
 ## Two inherited quirks
 
