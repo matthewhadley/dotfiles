@@ -22,24 +22,115 @@ set -uo pipefail
 # than a child, pick it from its *parent's* listing instead of descending
 # into it first); Left always ascends a level regardless of what's
 # highlighted. Esc/no selection exits the whole script via `|| exit 0`.
+#
+# Enter with nothing highlighted -- i.e. a typed name that matches no
+# existing directory -- creates it under $dir and opens that. --print-query
+# is what makes the typed text available at all: with no match there is no
+# selection line to read, and fzf otherwise discards the query on accept.
+# Output order is query, then the --expect key, then the selection.
+#
+# A query that *does* substring-match something still opens the match, per
+# the usual fzf convention -- typing "foo" where "foobar" exists cannot
+# create "foo". Descend into the parent and type a name nothing matches, or
+# make the directory in a shell.
+#
+# Rows are displayed tilde-abbreviated, matching the prompt -- /Users/mhadley
+# is the same 14 columns on every row and says nothing. Only while browsing
+# inside $HOME, though: pressing Left past it lists /Users/mhadley alongside
+# /Users/Shared, where it is one ordinary directory among siblings and the
+# abbreviation would make it look like something else. The rewrite matches
+# $HOME as a whole path component, so a sibling like /Users/mhadleyfoo is
+# left alone, and the expansion after the picker puts the real path back
+# before anything uses it.
+#
+# Hidden directories are excluded: nothing openable as a project is named
+# with a leading dot, and listing them buries the real entries under .git,
+# .venv, node_modules-adjacent caches and (after pressing Left up to $HOME)
+# the whole of the dotfiles tree. The bare ~/.dotfiles repo is not a loss --
+# it is checked out at ~/dev/dotfiles, which is what this picker should open.
+tilde() {
+  if [[ $dir == "$HOME" || $dir == "$HOME"/* ]]; then
+    sed "s|^$HOME/|~/|"
+  else
+    cat
+  fi
+}
+
 dir=~/dev
 while true; do
   result=$(
-    find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort \
+    find "$dir" -mindepth 1 -maxdepth 1 -type d ! -name '.*' 2>/dev/null | sort \
+      | tilde \
       | fzf --expect=enter,right,left \
+            --print-query \
             --color=fg:blue \
-            --prompt="${dir/#$HOME/\~} > " \
-            --header='→ = browse into · enter = open this one · ← = up a level · esc = cancel'
-  ) || exit 0
-  key=$(head -n1 <<<"$result")
-  choice=$(tail -n +2 <<<"$result")
+            --prompt="${dir/#$HOME/\~} > "
+  )
+  status=$?
+  # Exit 1 means the query matched nothing. With --print-query that is a
+  # usable answer -- the typed name -- not a cancel, so only a real abort
+  # (130 from Esc/Ctrl-C) or an unexpected error ends the script here.
+  [[ $status == 0 || $status == 1 ]] || exit 0
+  query=$(sed -n 1p <<<"$result")
+  key=$(sed -n 2p <<<"$result")
+  choice=$(sed -n 3p <<<"$result")
+  # Safe unconditionally: rows are absolute paths unless tilde() rewrote
+  # them, and it only ever writes the ~ at the front. A directory genuinely
+  # named ~something keeps its tilde.
+  choice=${choice/#\~/$HOME}
 
   if [[ $key == left ]]; then
     dir=$(dirname "$dir")
     continue
   fi
 
-  [[ -z $choice ]] && exit 0
+  # Nothing matched. Enter on a non-empty query creates it; anything else
+  # (Right, which has nothing to descend into, or an empty query) is a no-op
+  # and quits. mkdir -p, so "clients/acme" creates both levels, and a query
+  # given as an absolute or ~ path is taken at face value rather than nested
+  # under $dir -- the rows are displayed in that form, so one can be pasted.
+  #
+  # Tested for "not Right" rather than "is Enter": fzf leaves the --expect
+  # line empty when acceptance came from anything other than one of the
+  # listed keys, and an empty key here still means accept.
+  if [[ -z $choice ]]; then
+    [[ $key != right && -n $query ]] || exit 0
+
+    case $query in
+      /* | '~'/*) target=${query/#\~/$HOME} ;;
+      *)          target=$dir/$query ;;
+    esac
+    mkdir -p "$target" \
+      || { printf '\033[31mmkdir %s failed\033[0m\n' "$target"; sleep 2; exit 1; }
+
+    # git init, because the layout assumes a repo: globalLayout `standard`
+    # gives every workspace a lazygit tab and a `hunk diff --watch` tab, and
+    # in a plain directory both open broken -- lazygit on its "initialize a
+    # new repo?" prompt, hunk with nothing to diff. Creating a directory
+    # through this picker already means "this is a project".
+    #
+    # Unless something already claims it: typing a name while browsing inside
+    # a checkout (say ~/dev/some-repo/docs) would otherwise nest a repo in a
+    # repo, which is a nuisance to unpick and never the intent. rev-parse
+    # failing outright is the only safe signal -- it means no work tree
+    # encloses $target. A successful one covers both "already a repo root"
+    # and "inside somebody else's", and neither wants another init.
+    #
+    # Nothing beyond `init`: no first commit, no README, no .gitignore. That
+    # is scaffolding, a separate decision from "make this a repo". An unborn
+    # HEAD suits both panes fine. init.templateDir installs the commit-msg
+    # hook here, and with no scopedcommits.scopes set in the new repo it
+    # allows any scope, so it will not block the early commits.
+    toplevel=$(git -C "$target" rev-parse --show-toplevel 2>/dev/null)
+    if [[ -z $toplevel ]]; then
+      git -C "$target" init --quiet \
+        || { printf '\033[31mgit init %s failed\033[0m\n' "$target"; sleep 2; exit 1; }
+    fi
+
+    dir=$target
+    break
+  fi
+
   dir=$choice
   [[ $key == right ]] || break
 done
