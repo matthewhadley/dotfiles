@@ -216,6 +216,34 @@ vim.pack.add({
   "https://github.com/nvim-neo-tree/neo-tree.nvim",
 })
 
+-- Was the left button released at the end of a drag, rather than a click?
+--
+-- <LeftRelease> fires however the button went down, including at the end of a
+-- window-separator drag. `open` then acts on the node under the *cursor*, and
+-- a press on the separator never moves the cursor -- so on a freshly opened
+-- tree it acted on line 1, the root, and collapsed the whole tree. Once the
+-- cursor has been parked on a file the same misfire just reopens that file,
+-- which is why only the first resize appeared to do anything.
+--
+-- vim.on_key observes input without consuming it, so the separator keeps
+-- resizing normally. <LeftMouse> clears the flag at the start of every click,
+-- so a drag that ends outside the tree cannot leave it set and swallow the
+-- next genuine click. Registered against a namespace so re-sourcing this file
+-- replaces the callback instead of stacking another one.
+local mouse_dragged = false
+do
+  local leftmouse = vim.keycode("<LeftMouse>")
+  local leftdrag = vim.keycode("<LeftDrag>")
+  vim.on_key(function(key, typed)
+    local k = (typed and typed ~= "") and typed or key
+    if k == leftdrag then
+      mouse_dragged = true
+    elseif k == leftmouse then
+      mouse_dragged = false
+    end
+  end, vim.api.nvim_create_namespace("neotree_mouse_drag"))
+end
+
 -- Stock defaults apart from arrow keys for expand/collapse and the icon
 -- component below, which is blanked.
 require("neo-tree").setup({
@@ -287,7 +315,16 @@ require("neo-tree").setup({
       --
       -- Bound on release rather than press: the cursor moves on press, so by
       -- release the node under the cursor is the one that was clicked.
-      ["<LeftRelease>"] = "open",
+      --
+      -- Guarded, because a separator drag also ends in a release -- see
+      -- mouse_dragged above.
+      ["<LeftRelease>"] = function(state)
+        if mouse_dragged then
+          mouse_dragged = false
+          return
+        end
+        require("neo-tree.sources.filesystem.commands").open(state)
+      end,
     },
   },
 
