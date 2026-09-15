@@ -46,6 +46,37 @@ done
 
 name=$(basename "$dir")
 
+# Already open? Focus that workspace instead of standing a second one up on the
+# same checkout.
+#
+# No override key, deliberately. Wanting a repo open twice is what worktrees are
+# for: `wt` or `herdr worktree create` gives an isolated checkout at its own
+# path, which this check then treats as the separate thing it is. A second
+# workspace on the *same* checkout means two nvims and two agents over one set
+# of files, and both would land in the switcher under the same basename label.
+#
+# `herdr worktree list --cwd` reports an open_workspace_id per worktree, which
+# is the authoritative mapping. Pane cwds are not: a pane can cd anywhere -- the
+# dotfiles layout's own zsh pane cds to $HOME -- and one workspace routinely
+# holds panes from several projects at once, so matching on those would both
+# miss and misfire.
+#
+# Filtering on .path because the listing covers every worktree of the repo, not
+# only the one asked about: ~/dev/dotfiles also returns the bare ~/.dotfiles
+# alongside it. The []? and // empty between them absorb the two non-matches --
+# a repo that simply isn't open, and the error object returned for a path in no
+# repo at all. That second case is ordinary here rather than exceptional, since
+# most of ~/dev is plain directories.
+open_ws=$(herdr worktree list --cwd "$dir" 2>/dev/null \
+  | jq -r --arg d "$dir" '.result.worktrees[]? | select(.path == $d) | .open_workspace_id // empty' \
+  | head -n1)
+
+if [[ -n $open_ws ]]; then
+  herdr workspace focus "$open_ws" >/dev/null \
+    || { printf '\033[31mfocus %s failed\033[0m\n' "$open_ws"; sleep 2; exit 1; }
+  exit 0
+fi
+
 # ~/dev/dotfiles is a linked worktree of the bare ~/.dotfiles repo on an orphan
 # `docs` branch -- an ordinary directory under ~/dev as far as the browser
 # above is concerned, so basename already labels it "dotfiles" and nothing
