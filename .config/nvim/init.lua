@@ -699,9 +699,10 @@ local function theme_tweaks()
   -- The split is Vim's own: Search is every match, CurSearch the one under the
   -- cursor, IncSearch the match being previewed while the pattern is still
   -- being typed. So the current match and the incremental preview share the
-  -- brighter shade, and everything else takes the flatter one. That is the
-  -- mapping open_match further down was already applying by hand through
-  -- winhl -- it is just global now, so it applies in every window.
+  -- brighter shade, and everything else takes the flatter one.
+  --
+  -- Setting these globally is what lets open_match further down be a one-line
+  -- wrapper: it used to force the same mapping window-by-window through winhl.
   for _, group in ipairs({ "Search", "MatchSearch", "GrugFarResultsMatch", "GrugFarResultsMatchRemoved" }) do
     vim.api.nvim_set_hl(0, group, { fg = "#202020", bg = "#FFE066" })
   end
@@ -902,48 +903,16 @@ vim.keymap.set("n", "<leader>fF", "<cmd>Telescope frecency<cr>", { desc = "Teles
 vim.pack.add({ "https://github.com/ankushbhagats/match.nvim" })
 require("match").setup({ border = "rounded" })
 
--- Temporarily remap search colours in the source window, preserving its
--- original mappings and leaving other windows and global search groups alone.
+-- Opens match.nvim's dialog, prefilled with `text` as the search term when one
+-- is given. A wrapper only because the keymaps below call it both ways.
+--
+-- It used to do considerably more: remap Search, CurSearch and IncSearch to
+-- the yellow groups in the source window through winhl, then restore the
+-- window's original winhl on WinClosed. Those three are that yellow globally
+-- now (see theme_tweaks), so all of it amounted to setting a colour to the
+-- value it already had.
 local function open_match(text)
-  local source_win = vim.api.nvim_get_current_win()
-  local original_winhl = vim.wo[source_win].winhl
-  local previous_windows = {}
-  for _, win in ipairs(vim.api.nvim_list_wins()) do previous_windows[win] = true end
-
   vim.api.nvim_cmd({ cmd = "Match", args = text and { text } or {} }, {})
-
-  local dialog_windows = {}
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if not previous_windows[win] and vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "match" then
-      dialog_windows[win] = true
-    end
-  end
-  if not next(dialog_windows) then return end
-
-  local mappings = {}
-  for entry in original_winhl:gmatch("[^,]+") do
-    local group = entry:match("^([^:]+):")
-    if group ~= "Search" and group ~= "CurSearch" and group ~= "IncSearch" then
-      table.insert(mappings, entry)
-    end
-  end
-  vim.list_extend(mappings, {
-    "Search:MatchSearch", "CurSearch:MatchCurrentSearch", "IncSearch:MatchCurrentSearch",
-  })
-  vim.wo[source_win].winhl = table.concat(mappings, ",")
-
-  vim.api.nvim_create_autocmd("WinClosed", {
-    callback = function(event)
-      local closed_win = tonumber(event.match)
-      dialog_windows[closed_win] = nil
-      if closed_win == source_win or not next(dialog_windows) then
-        if vim.api.nvim_win_is_valid(source_win) then
-          vim.wo[source_win].winhl = original_winhl
-        end
-        return true -- Remove this dialog's cleanup callback.
-      end
-    end,
-  })
 end
 
 vim.keymap.set("n", "<leader>fs", function() open_match() end, { desc = "Find and replace in current file" })
