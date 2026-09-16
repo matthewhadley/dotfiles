@@ -46,6 +46,38 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 -- ── Keymaps ──────────────────────────────────────────────────────────────
 vim.keymap.set("n", ";", ":", { desc = "Enter command mode without Shift" })
 
+-- `q` and `Q` are both disabled, because every way either fires here is an
+-- accident on the way to quitting.
+--
+-- `q<register>` starts recording a macro, and worse, `q:`, `q/` and `q?` open
+-- the command-line and search history windows -- a real buffer in a modal
+-- split that looks like a broken editor when you did not ask for it, and that
+-- `:q` then closes instead of quitting. A stray `q` before `:q` lands in one
+-- or the other every time.
+--
+-- `Q` was briefly given the recording job instead, which was a bad trade: the
+-- `:Q` command further down aliases `:qa`, so `Q` is quit-adjacent in exactly
+-- the same way and would collect exactly the same accidents. Its own default
+-- -- repeat the last recorded register -- is worthless with recording gone, so
+-- it is a no-op too.
+--
+-- Mapped to <Nop> rather than removed: both are built-ins, not mappings, so
+-- there is nothing to delete -- a no-op mapping is what shadows them.
+--
+-- This does not touch the `q` that closes help, quickfix, fugitive and other
+-- plugin windows: those are buffer-local mappings, and a buffer-local mapping
+-- takes precedence over a global one. Nor does it touch the `:Q` command --
+-- that is an ex command typed after a colon, not this keypress.
+--
+-- Macro recording is therefore unreachable, which suits a workflow that has
+-- never used it: pattern edits go through \fs and \fS, and a one-off
+-- structural repeat is `:'<,'>normal <keys>`, which needs no recording at all.
+-- `:nunmap q` brings it back for a session if that ever changes; `@` and the
+-- registers are untouched, so an already-recorded macro still replays.
+for _, key in ipairs({ "q", "Q" }) do
+  vim.keymap.set("n", key, "<Nop>", { desc = "Disabled -- see :normal for repeats" })
+end
+
 -- Shift+arrows extend a selection, like most editors. "startsel" makes a
 -- shifted cursor key begin the selection, "stopsel" makes an unshifted one end
 -- it. Selection lands in Visual mode (not Select mode) because 'selectmode' is
