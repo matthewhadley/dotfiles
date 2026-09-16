@@ -24,12 +24,52 @@
 # ignored, and only then do the refs actually hold their new values.
 [ "$1" = committed ] || exit 0
 
+# Breadcrumbs for the paths that otherwise look exactly like success. Three
+# distinct failures -- herdr not resolvable, the CLI unable to reach the
+# socket, the action erroring -- all used to end in `exit 0` with nothing
+# written anywhere, which cost an afternoon to diagnose once already: a commit
+# refreshed the sidebar and the next one silently did not, with no evidence in
+# the plugin log, the server log, or git.
+#
+# Not a contradiction of "no log file of its own to grow or rotate" below.
+# That is about the SUCCESS trail, which herdr already keeps and which would
+# be one line per ref update forever. Only failures land here, and the cap
+# bounds the one case that could still be noisy -- a herdr that stays down.
+#
+# In the bare repo rather than under the work tree: $HOME is the work tree, so
+# anything written there is a file in the dotfiles repo's own namespace, while
+# ~/.dotfiles is already where machine-local untracked state lives (config).
+bail_log=$HOME/.dotfiles/reference-transaction.log
+
+bail() {
+  printf '%s\t%s\trefs=%s\tppid=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" "${matched:-none}" "$PPID" \
+    >> "$bail_log" 2>/dev/null
+  if [ "$(wc -l < "$bail_log" 2>/dev/null || echo 0)" -gt 400 ]; then
+    tail -n 200 "$bail_log" > "$bail_log.tmp" 2>/dev/null &&
+      mv "$bail_log.tmp" "$bail_log" 2>/dev/null
+  fi
+  exit 0
+}
+
 # stdin is "<old-oid> <new-oid> <ref>" lines. Only the two refs the count is
 # derived from are worth a refresh; AUTO_MERGE, the landing worktree's own
 # bare-repo branch and anything else cost one grep.
-grep -qE ' (refs/heads/main|refs/remotes/origin/main)$' || exit 0
+#
+# Read into a variable rather than piping straight to grep, so the refs that
+# triggered a failed run can be named in the breadcrumb. stdin is a handful of
+# lines.
+matched=$(grep -E ' (refs/heads/main|refs/remotes/origin/main)$' \
+  | awk '{print $3}' | paste -sd, -)
+[ -n "$matched" ] || exit 0
 
-command -v herdr >/dev/null 2>&1 || exit 0
+# Resolved rather than assumed. A caller whose PATH lacks /opt/homebrew/bin --
+# a tool shell that sources no profile, say -- would otherwise bail here with
+# no trace; verified that a minimal PATH reproduces exactly that. HERDR_BIN_PATH
+# is exported into every herdr pane, so it survives where PATH does not.
+herdr_bin=$(command -v herdr 2>/dev/null) ||
+  herdr_bin=${HERDR_BIN_PATH:-/opt/homebrew/bin/herdr}
+[ -x "$herdr_bin" ] || bail "herdr-not-found:PATH=$PATH"
 
 # Invoked as a plugin action rather than by running dotfiles-status.sh
 # directly, for the audit trail: herdr records every action run with its exit
@@ -63,7 +103,11 @@ command -v herdr >/dev/null 2>&1 || exit 0
 # of forever. The alarm survives exec, so it bounds the herdr CLI, not perl.
 #
 # Output still closed: a child inheriting the hook's stdout can leave git
-# waiting for EOF, and hook stderr would otherwise land in git's output.
-perl -e 'alarm 5; exec @ARGV' \
-  herdr plugin action invoke custom.dotfiles-status >/dev/null 2>&1
+# waiting for EOF. stderr is captured rather than discarded, so a failed invoke
+# can say why in the breadcrumb instead of vanishing; `2>&1 >/dev/null` in that
+# order keeps stdout out of git's way while routing stderr to the substitution.
+err=$(perl -e 'alarm 5; exec @ARGV' \
+  "$herdr_bin" plugin action invoke custom.dotfiles-status 2>&1 >/dev/null)
+rc=$?
+[ "$rc" -eq 0 ] || bail "invoke-failed:rc=$rc:${err:-no-stderr}"
 exit 0
