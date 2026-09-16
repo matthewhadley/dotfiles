@@ -2268,6 +2268,18 @@ local function trouble_refocus(list_win)
 end
 
 require("trouble").setup({
+  -- Close the window once the last item is gone. Default is false, which
+  -- leaves an empty box sitting there after the final diagnostic is fixed --
+  -- and since `a` keeps the list open to work through several in a row, that
+  -- is exactly how a session ends. auto_refresh is already on by default, so
+  -- entries disappear as they are resolved; this just finishes the job.
+  --
+  -- Note the sibling auto_open is deliberately left off: trouble itself warns
+  -- against setting it globally, and a list that appears unbidden the moment a
+  -- server reports anything would fight the inline diagnostics rather than
+  -- complement them.
+  auto_close = true,
+
   -- Focus the list when it opens. Default is false, which leaves the cursor in
   -- the code and means every use starts with a window switch -- wrong here,
   -- because the reason for opening it is always to work through it.
