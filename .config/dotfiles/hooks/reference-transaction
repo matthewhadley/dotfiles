@@ -36,12 +36,18 @@
 # be one line per ref update forever. Only failures land here, and the cap
 # bounds the one case that could still be noisy -- a herdr that stays down.
 #
-# In the bare repo rather than under the work tree: $HOME is the work tree, so
-# anything written there is a file in the dotfiles repo's own namespace, while
-# ~/.dotfiles is already where machine-local untracked state lives (config).
-bail_log=$HOME/.dotfiles/reference-transaction.log
+# A log, so XDG_STATE_HOME -- alongside the herdr, nvim, gh and yazi state
+# already there, and nothing under it is tracked, which is what this wants.
+# Not ~/.dotfiles: that is the bare repo's own directory, objects and refs, no
+# place for a log. Not $HOME either, which IS the work tree, so a file there
+# lands in the dotfiles repo's namespace.
+#
+# mkdir is inside bail() rather than out here: failures are rare, and the happy
+# path should not pay for a directory it will never write to.
+bail_log=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/reference-transaction.log
 
 bail() {
+  mkdir -p "${bail_log%/*}" 2>/dev/null
   printf '%s\t%s\trefs=%s\tppid=%s\n' \
     "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" "${matched:-none}" "$PPID" \
     >> "$bail_log" 2>/dev/null
