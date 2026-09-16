@@ -162,6 +162,29 @@ open_ws=$(herdr worktree list --cwd "$dir" 2>/dev/null \
   | jq -r --arg d "$dir" '.result.worktrees[]? | select(.path == $d) | .open_workspace_id // empty' \
   | head -n1)
 
+# The check above is authoritative, but only inside a checkout: for a plain
+# directory `herdr worktree list` returns not_git_worktree and there is no
+# open_workspace_id to find, so the guard never fired and every repeat call
+# stood up another workspace on the same directory.
+#
+# The label is the only thing left to match on. herdr records no cwd against a
+# workspace -- `workspace list` and `workspace get` both return just
+# label/number/counts/ids -- so there is no path to compare. That makes this
+# weaker than the worktree lookup: two directories sharing a basename
+# (~/dev/a/docs and ~/dev/b/docs) collide, and the second would focus the
+# first's workspace rather than opening its own. Accepted, because the
+# switcher already lists both under that one name -- the same ambiguity the
+# comment above notes -- and silently multiplying workspaces is the worse of
+# the two failures.
+#
+# Gated on the authoritative check being unable to run at all, not merely on
+# it finding nothing, so behaviour inside a repo is exactly as it was.
+if [[ -z $open_ws ]] && ! git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  open_ws=$(herdr workspace list 2>/dev/null \
+    | jq -r --arg l "$name" '.result.workspaces[]? | select(.label == $l) | .workspace_id' \
+    | head -n1)
+fi
+
 if [[ -n $open_ws ]]; then
   herdr workspace focus "$open_ws" >/dev/null \
     || { printf '\033[31mfocus %s failed\033[0m\n' "$open_ws"; sleep 2; exit 1; }
