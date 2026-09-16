@@ -13,12 +13,34 @@ setopt EXTENDED_HISTORY
 SAVEHIST=1000000
 HISTSIZE=1000000
 
-# History per TTY. TTY_NUM (00.env.zsh) is empty in a shell with no
-# controlling terminal, because `tty` prints "not a tty" and its `cut -c11-`
-# returns nothing -- without the fallback HISTFILE would name the directory
-# itself and those shells would silently record no history.
+# History per herdr pane, falling back to per-TTY.
+#
+# TTY_NUM (00.env.zsh) is the last two digits of the pty, and macOS allocates
+# pty numbers from a low pool -- this machine has never gone past /dev/ttys028
+# -- so every pane that has ever existed maps into one of ~30 buckets and new
+# panes inherit unrelated old panes' history. That is observable, not
+# theoretical: `herdr agent start` *types* `claude` into an agent pane's shell
+# rather than spawning it as the pane's command, so it is recorded like
+# anything typed, and it is usually the only command that pane ever runs.
+# `claude` was the last line of 8 of the 31 buckets, which is why Up in a hunk
+# or zsh pane offered it.
+#
+# HERDR_PANE_ID (w17:p2) is allocated from a per-workspace counter kept in
+# ~/.config/herdr/session.json and is never reused: a workspace on its 25th
+# pane has live numbers 2,5,6,15,18..23 -- gaps where panes closed -- and the
+# counter still only goes up. So a pane keeps its own history for as long as it
+# exists, across herdr restarts. The colon becomes a dash because it is legal
+# in an APFS filename but Finder renders it as "/".
+#
+# TTY_NUM remains the fallback outside herdr, and is itself empty in a shell
+# with no controlling terminal, because `tty` prints "not a tty" and its
+# `cut -c11-` returns nothing -- without that last fallback HISTFILE would name
+# the directory itself and those shells would silently record no history.
+#
+# Searching across panes is unaffected: rgh below has always read the whole
+# directory rather than $HISTFILE.
 mkdir -p "$HOME/.history.d"
-HISTFILE="$HOME/.history.d/${TTY_NUM:-no-tty}"
+HISTFILE="$HOME/.history.d/${${HERDR_PANE_ID//:/-}:-${TTY_NUM:-no-tty}}"
 
 # ripgrep
 alias rg="rg --colors 'match:bg:yellow' --colors 'match:fg:black' --colors 'line:fg:white'"
