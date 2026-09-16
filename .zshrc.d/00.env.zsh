@@ -49,15 +49,3 @@ fi
 # whichever runs last ends up in front. This is what puts ~/.local/bin ahead of
 # /opt/homebrew/bin.
 pathadd "$HOME/.local/bin"
-
-# Completion
-# HOMEBREW_PREFIX is set by `brew shellenv` above
-if [ -n "$HOMEBREW_PREFIX" ]; then
-  FPATH=$HOMEBREW_PREFIX/share/zsh-completions:$FPATH
-
-  autoload -Uz compinit
-  compinit
-fi
-
-# tab completion capital letters also match small letters
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
