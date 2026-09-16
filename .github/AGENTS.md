@@ -68,3 +68,39 @@ point of having one.
 Comma-separate when a change spans areas (`nvim, zsh: ...`). Merges, reverts
 and the root commit are exempt. A `commit-msg` hook in `.git-templates/hooks/`
 enforces this; leaving `scopedcommits.scopes` unset allows any scope.
+
+## Diffing a branch against its base
+
+In a worktree, "what does this branch change" is a diff against the **merge
+base**, not against the base branch's tip. Two dots compares the two tips, so
+anything that landed on `main` after you branched appears inverted, as your
+deletion:
+
+```sh
+git diff main         # f | 1 +   other | 1 -   <- you never touched other
+git diff main...HEAD  # f | 1 +
+```
+
+Three dots is shorthand for the merge base, and is what a pull request shows.
+Commit *ranges* are unaffected — `git log A..B` and tuicr's `-r A..B` already
+mean "reachable from B, not A", so two dots is right there. It is only
+`git diff` where the dots change the answer.
+
+Find the base branch with `git rev-parse --abbrev-ref origin/HEAD` rather than
+assuming `main`.
+
+| tool | command |
+| --- | --- |
+| pager (delta) | `git diff origin/main...` |
+| hunk | `hunk diff "$(git merge-base origin/main HEAD)" HEAD` |
+| tuicr | `tuicr -r origin/main..HEAD` |
+| a real PR | `tuicr pr <N>` — the forge's own diff |
+
+hunk takes two concrete revisions rather than a range, which is why the merge
+base is resolved first. `~/.local/bin/hunk-branch-diff` does all of that and
+runs in the `review` tab of the standard herdr layout.
+
+**lazygit's diffing mode (`W`) is two-dot.** `DiffHelper.DiffArgs()` passes two
+plain refs with no `...`, so in a worktree that has been open a while it will
+show other people's commits as your deletions. Its Commits panel is fine — a
+commit range is unambiguous — and `ctrl+t` hands the pair to `git difftool`.
