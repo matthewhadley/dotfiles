@@ -1,0 +1,5 @@
+# Paths are relative to $HOME (the work tree).
+.ssh/hosts
+.gitconfig-corp
+.zshrc.d/00.corp.zsh
+**/.DS_Store
