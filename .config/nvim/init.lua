@@ -688,12 +688,24 @@ vim.cmd.colorscheme("terafox")
 -- On ColorScheme because :colorscheme resets every highlight group; setting it
 -- directly would be wiped the next time a scheme loads.
 local function theme_tweaks()
-  -- Match uses these only in its source window; grug-far has dedicated groups
-  -- for its results and source preview. Keep both search UIs on one palette.
-  for _, group in ipairs({ "MatchSearch", "GrugFarResultsMatch", "GrugFarResultsMatchRemoved" }) do
+  -- One yellow palette for every search UI: Neovim's own buffer search, match
+  -- .nvim's dialog, and grug-far's results and source preview.
+  --
+  -- Search and CurSearch are included so ordinary `/` highlighting uses it too.
+  -- terafox's own are teals -- #425e5e for Search and #7aa4a1 for CurSearch --
+  -- which read as a selection rather than a match, and sat oddly beside the
+  -- yellow the two search *plugins* were already using.
+  --
+  -- The split is Vim's own: Search is every match, CurSearch the one under the
+  -- cursor, IncSearch the match being previewed while the pattern is still
+  -- being typed. So the current match and the incremental preview share the
+  -- brighter shade, and everything else takes the flatter one. That is the
+  -- mapping open_match further down was already applying by hand through
+  -- winhl -- it is just global now, so it applies in every window.
+  for _, group in ipairs({ "Search", "MatchSearch", "GrugFarResultsMatch", "GrugFarResultsMatchRemoved" }) do
     vim.api.nvim_set_hl(0, group, { fg = "#202020", bg = "#FFE066" })
   end
-  for _, group in ipairs({ "MatchCurrentSearch", "GrugFarCurrentMatch" }) do
+  for _, group in ipairs({ "CurSearch", "IncSearch", "MatchCurrentSearch", "GrugFarCurrentMatch" }) do
     vim.api.nvim_set_hl(0, group, { fg = "#202020", bg = "#FFF59D", bold = true })
   end
   local normal = vim.api.nvim_get_hl(0, { name = "Normal", link = false })
