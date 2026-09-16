@@ -19,7 +19,7 @@ set -uo pipefail
 # empirically by other plugins -- popup panes don't get HERDR_PANE_ID) and cd
 # there first; everything below (the git check, worktrunk's picker.sh) needs
 # to run against the actual repo, not wherever this plugin happens to live.
-origin_pane=$(jq -r '.focused_pane_id // empty' <<<"${HERDR_PLUGIN_CONTEXT_JSON:-{}}")
+origin_pane=$(jq -r '.focused_pane_id // empty' <<<"${HERDR_PLUGIN_CONTEXT_JSON:-null}")
 if [[ -n $origin_pane ]]; then
   origin_cwd=$(herdr pane get "$origin_pane" 2>/dev/null | jq -r '.result.pane.cwd // empty')
   [[ -n $origin_cwd && -d $origin_cwd ]] && cd "$origin_cwd"
