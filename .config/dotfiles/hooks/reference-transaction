@@ -44,10 +44,26 @@ command -v herdr >/dev/null 2>&1 || exit 0
 # file of its own to grow or rotate; the blind spot is herdr being down, which
 # is also the one case where there would be nothing useful to report.
 #
-# Backgrounded with its output closed. The reporter talks to herdr over a
-# socket; a wedged or restarting server would otherwise stall every commit and
-# fetch in $HOME until the CLI times out. The redirect earns its place as much
-# as the &: a child inheriting the hook's stdout can leave git waiting for EOF
-# long after the hook itself has exited.
-(herdr plugin action invoke custom.dotfiles-status >/dev/null 2>&1 &)
+# Run synchronously, not backgrounded. This used to be `( ... & )`, which
+# detaches from job control but leaves the child in the hook's process group,
+# so anything that reaps that group takes the reporter with it before it can
+# reach the socket. A commit from a shell survived, because the shell outlives
+# it. A push from lazygit did not: the hook ran and no invoke ever arrived --
+# no plugin log entry, nothing in the server log. Reproduced exactly by killing
+# the group the instant the hook returns.
+#
+# `setsid` does not fix it. The child still has to be forked and exec'd before
+# it can leave the group, and it loses that race; verified, the reproduction
+# still failed with a session of its own. Only not returning until the work is
+# done is reliable.
+#
+# The cost that backgrounding was buying is not worth it: a local invoke takes
+# ~10ms, measured, which is noise against a commit. alarm(2) caps the pathology
+# the & was really there for -- a wedged or restarting server -- at 5s instead
+# of forever. The alarm survives exec, so it bounds the herdr CLI, not perl.
+#
+# Output still closed: a child inheriting the hook's stdout can leave git
+# waiting for EOF, and hook stderr would otherwise land in git's output.
+perl -e 'alarm 5; exec @ARGV' \
+  herdr plugin action invoke custom.dotfiles-status >/dev/null 2>&1
 exit 0
