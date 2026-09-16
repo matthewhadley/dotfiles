@@ -19,20 +19,24 @@
 extends: default
 
 rules:
-  # A `# yaml-language-server: $schema=<url>` directive is one unbreakable
-  # token and routinely runs past 80 columns. It cannot be wrapped either:
-  # yaml-language-server parses that line to bind the schema, so breaking it
-  # silently turns schema validation off -- losing real diagnostics to satisfy
-  # a style rule.
-  #
-  # yamllint's own allow-non-breakable-words escape hatch does not cover it:
-  # that exempts a line only when it holds no spaces past the indent, and this
-  # one has several. So the limit itself has to move. 140 leaves headroom over
-  # the 123-column directive in the herdr workspace-manager config -- a raw
-  # githubusercontent schema URL is comfortably the longest line worth
-  # tolerating -- while still catching genuinely runaway lines.
-  line-length:
-    max: 140
+  # Not wanted. These are single-document config files, and nothing that reads
+  # them requires the marker.
+  document-start: disable
+
+# Deliberately no line-length override here. An over-long line is nearly always
+# a genuine style problem; the one real exception is a `# yaml-language-server:
+# $schema=<url>` directive, which is unbreakable and cannot be wrapped without
+# silently disabling schema validation. Raising the global limit to clear that
+# one line would stop catching runaway lines in every other file, so the
+# exception is taken inline where it occurs instead:
+#
+#   # yamllint disable-line rule:line-length
+#   # yaml-language-server: $schema=...
+#
+# The directive has to be on its own line above the modeline, not appended to
+# it: yamllint only recognises a directive that is its own comment token, and
+# text appended to an existing comment is just part of that comment's body.
+
 
   # Not wanted. These are single-document config files, and nothing that reads
   # them requires the marker.
