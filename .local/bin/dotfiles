@@ -260,6 +260,33 @@ _dotfiles_hooks() {
   done
 }
 
+_dotfiles_herdr_reload() {
+  # install-plugins.sh reconciles plugins; nothing was reloading config.toml,
+  # so tracked sidebar/keybinding changes sat inert until the next server
+  # start -- easy to mistake for the change not working.
+  #
+  # Skipped rather than failed when no server is running: config.toml is read
+  # at startup, so there is nothing to reload and nothing wrong. `status
+  # server` is the check; a stale socket left by a crash makes it fail the same
+  # way an absent one does.
+  if ! herdr status server >/dev/null 2>&1; then
+    echo "no herdr server running; config.toml applies at next start"
+    return 0
+  fi
+  # Diagnostics are printed, not swallowed. A bad ui block reloads as
+  # "partial" -- the server keeps its current settings and says why, which is
+  # the one outcome worth seeing here.
+  local out
+  out=$(herdr server reload-config 2>&1) || {
+    echo "$out" >&2
+    return 1
+  }
+  printf '%s\n' "$out" | jq -r '
+    "config reload: " + (.result.status // "unknown"),
+    (.result.diagnostics // [])[]
+  '
+}
+
 _dotfiles_deps() {
   # One entrypoint for everything this machine's package/plugin state depends
   # on. brew and herdr each reconcile differently -- brew bundle diffs the
@@ -275,6 +302,9 @@ _dotfiles_deps() {
   echo
   echo "==> git hooks"
   _dotfiles_hooks
+  echo
+  echo "==> herdr config"
+  _dotfiles_herdr_reload
 }
 
 _dotfiles_resolve() {
@@ -324,8 +354,8 @@ dotfiles git bare repo management at ~/.dotfiles
   brew           brew bundle install from .config/dotfiles/Brewfile, then run
                  any matching .config/dotfiles/brew-post-install.d/<formula>
   deps           brew, then herdr's install-plugins.sh, then link this repo's
-                 git hooks -- everything this machine's package/plugin state
-                 depends on, in one call
+                 git hooks and reload herdr's config -- everything this
+                 machine's package/plugin state depends on, in one call
   hunk           open the changes in Hunk; bare `hunk` is the working tree,
                  otherwise the args are a hunk command (`hunk --staged`,
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
