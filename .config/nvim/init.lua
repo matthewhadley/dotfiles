@@ -1014,6 +1014,25 @@ end, { desc = "Telescope: changed files, newest first" })
 -- by Ghostty itself, not by devicons, so they are unaffected.
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" })
 
+-- Builds a lualine component that counts one diagnostic severity in the
+-- current buffer and names it in words -- "1 error", "2 warnings" -- rather
+-- than abbreviating. Returns "" at zero, so the component disappears entirely
+-- on a clean buffer instead of showing a 0.
+--
+-- Both words here pluralise with a plain "s", so this does not need a table of
+-- irregulars; it would if the set ever grew past error/warning/hint. Never
+-- "warning(s)" -- the count is always known by the time this renders, so the
+-- parenthesis would only ever be hedging about something already decided.
+local function diagnostic_count(severity, word)
+  return function()
+    local n = vim.diagnostic.count(0)[severity] or 0
+    if n == 0 then
+      return ""
+    end
+    return n .. " " .. word .. (n == 1 and "" or "s")
+  end
+end
+
 require("lualine").setup({
   options = {
     -- nightfox ships a matching lualine theme, so "auto" resolves to terafox.
@@ -1032,6 +1051,78 @@ require("lualine").setup({
     lualine_b = { "branch", "diff" },   -- both read gitsigns' status dict
     lualine_c = { { "filename", path = 1 } },
     lualine_x = {
+      -- Error and warning counts, as two separate components rather than
+      -- lualine's own `diagnostics`. That one renders every severity in a
+      -- single field and needs its symbols overridden to stay glyph-free;
+      -- these are two plain phrases that vanish when the count is zero, so a
+      -- clean buffer shows nothing at all.
+      --
+      -- Errors and warnings only, no info or hint. The same call the rest of
+      -- this config makes: linehl tints these two severities and
+      -- tiny-inline-diagnostic keeps these two always visible, both because
+      -- ts_ls emits hints liberally -- an unused import puts one on its line
+      -- -- so a count including them would be dominated by noise and stop
+      -- meaning anything.
+      --
+      -- Spelled out rather than abbreviated to E2/W2: the bar has the room at
+      -- globalstatus, and the count is the thing worth reading at a glance
+      -- while the letter needs decoding.
+      --
+      -- `color` is given as a highlight group name rather than a hex, so both
+      -- track the colourscheme and match what the gutter and the inline
+      -- message are already using for that severity.
+      {
+        diagnostic_count(vim.diagnostic.severity.ERROR, "error"),
+        color = "DiagnosticError",
+      },
+      {
+        diagnostic_count(vim.diagnostic.severity.WARN, "warning"),
+        color = "DiagnosticWarn",
+      },
+
+      -- Format-on-save state, and a click target to flip it.
+      --
+      -- conform's format_on_save hook reads vim.g/vim.b conform_disable, which
+      -- :FormatDisable and :FormatEnable set. That state is otherwise entirely
+      -- invisible, so a save that quietly does not reformat is
+      -- indistinguishable from a formatter that crashed or a file that was
+      -- already clean.
+      --
+      -- Always rendered, unlike the two counts above, and that is the price of
+      -- making it clickable: a component returning "" has no region on the bar
+      -- to click, so it could only ever be switched back on, never off.
+      -- "auto format" is given Comment so the normal state stays quiet and
+      -- only the disabled state draws the eye.
+      --
+      -- Spelled out rather than fmt/no-fmt. It costs a dozen columns in a bar
+      -- that has them, and "no-fmt" is the kind of abbreviation that reads
+      -- fine the week it is written and not at all a year later -- the point
+      -- of the indicator is that this state is otherwise unguessable.
+      --
+      -- on_click needs 'mouse', set at the top of this file; lualine wraps the
+      -- component in a %@...@ click region.
+      --
+      -- Clicking while disabled clears *both* scopes, matching what
+      -- :FormatEnable does. Otherwise a buffer-local `:FormatDisable!` would
+      -- survive a click that looked like it had re-enabled everything.
+      {
+        function()
+          return (vim.g.conform_disable or vim.b.conform_disable)
+            and "no auto format" or "auto format"
+        end,
+        color = function()
+          return (vim.g.conform_disable or vim.b.conform_disable) and "DiagnosticWarn" or "Comment"
+        end,
+        on_click = function()
+          if vim.g.conform_disable or vim.b.conform_disable then
+            vim.g.conform_disable = false
+            vim.b.conform_disable = false
+          else
+            vim.g.conform_disable = true
+          end
+          vim.cmd.redrawstatus()
+        end,
+      },
       -- Filetype as plain text; icons_enabled = false above drops the glyph.
       { "filetype" },
     },
