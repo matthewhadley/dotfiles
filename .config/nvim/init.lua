@@ -1087,7 +1087,7 @@ require("lualine").setup({
     icons_enabled = false,
     globalstatus = true,   -- one bar for the whole editor, not one per window
     disabled_filetypes = {
-      statusline = { "neo-tree", "toggleterm" },
+      statusline = { "neo-tree" },
     },
   },
   sections = {
@@ -1190,7 +1190,7 @@ require("lualine").setup({
     lualine_y = { { search_count, color = "MatchSearch" }, "progress" },
     lualine_z = { "location" },
   },
-  extensions = { "neo-tree", "toggleterm", "fugitive" },
+  extensions = { "neo-tree", "fugitive" },
 })
 
 -- ── bufferline.nvim ──────────────────────────────────────────────────────
@@ -1420,34 +1420,6 @@ vim.keymap.set("n", "<leader>X", function()
     vim.api.nvim_echo({ { (argv and "Trashed " or "Deleted ") .. short } }, false, {})
   end)
 end, { desc = "Delete this buffer's file (to Trash), close buffer" })
-
--- ── toggleterm.nvim ──────────────────────────────────────────────────────
--- Toggleable terminal windows. Separate from herdr-sidekick's agent pane:
--- that one runs a specific tool in its own herdr pane, this is a plain shell
--- inside nvim.
-vim.pack.add({ "https://github.com/akinsho/toggleterm.nvim" })
-
-require("toggleterm").setup({
-  open_mapping = [[<c-\>]],  -- toggle from normal or terminal mode
-  direction = "horizontal",
-  size = 15,
-  -- Esc leaves terminal-insert mode so <C-h/j/k/l> window nav works from here.
-  -- Without this, Esc goes to the shell instead.
-  terminal_mappings = true,
-
-  -- Blank the statusline in terminal windows. By default it renders %f, which
-  -- for a terminal buffer is the full "term://...//204:/bin/zsh;#toggleterm#1"
-  -- path. 'laststatus' is a global option so the bar itself can't be hidden
-  -- per-window -- but its contents can be, which is what this does.
-  on_open = function()
-    vim.wo.statusline = " "
-  end,
-})
-
--- <leader>t as an alternative to <C-\>. Note leader mappings only work in
--- normal/visual mode -- inside the terminal, \t would be typed into the shell.
--- Keep <C-\> for toggling back out from terminal-insert mode.
-vim.keymap.set("n", "<leader>t", "<cmd>ToggleTerm<CR>", { desc = "Toggle terminal" })
 
 -- ── neominimap.nvim ──────────────────────────────────────────────────────
 -- Code minimap. No setup() call -- it reads vim.g.neominimap, and its
@@ -2193,6 +2165,210 @@ vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { d
 vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Previous diagnostic" })
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic detail" })
 
+-- ── Diagnostic and symbol lists: trouble.nvim ────────────────────────────
+-- A navigable list view over things that are otherwise only reachable one at a
+-- time. ]d and [d step through diagnostics in the current buffer and
+-- <leader>d shows one in a float; this gives the whole set at once, grouped by
+-- file, with the source line beside each entry -- which is what you want when
+-- deciding *which* problem to fix rather than fixing the one you are on.
+--
+-- Also fronts the quickfix and location lists, and LSP symbols. Nothing here
+-- replaces a keymap that already exists.
+--
+-- Under <leader>q, not folke's usual <leader>x: that is taken here by "close
+-- buffer, keep the window". q because these are all quickfix-shaped lists, and
+-- <leader>t -- the other obvious choice -- is the terminal toggle.
+vim.pack.add({ "https://github.com/folke/trouble.nvim" })
+
+-- Every symbol-kind icon is a Nerd Font glyph, as are the folder and fold
+-- markers, so all of them render as tofu here -- the same reason devicons is
+-- not installed and neo-tree's icons are blanked.
+--
+-- The kinds are blanked in a loop rather than listed: there are twenty-six,
+-- and they are exactly the LSP SymbolKind names, so the protocol table is the
+-- authoritative source and cannot drift out of step with trouble's own list.
+local trouble_kinds = {}
+for _, kind in ipairs(vim.lsp.protocol.SymbolKind) do
+  if type(kind) == "string" then
+    trouble_kinds[kind] = ""
+  end
+end
+
+-- Returns focus to the trouble list once the code action picker has gone,
+-- however it went -- action applied, cancelled with <Esc>, or nothing offered.
+-- Without this, `a` leaves you in the code window and the list has to be
+-- re-entered by hand for every diagnostic, which defeats keeping it open.
+--
+-- Polling the window list rather than a callback, because there is no event to
+-- hang this on: actions-preview's code_actions() takes no completion callback,
+-- and telescope emits nothing for teardown -- it has TelescopeFindPre and
+-- TelescopeKeymap and no counterpart for closing. So the prompt window
+-- vanishing is the only observable signal.
+--
+-- Armed only once a prompt window genuinely exists, checked on a short defer.
+-- On a line with no applicable actions the picker never opens, and an
+-- unconditional watcher would sit there and then yank focus into the list the
+-- next time any window anywhere was closed.
+local function trouble_refocus(list_win)
+  local function prompt_open()
+    for _, w in ipairs(vim.api.nvim_list_wins()) do
+      if vim.bo[vim.api.nvim_win_get_buf(w)].filetype == "TelescopePrompt" then
+        return true
+      end
+    end
+    return false
+  end
+
+  vim.defer_fn(function()
+    if not prompt_open() then
+      return
+    end
+
+    local id
+    id = vim.api.nvim_create_autocmd("WinClosed", {
+      desc = "Return focus to trouble when the code action picker closes",
+      callback = function()
+        -- Scheduled: during WinClosed the window being closed is still in the
+        -- list, so an immediate check would always still see the prompt.
+        -- telescope also closes several windows, so this fires more than once
+        -- and only acts on the pass where none are left.
+        vim.schedule(function()
+          if prompt_open() then
+            return
+          end
+          pcall(vim.api.nvim_del_autocmd, id)
+          if vim.api.nvim_win_is_valid(list_win) then
+            pcall(vim.api.nvim_set_current_win, list_win)
+          end
+        end)
+      end,
+    })
+  end, 100)
+end
+
+require("trouble").setup({
+  -- Focus the list when it opens. Default is false, which leaves the cursor in
+  -- the code and means every use starts with a window switch -- wrong here,
+  -- because the reason for opening it is always to work through it.
+  focus = true,
+
+  -- A float rather than the default bottom split, sitting at the bottom.
+  --
+  -- height is 10 *lines*, not a fraction: trouble treats a size <= 1 as a
+  -- proportion of the editor and anything above it as an absolute count, so
+  -- 0.8 would be 80% and 10 is ten rows. The default float is 80% tall, which
+  -- for a nine-item list was mostly empty.
+  --
+  -- position is { row, col }. A value of 1 or less is a fraction of the
+  -- *leftover* space rather than of the editor -- 0 flush to the top, 1 flush
+  -- to the bottom -- but 1 would put the float over the statusline and command
+  -- line, since parent_size is the whole of vim.o.lines. A value above 1 is an
+  -- absolute row and a negative one counts back from the bottom, which is what
+  -- keeps this pinned to the bottom at any window height instead of drifting
+  -- as a fraction would.
+  --
+  -- -15 was measured rather than derived: ten content rows plus a border row
+  -- either side comes to twelve, but -13 put the bottom border on the
+  -- statusline rather than above it, so the border is evidently not counted
+  -- the way the arithmetic suggests. -15 leaves one clear row between the
+  -- float and the statusline. Nudge this one number to move it.
+  --
+  -- 0.5 horizontally leaves it centred.
+  win = {
+    type = "float",
+    border = "single",
+    size = { width = 0.8, height = 10 },
+    position = { -15, 0.5 },
+
+    -- A key hint on the bottom border. trouble passes title/footer straight
+    -- through to nvim_open_win, so this costs no rows -- it is drawn on the
+    -- border that is there anyway, unlike a header line inside the window.
+    --
+    -- Three keys only, not the whole map. `s` and `a` because neither is
+    -- guessable -- `s` cycles a severity filter and `a` is the code action
+    -- binding added below, and nothing on screen would otherwise suggest
+    -- either exists. `?` because it opens the full list, so the footer can stay
+    -- short rather than trying to be complete. <CR> and q are left out on the
+    -- grounds that they are what anyone would try first anyway.
+    --
+    -- U+00B7 as the separator: single cell, no Nerd Font.
+    footer = " ? help \u{00B7} s severity \u{00B7} a code action ",
+    footer_pos = "center",
+  },
+
+  -- `a` runs the code action picker on the item under the cursor, so a
+  -- diagnostic can go from "listed" to "fixed" without leaving the list and
+  -- finding the line by hand.
+  --
+  -- jump, then the picker on a scheduled tick. jump moves the real cursor to
+  -- the diagnostic's position -- which is what the LSP request is made against
+  -- -- and hands focus to the code window, leaving the list open behind it.
+  --
+  -- The list is deliberately *not* closed. Neither trouble nor telescope sets
+  -- a zindex, so both take nvim's default of 50 and the later window wins,
+  -- which is the picker -- there is no stacking problem to avoid. Keeping it
+  -- open means working through several diagnostics in one pass instead of
+  -- reopening the list after each fix, and trouble refreshes itself when the
+  -- diagnostics change, so entries disappear as they are resolved. q or <Esc>
+  -- in the list closes it when you are done.
+  --
+  -- Reuses the same code_action local that \ca and gra call, so all three
+  -- share the actions-preview picker and the `disabled` filter rather than
+  -- this one quietly being the stock one.
+  keys = {
+    a = {
+      action = function(view)
+        local list_win = view.win.win
+        view:jump()
+        vim.schedule(function()
+          code_action()
+          trouble_refocus(list_win)
+        end)
+      end,
+      desc = "Code action",
+    },
+  },
+
+  icons = {
+    -- indent's top/middle/last are box-drawing and survive as they are; only
+    -- the two fold markers are Nerd Font. Replaced with geometric triangles,
+    -- single cell, the same class of glyph as the indentscope guide.
+    indent = {
+      fold_open = "\u{25BE} ",
+      fold_closed = "\u{25B8} ",
+    },
+    -- Blank rather than lettered. The file path is already on the line, so a
+    -- folder marker is pure decoration -- unlike neo-tree's git_status column,
+    -- which was kept as letters because it carries information.
+    folder_closed = "",
+    folder_open = "",
+    kinds = trouble_kinds,
+  },
+})
+
+-- <leader>t is the everyday one -- the workspace diagnostics list -- and is a
+-- single press because that is the view opened by far the most. It is a leaf,
+-- not a prefix: the other modes live under <leader>q instead, because a key
+-- that is both a complete mapping and the start of a longer one makes vim wait
+-- 'timeoutlen' before firing it, so a slightly slow <leader>tt would run the
+-- leaf. That is the same collision the <leader>fe mapping above exists to
+-- avoid.
+--
+-- <leader>t was toggleterm's until that was removed; t for trouble is the
+-- obvious claim on it.
+vim.keymap.set("n", "<leader>t", "<cmd>Trouble diagnostics toggle<cr>",
+  { desc = "Trouble: diagnostics (workspace)" })
+
+for _, map in ipairs({
+  { "qb", "diagnostics toggle filter.buf=0", "Diagnostics (this buffer)" },
+  { "qs", "symbols toggle", "Symbols" },
+  { "ql", "loclist toggle", "Location list" },
+  { "qf", "qflist toggle", "Quickfix list" },
+}) do
+  vim.keymap.set("n", "<leader>" .. map[1], "<cmd>Trouble " .. map[2] .. "<cr>",
+    { desc = "Trouble: " .. map[3] })
+end
+
 -- ── mason.nvim ───────────────────────────────────────────────────────────
 -- Installs language servers, linters and formatters into
 -- ~/.local/share/nvim/mason/bin and prepends that to *Neovim's* PATH. Nothing
@@ -2313,7 +2489,7 @@ require("mini.cursorword").setup({ delay = 250 })
 vim.api.nvim_create_autocmd("FileType", {
   desc = "Disable the mini modules in UI buffers",
   pattern = {
-    "neo-tree", "toggleterm", "help", "man", "lazy", "mason", "checkhealth",
+    "neo-tree", "help", "man", "lazy", "mason", "checkhealth",
     "qf", "fugitive", "gitcommit", "TelescopePrompt", "TelescopeResults",
     "neominimap",
   },
@@ -2363,6 +2539,7 @@ require("which-key").add({
   { "<leader>c", group = "code" },
   { "<leader>f", group = "find" },
   { "<leader>o", group = "obsidian" },
+  { "<leader>q", group = "trouble lists" },
 })
 
 -- ── AI: herdr-sidekick ───────────────────────────────────────────────────
