@@ -154,8 +154,8 @@ gui:
 #
 # All of the styling lives in the `terafox` feature in
 # ~/.config/git/delta-terafox.gitconfig, so it can be commented and so it is
-# reusable if delta ever replaces diff-so-fancy as core.pager. Nothing here
-# touches terminal git: `git diff` is still diff-so-fancy.
+# shared rather than duplicated: delta is core.pager too, so terminal `git
+# diff` and this panel are rendered by the same tool against the same theme.
 #
 # `--paging=never` is required, not cosmetic — delta defaults to paging=auto
 # and would spawn a pager inside lazygit's pane.
