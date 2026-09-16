@@ -216,6 +216,29 @@ vim.pack.add({
   "https://github.com/nvim-neo-tree/neo-tree.nvim",
 })
 
+-- Plenary's scandir module probes getpwuid/getgrgid with ID 1000 at load
+-- time. On this Mac that reaches corporate LDAP and blocks startup on VPN.
+-- Probe the current local IDs instead (26s -> 0.11s in the startup test).
+-- Patch only the loaded source: keep the workaround in dotfiles, without
+-- modifying the plugin checkout or losing it when plugins are reinstalled.
+-- Plenary is no longer maintained; remove this if its probes are fixed upstream.
+do
+  package.preload["plenary.scandir"] = function()
+    local path = assert(vim.api.nvim_get_runtime_file("lua/plenary/scandir.lua", false)[1],
+      "plenary.scandir not found")
+    local source = table.concat(vim.fn.readfile(path), "\n")
+    local count = 0
+    source = source:gsub("pcall%(ffi_func, {}, 1000%)", function()
+      count = count + 1
+      local id = count == 1 and "getuid" or "getgid"
+      return "pcall(ffi_func, {}, vim.uv." .. id .. "())"
+    end)
+    -- Zero matches permits an upstream fix; a partial match needs review.
+    assert(count == 0 or count == 2, "Plenary lookup probes changed; review startup patch")
+    return assert(loadstring(source, "@" .. path))()
+  end
+end
+
 -- Was the left button released at the end of a drag, rather than a click?
 --
 -- <LeftRelease> fires however the button went down, including at the end of a
