@@ -1709,6 +1709,27 @@ vim.keymap.set({ "n", "x" }, "gra", code_action, { desc = "Code action" })
 vim.pack.add({ "https://github.com/kosayoda/nvim-lightbulb" })
 
 require("nvim-lightbulb").setup({
+  -- Only light up for actual fixes. Without this the lamp stays lit on lines
+  -- that have just been fixed, because ts_ls still offers refactors there --
+  -- "Move to a new file" and "Inline variable" are available on most top-level
+  -- statements in a TypeScript file, so the marker ends up meaning "this is a
+  -- line of code" rather than "there is something to do here".
+  --
+  -- This becomes context.only on the request, so the *server* filters by kind
+  -- and returns less, rather than the results being thrown away here.
+  --
+  -- quickfix alone: verified that it keeps everything worth marking -- ts_ls's
+  -- "Remove import from ...", and bashls forwarding shellcheck's SC2086 and
+  -- SC2164 fixes, are all kind=quickfix. source.fixAll and
+  -- source.organizeImports are deliberately excluded: they apply to the whole
+  -- file, so they would light every line equally and say nothing about where
+  -- the cursor is.
+  --
+  -- This narrows the *marker* only. \ca and gra still offer the full set,
+  -- refactors included, which is right -- asking for actions is deliberate,
+  -- whereas the lamp has to earn its place by being quiet.
+  action_kinds = { "quickfix" },
+
   -- Off by default: without this nothing ever fires and update_lightbulb() has
   -- to be called by hand.
   --
