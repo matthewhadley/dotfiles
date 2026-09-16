@@ -2,11 +2,11 @@
 # hunk-branch-diff — review what this branch changes, rather than what is
 # uncommitted.
 #
-# Runs in the "review" tab of the standard herdr layout, alongside the "hunk"
+# Runs in the "branch" tab of the standard herdr layout, alongside the "hunk"
 # tab's plain `hunk diff --watch`. The two are deliberately complementary:
 #
 #   hunk    the working tree -- what you have not committed yet
-#   review  merge-base..HEAD -- what the branch adds on top of its base
+#   branch  merge-base..HEAD -- what the branch adds on top of its base
 #
 # ── Why the merge base, and not just the base branch ────────────────────────
 #

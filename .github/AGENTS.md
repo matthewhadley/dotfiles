@@ -98,7 +98,7 @@ assuming `main`.
 
 hunk takes two concrete revisions rather than a range, which is why the merge
 base is resolved first. `~/.local/bin/hunk-branch-diff` does all of that and
-runs in the `review` tab of the standard herdr layout.
+runs in the `branch` tab of the standard herdr layout.
 
 **lazygit's diffing mode (`W`) is two-dot.** `DiffHelper.DiffArgs()` passes two
 plain refs with no `...`, so in a worktree that has been open a while it will
