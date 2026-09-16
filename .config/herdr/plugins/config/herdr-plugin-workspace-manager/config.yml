@@ -28,6 +28,24 @@ layouts:
           - title: hunk
             command: hunk diff --watch
 
+      # Complementary to the hunk tab above, not a replacement for it:
+      #
+      #   hunk    the working tree -- what is not committed yet
+      #   review  merge-base..HEAD -- what this branch adds over its base
+      #
+      # The second is what a worktree is usually for, and it is the one that
+      # is awkward to type: `git diff main` compares the two tips, so anything
+      # that lands on main after you branch shows up inverted as your deletion.
+      # hunk-branch-diff (~/.local/bin) resolves origin/HEAD and the merge base
+      # and passes both revisions explicitly. On a checkout with nothing to
+      # review -- the base branch itself, or the orphan bare-repo branch, which
+      # has no merge base at all -- it says so and falls back to the working
+      # tree, so the tab is never dead.
+      - title: review
+        panes:
+          - title: review
+            command: hunk-branch-diff
+
   # standard, but for the dotfiles bare repo. Applied to a workspace rooted at
   # ~/dev/dotfiles -- a linked worktree of ~/.dotfiles on an orphan `bare-repo`
   # branch holding only README.md and AGENTS.md. That directory exists to be a

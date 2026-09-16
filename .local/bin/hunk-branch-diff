@@ -1,0 +1,63 @@
+#!/bin/sh
+# hunk-branch-diff — review what this branch changes, rather than what is
+# uncommitted.
+#
+# Runs in the "review" tab of the standard herdr layout, alongside the "hunk"
+# tab's plain `hunk diff --watch`. The two are deliberately complementary:
+#
+#   hunk    the working tree -- what you have not committed yet
+#   review  merge-base..HEAD -- what the branch adds on top of its base
+#
+# ── Why the merge base, and not just the base branch ────────────────────────
+#
+# `git diff main` compares the two tips, so anything that landed on main after
+# you branched shows up inverted, as though you had deleted it:
+#
+#   git diff main         ->  f | 1 +   other | 1 -    <- you never touched other
+#   git diff main...HEAD  ->  f | 1 +
+#
+# Three-dot is shorthand for "diff against the merge base", which is where the
+# branch actually diverged and what the forge shows on a pull request. hunk
+# takes two concrete revisions rather than a range, so the merge base is
+# resolved here and passed explicitly.
+#
+# Note the same distinction does NOT apply to commit ranges: `git log A..B` and
+# tuicr's `-r A..B` already mean "reachable from B, not from A", so two dots is
+# correct there. It is only `git diff` where the dots change the answer.
+#
+# ── Finding the base branch ─────────────────────────────────────────────────
+#
+# origin/HEAD, which is the remote's own default branch rather than a guess at
+# `main`. Set by `git clone`, and inherited by every linked worktree of that
+# clone -- verified present in each repo on this machine. When it is missing
+# (some bare setups, or a remote added by hand) `git remote set-head origin -a`
+# writes it with one network call.
+set -eu
+
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "hunk-branch-diff: not a git repository: $PWD" >&2
+  exit 1
+fi
+
+base=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || true)
+if [ -z "$base" ]; then
+  echo "hunk-branch-diff: origin/HEAD is not set; run: git remote set-head origin -a" >&2
+  echo "hunk-branch-diff: falling back to the working tree" >&2
+  exec hunk diff --watch
+fi
+
+mb=$(git merge-base "$base" HEAD 2>/dev/null || true)
+if [ -z "$mb" ]; then
+  echo "hunk-branch-diff: no merge base with $base; falling back to the working tree" >&2
+  exec hunk diff --watch
+fi
+
+# On the base branch itself there is nothing to review -- the range is empty,
+# and an empty pane is less useful than the working tree. This is the normal
+# state of a main checkout, so it is not a warning.
+if [ "$mb" = "$(git rev-parse HEAD)" ]; then
+  echo "hunk-branch-diff: no commits beyond $base; showing the working tree"
+  exec hunk diff --watch
+fi
+
+exec hunk diff "$mb" HEAD --watch
