@@ -2,4 +2,3 @@
 .ssh/hosts
 .gitconfig-corp
 .zshrc.d/00.corp.zsh
-**/.DS_Store
