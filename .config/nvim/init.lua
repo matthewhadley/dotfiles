@@ -1045,6 +1045,69 @@ local function diagnostic_count(severity, word)
   end
 end
 
+-- Search match count, replacing lualine's stock `searchcount` component.
+--
+-- That one keys off v:hlsearch, which Neovim only sets once a search is
+-- submitted -- so nothing appeared while the pattern was being typed, even
+-- though incsearch was already highlighting the matches in the buffer. This
+-- counts against the partially typed pattern instead, via getcmdline(), so the
+-- total shows from the first keystroke.
+--
+-- Only a total while typing, never a position. The cursor has not moved yet at
+-- that point -- incsearch scrolls the view, not the cursor -- so searchcount
+-- reports current = 0, and "0 of 6" would be wrong rather than merely
+-- incomplete. Once the search is committed the position is real and is shown.
+--
+-- pcall is not defensive padding: a half-typed pattern is routinely an invalid
+-- regex, and `/foo\(` on the way to `/foo\(bar\)` throws outright. Confirmed,
+-- not assumed.
+local function search_count()
+  local cmdtype = vim.fn.getcmdtype()
+  local typing = cmdtype == "/" or cmdtype == "?"
+  local pattern = typing and vim.fn.getcmdline() or nil
+
+  if typing then
+    if pattern == "" then
+      return ""
+    end
+  elseif vim.v.hlsearch ~= 1 then
+    return ""
+  end
+
+  local ok, res = pcall(vim.fn.searchcount, {
+    pattern = pattern,
+    recompute = true,
+    maxcount = 999,
+    timeout = 100,
+  })
+  if not ok or type(res) ~= "table" or (res.total or 0) == 0 then
+    return ""
+  end
+
+  local total = math.min(res.total, res.maxcount)
+  if typing then
+    return total .. (total == 1 and " match" or " matches")
+  end
+  return res.current .. " of " .. total
+end
+
+-- lualine's refresh events do not include CmdlineChanged, and the statusline
+-- is not redrawn on its own while the command line is active, so the count
+-- above would sit stale until the search was submitted -- which is the whole
+-- problem it exists to fix.
+--
+-- Scoped by pattern to the two search prompts. CmdlineChanged matches on the
+-- command-line type, so an ordinary `:` command does not force a statusline
+-- redraw on every keystroke. CmdlineLeave is included so the count clears the
+-- moment a search is abandoned rather than lingering until the next redraw.
+vim.api.nvim_create_autocmd({ "CmdlineChanged", "CmdlineLeave" }, {
+  pattern = { "/", "?" },
+  desc = "Keep the statusline search count live while a search is typed",
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
+
 require("lualine").setup({
   options = {
     -- nightfox ships a matching lualine theme, so "auto" resolves to terafox.
@@ -1138,7 +1201,24 @@ require("lualine").setup({
       -- Filetype as plain text; icons_enabled = false above drops the glyph.
       { "filetype" },
     },
-    lualine_y = { "progress" },
+    -- searchcount sits with progress and location rather than over in
+    -- lualine_x with the diagnostics: all three answer "where am I", and x is
+    -- already carrying three components.
+    --
+    -- Renders "6 matches" while a pattern is being typed and "3 of 6" once it
+    -- is submitted. search_count above, not lualine's stock "searchcount"
+    -- string, which shows nothing at all until the search is submitted -- see
+    -- its comment for why.
+    --
+    -- Coloured with MatchSearch, the yellow defined in theme_tweaks above --
+    -- not terafox's own Search, which is a teal (#425e5e) and would read as
+    -- just another statusline section. As a group name rather than a hex, so
+    -- the count and the highlighted matches in the buffer stay the same colour
+    -- if that yellow is ever changed in one place.
+    --
+    -- Only this component takes it; progress keeps the section's normal
+    -- background.
+    lualine_y = { { search_count, color = "MatchSearch" }, "progress" },
     lualine_z = { "location" },
   },
   extensions = { "neo-tree", "toggleterm", "fugitive" },
