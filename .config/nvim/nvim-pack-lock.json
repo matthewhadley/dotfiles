@@ -1,5 +1,9 @@
 {
   "plugins": {
+    "actions-preview.nvim": {
+      "rev": "0ac9c2aa3cfc8c885321c0862b50b6b1c3392405",
+      "src": "https://github.com/aznhe21/actions-preview.nvim"
+    },
     "bufferline.nvim": {
       "rev": "655133c3b4c3e5e05ec549b9f8cc2894ac6f51b3",
       "src": "https://github.com/akinsho/bufferline.nvim"
@@ -101,6 +105,10 @@
     "telescope.nvim": {
       "rev": "40aedd8a68c78a656a10a8d62d80c54af59420fb",
       "src": "https://github.com/nvim-telescope/telescope.nvim"
+    },
+    "tiny-code-action.nvim": {
+      "rev": "0d040ed81f7953118b81cd12681fcdfcac069803",
+      "src": "https://github.com/rachartier/tiny-code-action.nvim"
     },
     "tiny-inline-diagnostic.nvim": {
       "rev": "6264451f14119d63a52580e5198d6baf8518b0b2",

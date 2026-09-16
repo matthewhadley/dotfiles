@@ -1422,8 +1422,171 @@ vim.lsp.config("eslint", {
   },
 })
 
--- <leader>ca applies eslint's fixes (and any other code action) at the cursor.
-vim.keymap.set({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+-- ── Code actions: tiny-code-action.nvim ──────────────────────────────────
+-- Replaces the picker vim.lsp.buf.code_action() puts up, which is a bare list
+-- of titles. ts_ls routinely answers with sixteen actions at a single cursor
+-- position, most of them file-scoped refactors it can always offer and whose
+-- names differ by a word or two ("Convert default export to named export" next
+-- to "Convert named export to default export"), so the title alone rarely
+-- identifies the one that does what you meant. This previews the diff each
+-- action would actually apply, which is the only reliable way to tell them
+-- apart.
+--
+-- It also answers the case of a fix that reads correctly and is not: the
+-- SC2164 suggestion shellcheck offers on an `A && B` line appends `|| exit`,
+-- which changes the control flow so the script quits when the test merely
+-- fails. A diff shows that; a list of titles cannot.
+--
+-- Same author as tiny-inline-diagnostic above.
+vim.pack.add({ "https://github.com/rachartier/tiny-code-action.nvim" })
+
+require("tiny-code-action").setup({
+  -- delta is already installed and already configured for git, in
+  -- ~/.config/git/delta-terafox.gitconfig. The default "vim" backend prints a
+  -- plain unified diff; delta syntax-highlights it and adds line numbers.
+  -- difftastic and diffsofancy are the other accepted values.
+  backend = "delta",
+
+  -- Autodetected if left nil, but named so the choice cannot change silently
+  -- the day another picker ends up installed.
+  picker = "telescope",
+
+  -- The defaults are Nerd Font glyphs from the private use area, which render
+  -- as tofu here -- the same reason devicons is not installed and neo-tree's
+  -- icons are blanked. Single letters instead, the same approach taken for
+  -- neo-tree's git_status column above.
+  --
+  -- One letter and not a word: the telescope picker hardcodes this column at
+  -- `{ width = 2 }` (pickers/telescope.lua, in create_displayer) with no
+  -- option to widen it, so anything longer than two cells is truncated by
+  -- telescope to a single character plus an ellipsis -- "ref" renders as "r…",
+  -- which is worse than either. Not patched around, because the checkout would
+  -- lose it on the next update.
+  --
+  -- N rather than R for rename: R is taken by refactor, which is far more
+  -- common. The highlight links are the plugin's own, kept so the letters stay
+  -- colour-coded by kind.
+  signs = {
+    quickfix = { "F", { link = "DiagnosticWarning" } },
+    others = { "?", { link = "DiagnosticWarning" } },
+    refactor = { "R", { link = "DiagnosticInfo" } },
+    ["refactor.move"] = { "M", { link = "DiagnosticInfo" } },
+    ["refactor.extract"] = { "E", { link = "DiagnosticError" } },
+    ["source.organizeImports"] = { "I", { link = "DiagnosticWarning" } },
+    ["source.fixAll"] = { "A", { link = "DiagnosticError" } },
+    ["source"] = { "S", { link = "DiagnosticError" } },
+    ["rename"] = { "N", { link = "DiagnosticWarning" } },
+    ["codeAction"] = { "C", { link = "DiagnosticWarning" } },
+  },
+})
+
+-- No range passed for visual mode: the plugin reads the mode and builds the
+-- range itself (see its finder.lua).
+--
+-- The filter drops actions the server marked `disabled`. ts_ls answers a
+-- cursor position with every refactor it knows -- "Extract function", "Move to
+-- a new file", "Convert to template string" and a dozen more -- and marks the
+-- ones that do not apply there with a reason ("Could not find export
+-- statement", and so on) rather than leaving them out. Measured on
+-- scratch.ts:7, that is 16 disabled entries against 2 real ones.
+--
+-- A disabled action carries no edit and no data, so codeAction/resolve returns
+-- it just as bare: there is nothing to apply and nothing to preview, which is
+-- what "No preview available for this action" means on those rows. Filtering
+-- them is what makes the preview worth having -- otherwise the list is mostly
+-- entries that cannot do anything and the real fix is buried among them.
+--
+-- Anything genuinely applicable is not disabled, so nothing useful is lost:
+-- make a visual selection and the extract refactors come back enabled.
+--
+-- Neovim's built-in `gra` is deliberately left alone and still runs the stock
+-- vim.lsp.buf picker -- unfiltered and with no preview -- so the two sit side
+-- by side for comparison.
+-- actions-preview.nvim, on trial alongside tiny-code-action above. Same idea
+-- -- a picker that previews the diff each action would apply -- with a
+-- different lineage: it is a fork of vim.lsp.buf.code_action() rather than a
+-- reimplementation, so it takes the same opts (including `filter`) and
+-- computes its preview by diffing the buffer against the action's edit
+-- applied to a scratch copy.
+--
+-- Both are bound for now so they can be compared on the same line:
+--   \ca  actions-preview
+--   \cA  tiny-code-action
+--   gra  Neovim's stock picker -- no preview, no filtering
+vim.pack.add({ "https://github.com/aznhe21/actions-preview.nvim" })
+
+require("actions-preview").setup({
+  -- Trimmed from the shipped list of four. mini.pick and snacks are not
+  -- installed -- only mini.indentscope, trailspace and cursorword are, and
+  -- snacks not at all -- so those two entries could never be reached. nui is
+  -- kept as a genuine fallback: it ships with neo-tree, so it is always there.
+  --
+  -- The nui backend was tried as the primary and reverted. It uses nui.menu,
+  -- so there is no fuzzy prompt -- arrows and <CR> only, which suits a
+  -- three-row list -- but telescope's window is the better one to read a diff
+  -- in, mainly because <C-u>/<C-d> scroll the preview and nui has no
+  -- equivalent.
+  backend = { "telescope", "nui" },
+
+  -- A priority list, each entry guarded by its own is_available, so the first
+  -- one actually on PATH wins. Only delta is listed: difftastic and
+  -- diff-highlight are not installed, and diff-so-fancy was removed from the
+  -- Brewfile rather than kept as a fallback nobody wants to fall back to.
+  --
+  -- Worth knowing: hl.delta() shells out to bare `delta`, which reads git
+  -- config, so this already inherits the whole terafox delta setup from
+  -- ~/.config/git/delta-terafox.gitconfig -- syntax-theme, the plus/minus
+  -- styles, line numbers, tabs=4. Nothing needs restating here, and the
+  -- preview matches what `git diff` looks like in a terminal.
+  --
+  -- One deliberate difference: core.pager adds --side-by-side above 160
+  -- columns, and this does not. A telescope preview pane is far narrower than
+  -- the terminal, so side-by-side would be cramped.
+  --
+  -- If delta ever goes missing this list is empty and the preview falls back
+  -- to a plain uncoloured diff, which is the plugin's own default behaviour --
+  -- degraded, not broken.
+  highlight_command = {
+    require("actions-preview.highlight").delta(),
+  },
+
+  -- Handed straight to vim.diff(), so its whole option set is available rather
+  -- than just ctxlen.
+  --
+  -- histogram over the default myers: it is the algorithm git itself reaches
+  -- for on code, and it keeps related lines together instead of producing the
+  -- shortest edit script. indent_heuristic shifts hunk boundaries to line up
+  -- with indentation, which stops a inserted block being attributed to the
+  -- closing brace of the one above it.
+  --
+  -- ignore_whitespace is deliberately NOT set, though the plugin's own FAQ
+  -- suggests it: an action whose entire effect is reindentation would preview
+  -- as an empty diff, which is exactly the case worth seeing.
+  --
+  -- ctxlen 3 is the default, stated because a one-line edit like appending
+  -- `|| exit` is unreadable without its surroundings.
+  diff = {
+    ctxlen = 3,
+    algorithm = "histogram",
+    indent_heuristic = true,
+  },
+})
+
+vim.keymap.set({ "n", "x" }, "<leader>ca", function()
+  require("actions-preview").code_actions({
+    filter = function(action)
+      return not action.disabled
+    end,
+  })
+end, { desc = "Code action (actions-preview)" })
+
+vim.keymap.set({ "n", "x" }, "<leader>cA", function()
+  require("tiny-code-action").code_action({
+    filter = function(action)
+      return not action.disabled
+    end,
+  })
+end, { desc = "Code action (tiny-code-action)" })
 
 -- ── LSP progress and notifications: fidget.nvim ──────────────────────────
 -- Two separate halves in one plugin, and both are wanted here:
