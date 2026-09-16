@@ -8,7 +8,7 @@ _dotfiles_scopes_scan() {
   # Derive the vocabulary from history rather than a list that has to be kept
   # in step by hand. Bootstrap a new machine with:
   #
-  #   dotfiles scopes set $(dotfiles scopes scan)
+  #   dotfiles scopes rebuild
   #
   # Two commits are skipped for the same reasons the hook exempts them: special
   # commits are not required to carry a scope, and subjects with no colon
@@ -16,7 +16,8 @@ _dotfiles_scopes_scan() {
   # is dropped too, which is what keeps leftover Conventional Commit subjects
   # like "feat(nvim): ..." from contributing a scope of "feat(nvim)".
   local -a found
-  local subject scope s
+  local subjects subject scope s
+  subjects=$(_dotfiles_git_home log --format=%s) || return
   while IFS= read -r subject; do
     [[ $subject =~ '^(Merge|Revert|fixup!|squash!|amend!)' ]] && continue
     [[ $subject != *:* ]] && continue
@@ -27,7 +28,7 @@ _dotfiles_scopes_scan() {
       s=${s%% }
       [[ $s =~ '^[a-z0-9._/-]+$' ]] && found+=$s
     done
-  done < <(_dotfiles_git_home log --format=%s)
+  done <<< "$subjects"
   (( ${#found} )) || return 1
   echo ${(j: :)${(o)${(u)found}}}
 }
@@ -36,7 +37,7 @@ _dotfiles_scopes() {
   # The scope vocabulary the commit-msg hook enforces. Lives in git config,
   # which for this repo means ~/.dotfiles/config -- inside the git dir, so it
   # is NOT tracked and a fresh clone starts with no vocabulary at all. Run
-  # `dotfiles scopes set ...` as part of bootstrapping a new machine.
+  # `dotfiles scopes rebuild` as part of bootstrapping a new machine.
   local -a current
   # --get-all to match the hook: --get returns only the last value, so a
   # multi-valued key would list short of what is actually enforced.
@@ -58,6 +59,15 @@ _dotfiles_scopes() {
     scan)
       _dotfiles_scopes_scan
       return
+      ;;
+    rebuild)
+      (( $# == 0 )) || { echo "usage: dotfiles scopes rebuild"; return 2 }
+      local scanned
+      scanned=$(_dotfiles_scopes_scan) || {
+        echo "could not rebuild scopes from history; configured scopes unchanged" >&2
+        return 1
+      }
+      current=(${(s: :)scanned})
       ;;
     add)
       (( $# )) || { echo "usage: dotfiles scopes add <name> [name...]"; return 2 }
@@ -81,13 +91,13 @@ _dotfiles_scopes() {
       current=("$@")
       ;;
     *)
-      echo "usage: dotfiles scopes [scan|add|rm|set <name>...]"
+      echo "usage: dotfiles scopes [scan|rebuild|add|rm|set <name>...]"
       return 2
       ;;
   esac
 
   current=(${(o)${(u)current[@]}})
-  _dotfiles_git_home config scopedcommits.scopes "${current[*]}"
+  _dotfiles_git_home config --replace-all scopedcommits.scopes "${current[*]}" || return
   echo "scopes: ${current[*]}"
 }
 
@@ -377,7 +387,8 @@ dotfiles git bare repo management at ~/.dotfiles
                  pair spelled out -- it refuses a bare repo on its own
   logs           the `git logs` alias without the redundant " by <author>"
   resolve        open the conflicted files of a merge or rebase in diffview
-  scopes         list the commit scopes the hook allows; scan/add/rm/set
+  scopes         list the commit scopes the hook allows; scan/rebuild/add/rm/set
+                 rebuild replaces configured scopes with those in HEAD's history
   help           this text
 
 Agents: read ~/.github/AGENTS.md before working in this repo.
