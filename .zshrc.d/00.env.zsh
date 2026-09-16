@@ -34,8 +34,9 @@ fi
 
 # Path
 function pathadd {
-  if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
-    PATH="$1:$PATH"
+  if [[ -d "$1" ]]; then
+    # Move existing entries to the front too, including after brew shellenv.
+    path=("$1" "${(@)path:#"$1"}")
   fi
 }
 

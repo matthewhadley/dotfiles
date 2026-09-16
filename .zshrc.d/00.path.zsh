@@ -1,9 +1,4 @@
-# Path
-function pathadd {
-  if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
-    PATH="$1:$PATH"
-  fi
-}
+# pathadd is defined and used in 00.env.zsh, which loads before this file.
 
 # Note, edit /etc/paths to put local paths before global
 # http://stackoverflow.com/questions/5364614/
