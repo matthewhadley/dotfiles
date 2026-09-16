@@ -37,6 +37,12 @@ title = "Open worktree"
 contexts = ["workspace"]
 command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint new-worktree"]
 
+[[actions]]
+id = "clone-pr"
+title = "Clone PR"
+contexts = ["workspace"]
+command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint clone-pr"]
+
 [[panes]]
 id = "open-project"
 title = "Open project"
@@ -52,3 +58,11 @@ placement = "popup"
 width = "60%"
 height = "50%"
 command = ["bash", "new-worktree.sh"]
+
+[[panes]]
+id = "clone-pr"
+title = "Clone PR"
+placement = "popup"
+width = "70%"
+height = "50%"
+command = ["bash", "clone-pr.sh"]
