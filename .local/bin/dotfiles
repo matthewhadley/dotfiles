@@ -246,6 +246,20 @@ _dotfiles_hooks() {
   # Only reference-transaction is managed here. commit-msg is left alone: it
   # arrives from ~/.git-templates/hooks at clone time, and is shared with every
   # other repo on the machine.
+  #
+  # Nothing is linked on a machine without herdr. The hook exists solely to
+  # refresh a herdr sidebar token, and it already no-ops on its own when herdr
+  # is missing -- but a hook that cannot do anything is still a hook in the
+  # path of every commit and fetch in $HOME, and this repo is not one to leave
+  # inert machinery lying in.
+  #
+  # Skipped rather than unlinked, deliberately. herdr briefly off PATH -- a
+  # login shell that has not sourced it, a half-finished brew upgrade -- would
+  # otherwise make `deps` tear out a hook that was working fine.
+  if ! command -v herdr >/dev/null 2>&1; then
+    echo "herdr not installed; skipping reference-transaction hook"
+    return 0
+  fi
   local src="$HOME/.config/dotfiles/hooks"
   local dst="$HOME/.dotfiles/hooks"
   local hook
