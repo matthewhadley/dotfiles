@@ -1,3 +1,8 @@
+# The schema URL below is one unbreakable token, and the line cannot be
+# wrapped: yaml-language-server parses it to bind the schema, so splitting it
+# would silently turn schema validation off. Verified that the directive still
+# binds from line 2, so this comment can sit above it.
+# yamllint disable-line rule:line-length
 # yaml-language-server: $schema=https://raw.githubusercontent.com/razajamil/herdr-plugin-workspace-manager/main/schema.json
 layouts:
   - id: standard
