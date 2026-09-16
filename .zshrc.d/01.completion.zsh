@@ -11,16 +11,10 @@
 #
 # So if this ever needs to move, move it -- do not add a second one.
 if [ -n "$BREW_PREFIX" ]; then
-  # Idempotent, in the style of pathadd in 00.env.zsh. zsh marks FPATH exported
-  # when it finds it in the environment at startup, so a plain prepend adds a
-  # copy per nesting level -- and a nested shell's fpath then differs from a
-  # top-level one's, which is precisely the mismatch that sends compinit off to
-  # rebuild the dump. herdr panes never saw this (the herdr server's own
-  # environment carries no FPATH, so each pane starts clean), but `zsh` inside
-  # `zsh` is common enough to be worth closing.
-  _zsh_completions=$BREW_PREFIX/share/zsh-completions
-  fpath=("$_zsh_completions" "${(@)fpath:#"$_zsh_completions"}")
-  unset _zsh_completions
+  # A plain prepend is safe to repeat: 00.env.zsh declares `typeset -U fpath`,
+  # so the duplicate this would otherwise leave behind is dropped and the entry
+  # simply moves to the front. See that file for why it is needed at all.
+  fpath=($BREW_PREFIX/share/zsh-completions $fpath)
 
   autoload -Uz compinit
   compinit

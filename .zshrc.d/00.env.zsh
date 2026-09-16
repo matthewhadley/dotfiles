@@ -32,6 +32,32 @@ if [ -f "$HOME/.config/lazygit/config.yml" ]; then
   export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
 fi
 
+# Keep both arrays free of duplicates, first occurrence winning. This is here
+# for `brew shellenv` below, which is not idempotent and does not always know
+# to skip itself: it emits
+#
+#   fpath[1,0]="/opt/homebrew/share/zsh/site-functions";
+#   export FPATH;
+#   export PATH="/opt/homebrew/bin:/opt/homebrew/sbin${PATH+:$PATH}";
+#
+# and short-circuits to no output only when /opt/homebrew/bin is *first* on
+# PATH. pathadd below deliberately moves ~/.local/bin in front of it, so every
+# nested zsh re-runs the whole block: without -U, `zsh` inside `zsh` gained one
+# fpath entry and two PATH entries per level, without limit.
+#
+# It also matters for more than tidiness. `export FPATH` on line 2 above means
+# a child inherits the list, so an un-deduped nested shell ends up with an
+# fpath that a compinit dump built by a top-level shell does not match -- and
+# compinit answers a mismatch by rebuilding the dump, which is the ~250ms
+# mistake 01.completion.zsh exists to avoid. With -U every depth converges on
+# the same fpath and the dump is shared.
+#
+# -g is not optional. .zshrc sources these fragments from inside the source_rc
+# function, so a bare `typeset` would declare locals that shadow path and fpath
+# for the rest of the loop -- brew shellenv's exports would land in the shadow
+# and vanish with it, leaving the shell with a four-entry PATH and no homebrew.
+typeset -gU path fpath
+
 # Path
 function pathadd {
   if [[ -d "$1" ]]; then
