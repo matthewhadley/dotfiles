@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+# Shared by nv, dotfiles edit/resolve, and EDITOR/VISUAL integrations.
+# Herdr renders undercurls but does not advertise them to Neovim correctly.
+# This enables their shape; Herdr issue #895 still affects underline color.
+if [[ ${HERDR_ENV:-} == 1 ]]; then
+  export TERM=xterm-ghostty
+fi
+
+# Find the real binary without changing the PATH inherited by Neovim or
+# its child processes. Skip this launcher, including symlinks back to it.
+for nvim_dir in "${path[@]}"; do
+  nvim_candidate="${nvim_dir:-.}/nvim"
+  if [[ -x "$nvim_candidate" && ! -d "$nvim_candidate" && ${nvim_candidate:A} != ${0:A} ]]; then
+    exec "$nvim_candidate" "$@"
+  fi
+done
+
+print -u2 'nvim: no Neovim binary found on PATH'
+exit 127
