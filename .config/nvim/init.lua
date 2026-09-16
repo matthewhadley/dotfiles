@@ -1014,6 +1014,60 @@ local function diagnostic_count(severity, word)
   end
 end
 
+-- A language server that is attached and running but cannot do its job.
+--
+-- Worth a permanent indicator, because every other signal says the server is
+-- healthy: it attached, it is connected, `:checkhealth vim.lsp` lists it -- it
+-- simply reports nothing, so a file with real violations looks clean. The
+-- notification a server raises times out, which is the wrong shape for a
+-- condition that lasts until you fix it.
+--
+-- Recorded on the client object rather than in a table keyed by client id, so
+-- it needs no cleanup: the object is discarded when the server stops, and a
+-- restart that works never records anything. "Until resolved" falls out of
+-- that for free.
+--
+-- The latest complaint wins, not the first. An earlier version kept the first
+-- and went stale in exactly the case that matters: eslint said "no library",
+-- the dependencies were installed, and the bar still said "no library" while
+-- the server was busy reporting a different failure entirely. A repeat of the
+-- same message is a no-op, which is what keeps the common case -- one
+-- complaint restated per document -- from churning.
+--
+-- Returns true when something actually changed, so callers can notify on the
+-- change rather than on every occurrence.
+local function record_lsp_problem(client_id, message)
+  local client = vim.lsp.get_client_by_id(client_id)
+  if not client then
+    return false
+  end
+  message = vim.trim(tostring(message or ""):gsub("%s+", " "))
+  if message == "" then
+    return false
+  end
+  -- Servers write for a dialog box, not a status bar. 48 columns is about what
+  -- the bar can spare next to the diagnostic counts before it starts pushing
+  -- the position indicator around.
+  if #message > 48 then
+    message = message:sub(1, 47) .. "…"
+  end
+  if client.lsp_problem == message then
+    return false
+  end
+  client.lsp_problem = message
+  return true
+end
+
+-- Generic: whatever any attached server last complained about.
+local function lsp_problem()
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+    if client.lsp_problem then
+      return client.name .. ": " .. client.lsp_problem
+    end
+  end
+  return ""
+end
+
 -- Search match count, replacing lualine's stock `searchcount` component.
 --
 -- That one keys off v:hlsearch, which Neovim only sets once a search is
@@ -1121,6 +1175,14 @@ require("lualine").setup({
       },
       {
         diagnostic_count(vim.diagnostic.severity.WARN, "warning"),
+        color = "DiagnosticWarn",
+      },
+
+      -- Sits with the counts because it makes the same kind of claim about
+      -- this buffer, and takes the same colour: a warning that the counts
+      -- beside it may be understating things, a server contributing none.
+      {
+        lsp_problem,
         color = "DiagnosticWarn",
       },
 
@@ -1547,6 +1609,62 @@ vim.lsp.enable({
   "eslint",   -- eslint-lsp: rule violations, and applyAllFixes as a code action
 })
 
+-- Feed the lsp_problem statusline component, generically.
+--
+-- window/showMessage is the protocol's own way for a server to say something
+-- went wrong, and Neovim already routes it to vim.notify. Recording the
+-- warnings and errors as well gives every server a persistent indicator for
+-- free, rather than a toast that times out.
+--
+-- Wrapped rather than replaced, so the notification still happens -- the first
+-- occurrence is when an explanation is most useful, and the full text is there
+-- rather than the 48 columns the bar keeps.
+--
+-- Info and Log are dropped. Servers use those for progress chatter ("project
+-- loaded", index counts), which fidget already draws and which would otherwise
+-- park in the bar forever.
+local lsp_show_message = vim.lsp.handlers["window/showMessage"]
+vim.lsp.handlers["window/showMessage"] = function(err, result, ctx)
+  local ERROR, WARNING = 1, 2
+  if result and (result.type == ERROR or result.type == WARNING) then
+    record_lsp_problem(ctx.client_id, result.message)
+  end
+  return lsp_show_message(err, result, ctx)
+end
+
+-- A third channel, and the one that actually caught the eslint plugin failure:
+-- a request that comes back as a JSON-RPC error rather than a notification.
+-- Neither window/showMessage nor a server's own method -- it is the response to
+-- a request nvim made, reported as
+--
+--   eslint: -32603: Request textDocument/diagnostic failed with message: ...
+--
+-- Wrapping the handler table catches these for every method with a default
+-- handler, textDocument/diagnostic among them, which is where a linter that
+-- cannot load its config surfaces. Keys are collected first because assigning
+-- into a table while iterating it with pairs() is only defined for keys that
+-- already exist.
+--
+-- Cancellation is not a problem with the server. ContentModified means the
+-- buffer changed while the request was in flight, which happens constantly
+-- while typing, and the two cancelled codes are routine; nvim's own reporting
+-- skips them for the same reason, so recording them would fill the bar with
+-- noise from ordinary editing.
+local LSP_CANCELLED = {
+  [-32800] = true, -- RequestCancelled
+  [-32801] = true, -- ContentModified
+  [-32802] = true, -- ServerCancelled
+}
+for _, method in ipairs(vim.tbl_keys(vim.lsp.handlers)) do
+  local handler = vim.lsp.handlers[method]
+  vim.lsp.handlers[method] = function(err, result, ctx, config)
+    if err and err.message and not LSP_CANCELLED[err.code] then
+      record_lsp_problem(ctx.client_id, err.message)
+    end
+    return handler(err, result, ctx, config)
+  end
+end
+
 -- eslint reports one generic "Parsing error: ..." when a file will not parse,
 -- duplicating ts_ls -- which says it better, giving several specific messages
 -- where eslint gives one. Filtered out here; every other eslint diagnostic is a
@@ -1574,6 +1692,34 @@ vim.lsp.config("eslint", {
         result.diagnostics = drop_parse_errors(result.diagnostics)
       end
       return vim.lsp.handlers["textDocument/publishDiagnostics"](err, result, ctx)
+    end,
+
+    -- An adapter, not a special case. eslint is one of the twenty-odd servers
+    -- in lspconfig's 414 that report trouble through a method of their own
+    -- rather than window/showMessage, so the generic wrapper above never sees
+    -- this one -- it arrives as `eslint/noLibrary`. Feeding the same store
+    -- keeps the statusline component generic and confines the server-specific
+    -- knowledge to these few lines.
+    --
+    -- It means eslint found a config file -- the only reason it attaches at
+    -- all -- but not the library that config needs. Nearly always a checkout
+    -- whose dependencies are not installed, which is the default state of a
+    -- fresh `git worktree add`: eslint.config.mjs is tracked, node_modules is
+    -- not.
+    --
+    -- This replaces lspconfig's own handler, which only calls vim.notify, and
+    -- does so on every occurrence -- the server asks again for each document
+    -- it is told to validate, so opening a few files in an uninstalled
+    -- checkout produces a stack of identical toasts. record_lsp_problem keeps
+    -- the first per client, and the notify here matches it.
+    ["eslint/noLibrary"] = function(_, _, ctx)
+      if record_lsp_problem(ctx.client_id, "no library") then
+        vim.notify(
+          "eslint attached but found no ESLint library -- dependencies are probably not installed",
+          vim.log.levels.WARN
+        )
+      end
+      return {}
     end,
   },
 })
