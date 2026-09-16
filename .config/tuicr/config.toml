@@ -1,0 +1,27 @@
+# tuicr — a code review TUI, reviewed against the same palette as everything
+# else here. See themes/terafox.toml for where each colour comes from.
+
+# Local theme, resolved from themes/terafox.toml after bundled names are
+# checked. Set explicitly rather than via theme_dark/theme_light: there is no
+# light variant of this setup, and an explicit `theme` also stops `appearance`
+# from having any say.
+theme = "terafox"
+
+# No `appearance` here, deliberately. It looks like a sensible belt-and-braces
+# default next to an explicit theme, but tuicr disagrees loudly: setting both
+# puts "Warning: Appearance setting is ignored when theme is explicitly set" in
+# the status bar for the whole session. docs/CONFIG.md's resolution order says
+# the same more quietly -- `appearance` is consulted only when no explicit
+# theme and no theme_dark/theme_light pair is set.
+#
+# Nothing is lost. There is no light variant of this setup, so the only case
+# `appearance` would have covered is terafox.toml failing to load, which is a
+# startup warning rather than an exit -- and a fallback that briefly follows
+# the OS is a better outcome than a permanent warning in the status bar.
+
+# Left unset deliberately: `transparent_background` defaults to true, which
+# lets Ghostty's background show through instead of painting the theme's
+# panel_bg. Painting it would draw a hard edge against Ghostty's #151C23
+# wherever content is narrower than the pane -- the same seam documented in
+# ~/.config/git/delta-terafox.gitconfig, ~/.config/hunk/config.toml and
+# ~/.config/yazi/theme.toml.

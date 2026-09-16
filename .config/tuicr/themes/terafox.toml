@@ -1,0 +1,107 @@
+# tuicr — terafox.
+#
+# Selected by `theme = "terafox"` in ../config.toml. Local themes resolve after
+# bundled ones, so the name is safe as long as tuicr never ships a "terafox".
+#
+# ── Where the colours come from ─────────────────────────────────────────────
+#
+# Same palette as the rest of this machine, and deliberately not re-derived:
+# every value below is already in use somewhere, so a diff reads the same in
+# tuicr, hunk, lazygit and `git diff`.
+#
+#   ~/.config/hunk/config.toml         the closest analogue -- also a diff
+#                                      review TUI, so its roles map almost
+#                                      one to one and are the authority for
+#                                      anything with no delta equivalent
+#   ~/.config/git/delta-terafox.gitconfig   the diff chrome, shared with
+#                                      lazygit via --features=terafox
+#   ~/.vim/colors/terafox.vim          the raw nightfox palette
+#
+# Two values are overrides rather than stock terafox, kept because the rest of
+# the setup already made the same choice:
+#
+#   diff_add = #6ec47c   stock add is #7aa4a1, a muted teal that collides with
+#                        terafox's change colour. nvim applies this to
+#                        GitSignsAdd, hunk to addedSignColor, delta to
+#                        line-numbers-plus-style.
+#   the four diff backgrounds are bg1 blended toward the sign colour, 0.20 for
+#                        the row and 0.28 for word-level emphasis -- the exact
+#                        hexes delta's plus/minus styles use.
+#
+# ── The syntax theme ────────────────────────────────────────────────────────
+#
+# Pointed at bat's copy rather than a copy of its own. That file is generated
+# by ~/.local/bin/terafox-bat-theme and is what delta already highlights with,
+# so there is one file to regenerate after a nightfox update instead of two
+# that can drift. Relative because tuicr resolves the path against this file.
+syntax_theme = "../../bat/themes/terafox.tmTheme"
+
+# ── Chrome ──────────────────────────────────────────────────────────────────
+#
+# panel_bg is terafox bg0, but `transparent_background` defaults to true and is
+# left that way in config.toml, so this is mostly unused -- which is the point.
+# Painting panels would draw a hard edge against Ghostty's #151C23 wherever the
+# content is narrower than the pane, the same seam the delta, hunk and yazi
+# configs all document.
+panel_bg = "#0f1c1e"
+bg_highlight = "#344a4f"      # hunk selectedHunk
+fg_primary = "#e6eaea"        # terafox fg1, hunk text
+fg_secondary = "#cbd9d8"      # terafox fg2
+fg_dim = "#587b7b"            # terafox fg3, hunk lineNumberFg, delta gutter
+
+# ── Diff rows ───────────────────────────────────────────────────────────────
+diff_add = "#6ec47c"
+diff_add_bg = "#274539"       # delta plus-style, hunk addedBg
+diff_del = "#e85c51"
+diff_del_bg = "#3f3030"       # delta minus-style, hunk removedBg
+diff_context = "#e6eaea"
+diff_hunk_header = "#a1cdd8"  # terafox cyan, delta hunk-header-file-style
+expanded_context_fg = "#6d7f8b"  # terafox comment
+
+# Word-level emphasis inside a changed row: the 0.28 blends, matching delta's
+# plus-emph-style / minus-emph-style and hunk's *ContentBg.
+syntax_add_bg = "#2e5240"
+syntax_del_bg = "#503433"
+
+# ── File status ─────────────────────────────────────────────────────────────
+# Straight from hunk's fileNew / fileModified / fileDeleted / fileRenamed, so
+# the file list is colour-identical between the two review TUIs.
+file_added = "#bddeab"
+file_modified = "#ffdca0"
+file_deleted = "#ffa1a1"
+file_renamed = "#b1d8f6"
+
+# ── Review state ────────────────────────────────────────────────────────────
+reviewed = "#6ec47c"          # the added-sign green, i.e. "done"
+pending = "#fda47f"           # terafox yellow, hunk accent
+
+# ── Comment types ───────────────────────────────────────────────────────────
+comment_note = "#5fafff"      # hunk noteBorder
+comment_suggestion = "#a1cdd8"
+comment_issue = "#e85c51"
+comment_praise = "#6ec47c"
+
+# ── Borders, status bar, cursor ─────────────────────────────────────────────
+border_focused = "#fda47f"    # accent, so the focused pane is unambiguous
+border_unfocused = "#2d4f56"  # terafox bg4, hunk border, delta's rules
+status_bar_bg = "#1d3337"     # terafox bg2, hunk panelAlt
+cursor_color = "#fda47f"
+cursor_line_bg = "#293e40"    # terafox sel0
+branch_name = "#d38d97"       # terafox pink; nothing else here uses it, which
+                              # is what keeps the branch readable at a glance
+help_indicator = "#8a9ba5"    # hunk muted
+
+# ── Messages and badges ─────────────────────────────────────────────────────
+# Foreground is bg0 throughout: these are reversed pills, so the text sits on a
+# saturated background and needs the darkest value in the palette.
+message_info_fg = "#0f1c1e"
+message_info_bg = "#5fafff"
+message_warning_fg = "#0f1c1e"
+message_warning_bg = "#fda47f"
+message_error_fg = "#0f1c1e"
+message_error_bg = "#e85c51"
+update_badge_fg = "#0f1c1e"
+update_badge_bg = "#fda47f"
+
+mode_fg = "#0f1c1e"
+mode_bg = "#a1cdd8"
