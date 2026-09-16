@@ -553,24 +553,10 @@ end, { desc = "New file" })
 -- text files through it would have to perform the normal read itself, which
 -- means reimplementing nvim's encoding, BOM and fileformat handling. So it
 -- runs on BufReadPost, one frame later, and accepts a brief flash.
--- The message sits on the command line until something overwrites it. Opening
--- an ordinary file does that on its own -- nvim prints `"name" 12L, 340B` --
--- but landing back on a buffer that is already loaded prints nothing, so it
--- would linger. Clear it on a timer, and only if it is still the newest one:
--- without the token, two refusals in quick succession would have the first
--- one's timer wipe the second one's message.
-local refusal_id = 0
 
 local function refuse(buf, file)
-  refusal_id = refusal_id + 1
-  local mine = refusal_id
   vim.notify("unsupported file type: " .. vim.fn.fnamemodify(file, ":t"),
     vim.log.levels.WARN)
-  vim.defer_fn(function()
-    if refusal_id == mine then
-      vim.api.nvim_echo({ { "" } }, false, {})
-    end
-  end, 4000)
   -- Scheduled: wiping a buffer from inside its own read event leaves the
   -- window without one. nvim_buf_delete with force = true, unlike :bdelete,
   -- closes any window that would otherwise be left showing nothing rather
@@ -687,6 +673,22 @@ local function theme_tweaks()
   -- otherwise inherits from gitsigns.
   for _, group in ipairs({ "GitSignsAdd", "NeominimapGitAddSign" }) do
     vim.api.nvim_set_hl(0, group, { fg = "#6EC47C" })
+  end
+
+  -- mini.indentscope's guide is structural furniture rather than content, but
+  -- terafox paints it #73a3b7 -- a saturated blue brighter than Comment, which
+  -- makes a full-height rule the loudest thing in a deeply indented buffer.
+  -- NonText is the register the scheme already uses for exactly this class of
+  -- mark (the end-of-buffer filler, listchars guides), so borrowing it keeps
+  -- the guide readable without competing with the code beside it.
+  --
+  -- Read off the group rather than hardcoded, so it follows whatever scheme is
+  -- loaded. SymbolOff is set alongside it: it is the same colour by default and
+  -- only shows up in the try_as_border case, but leaving it bright would make
+  -- the guide change loudness depending on where the cursor sits.
+  local nontext = vim.api.nvim_get_hl(0, { name = "NonText", link = false })
+  for _, group in ipairs({ "MiniIndentscopeSymbol", "MiniIndentscopeSymbolOff" }) do
+    vim.api.nvim_set_hl(0, group, { fg = nontext.fg })
   end
 
 end
@@ -1423,6 +1425,49 @@ vim.lsp.config("eslint", {
 -- <leader>ca applies eslint's fixes (and any other code action) at the cursor.
 vim.keymap.set({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
 
+-- ── LSP progress and notifications: fidget.nvim ──────────────────────────
+-- Two separate halves in one plugin, and both are wanted here:
+--
+--   progress      draws the `$/progress` reports a language server sends while
+--                 it works -- ts_ls indexing a project, eslint-lsp starting up
+--                 -- as a spinner in the bottom-right corner that clears
+--                 itself when the server finishes. Without it those reports go
+--                 nowhere visible, so a server that takes ten seconds to come
+--                 up is indistinguishable from a hung editor.
+--
+--   notification  a vim.notify implementation. Everything this file notifies
+--                 about -- mason's installs, the unsupported-file-type
+--                 refusal, conform's format failures -- currently lands on the
+--                 command line, one line high, where a long message forces a
+--                 hit-enter prompt and a short one sits there until something
+--                 else happens to overwrite it. As toasts they stack, time out
+--                 on their own, and `:Fidget history` keeps what scrolled by.
+--
+-- No Nerd Font dependency, in keeping with the rest of this config: the
+-- default spinner is braille (U+28xx) and the done marker is U+2714, both
+-- plain Unicode that Ghostty draws from its own fonts.
+vim.pack.add({ "https://github.com/j-hui/fidget.nvim" })
+
+require("fidget").setup({
+  notification = {
+    -- Off by default, which leaves vim.notify alone and makes this half of the
+    -- plugin reachable only through fidget.notify() -- i.e. nothing already
+    -- written here would use it.
+    override_vim_notify = true,
+    window = {
+      -- Default is 100, meaning fully transparent: the toast has no background
+      -- of its own and its text is drawn straight over whatever code sits
+      -- underneath. Fine above a blank buffer, illegible above a full one. 0
+      -- gives it terafox's Normal background instead.
+      winblend = 0,
+      -- Needed once winblend is 0: with a solid background and no border the
+      -- toast is a bare rectangle of text butted against the code. "single" is
+      -- the same box-drawing style neo-tree's popups use above.
+      border = "single",
+    },
+  },
+})
+
 -- ── nvim-lint ────────────────────────────────────────────────────────────
 -- For linters with no language server. It writes into vim.diagnostic under its
 -- own namespace, so signs, ]d/[d and the inline renderer treat its output
@@ -1489,6 +1534,170 @@ vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave", "Buf
     end))
   end,
 })
+
+-- ── Formatting: conform.nvim ─────────────────────────────────────────────
+-- The counterpart to nvim-lint above, and the same shape: a filetype -> tool
+-- table, binaries from mason. The difference is that it rewrites the buffer
+-- rather than writing diagnostics.
+--
+-- Why not vim.lsp.buf.format() with the servers already enabled: ts_ls formats
+-- with tsserver's own built-in style, which ignores the project's .prettierrc,
+-- and nothing enabled here formats shell at all. conform runs the same binaries
+-- the project's npm scripts and CI run, so the result matches -- and it still
+-- falls through to a language server where no CLI formatter is configured, see
+-- lsp_format below.
+--
+-- prettier and shfmt come from the mason list further down. Plain prettier,
+-- not prettierd: the daemon is the faster option on paper -- it stays warm,
+-- avoiding node's startup on every run -- but on this machine it does not work
+-- at all. Every invocation returns "Could not connect", it never writes its
+-- ~/.prettierd state file, and `prettierd start`, `pkill -f prettierd` and a
+-- full :MasonInstall reinstall each failed to fix it; the suspect is Node
+-- v26.8.1 being newer than @fsouza/prettierd 0.29 expects. A formatter that
+-- silently does nothing is worse than a slower one.
+--
+-- The cost turns out to be small anyway: measured on this machine, prettier
+-- takes ~220ms cold and ~60ms warm over this config's own YAML, not the ~300ms
+-- node startup usually quoted as the reason to prefer the daemon. Worth
+-- retrying prettierd after a node or prettierd upgrade -- it is a one-word
+-- change back.
+vim.pack.add({ "https://github.com/stevearc/conform.nvim" })
+
+local conform = require("conform")
+
+conform.setup({
+  -- A filetype absent from this table is simply never formatted (lua, for one
+  -- -- stylua is deliberately not installed, see the mason list below).
+  formatters_by_ft = {
+    javascript = { "prettier" },
+    javascriptreact = { "prettier" },
+    typescript = { "prettier" },
+    typescriptreact = { "prettier" },
+    json = { "prettier" },
+    jsonc = { "prettier" },
+    css = { "prettier" },
+    scss = { "prettier" },
+    less = { "prettier" },
+    html = { "prettier" },
+    graphql = { "prettier" },
+    -- Overlaps yamllint the way prettier always overlaps a linter: yamllint
+    -- reports the style problem, prettier removes it. They agree on the
+    -- defaults in play here, and a project that configures either usually
+    -- configures both.
+    yaml = { "prettier" },
+    -- Configured so <leader>cf works on a README, but excluded from
+    -- format-on-save -- see format_on_save.
+    markdown = { "prettier" },
+    -- shfmt's default indentation is tabs, which is what 'expandtab = false' at
+    -- the top of this file asks for, so it needs no arguments. It also reads
+    -- .editorconfig, which overrides that per project.
+    sh = { "shfmt" },
+    bash = { "shfmt" },
+  },
+
+  -- A function rather than a table, so the on-save set can be narrower than the
+  -- set of filetypes conform knows how to format. Returning nil skips the
+  -- format; returning a table passes it to format() as options.
+  format_on_save = function(buf)
+    if vim.g.conform_disable or vim.b[buf].conform_disable then
+      return
+    end
+
+    -- Markdown is formatted on demand only. The Obsidian vaults are markdown,
+    -- and prettier edits prose in ways that are pure noise in a note --
+    -- renumbering ordered lists, rewriting bullet characters, escaping stray
+    -- punctuation -- on files that are read in an app, not diffed.
+    if vim.bo[buf].filetype == "markdown" then
+      return
+    end
+
+    -- Synchronous, so the bytes written are the formatted ones. If the timeout
+    -- is hit the write goes ahead unformatted rather than blocking; 500ms is
+    -- comfortable for prettier, measured at ~220ms cold and ~60ms warm.
+    return { timeout_ms = 500, lsp_format = "fallback" }
+  end,
+
+  -- Reporting is done by the ConformFormatPost hook below instead. See there.
+  notify_on_error = false,
+})
+
+-- conform notifies about the *first* failure of a given formatter and then
+-- stays quiet until that formatter next succeeds -- `last_run_errored` in its
+-- runner.lua, which sets `debounce_message` on the error and is not exposed as
+-- an option. It is keyed by formatter name and lives for the whole session, so
+-- it is not even per-buffer. That suits a setup that formats on every
+-- keystroke; here a save is deliberate, and one that silently did not format
+-- looks exactly like one that did.
+--
+-- ConformFormatPost fires on every run regardless of the debounce, so the
+-- notification is raised from here and conform's own is switched off above.
+-- The message is better for it, too: conform throws the real one away and
+-- substitutes "Formatter failed. See :ConformInfo for details", where
+-- err.message is the formatter's own stderr -- "SyntaxError: Nested mappings
+-- are not allowed in compact mappings (22:16)" -- which is usually the whole
+-- answer without opening anything.
+--
+-- Execution errors only. A timeout or an interrupted run still goes through
+-- conform's own path: notify_on_error does not gate those, they are not
+-- debounced, and it already reports them with their real message -- so
+-- handling them here as well would just print them twice.
+vim.api.nvim_create_autocmd("User", {
+  pattern = "ConformFormatPost",
+  desc = "Report a failed format on every save, not only the first",
+  callback = function(ev)
+    local err = ev.data and ev.data.err
+    if not (err and require("conform.errors").is_execution_error(err.code)) then
+      return
+    end
+
+    -- The first line only, with ANSI SGR sequences stripped. prettier follows
+    -- its message with a syntax-highlighted code frame, which is unreadable
+    -- once the escapes are literal text and redundant anyway -- those lines
+    -- are already on screen in the buffer the error came from.
+    --
+    -- Not prefixed with the formatter's name: conform builds every one of
+    -- these as "Formatter '<name>' error: ...", so it is already in there.
+    local first = vim.split(err.message or "", "\n", { plain = true })[1] or ""
+    vim.notify(vim.trim((first:gsub("\27%[[%d;]*m", ""))), vim.log.levels.ERROR)
+  end,
+})
+
+-- Format the buffer, or the range given as :'<,'>Format. conform takes a
+-- (line, col) byte range, so the last line's length has to be looked up.
+vim.api.nvim_create_user_command("Format", function(args)
+  local range
+  if args.count ~= -1 then
+    local last = vim.api.nvim_buf_get_lines(0, args.line2 - 1, args.line2, true)[1]
+    range = { start = { args.line1, 0 }, ["end"] = { args.line2, #last } }
+  end
+  conform.format({ async = true, lsp_format = "fallback", range = range })
+end, { range = true, desc = "Format the buffer or the given range" })
+
+-- For the times a format would bury a one-line change under a whole-file
+-- reflow -- a file nobody has run prettier over before, or someone else's
+-- branch. `:FormatDisable!` is this buffer only, plain `:FormatDisable` is
+-- every buffer; both are the pattern from conform's own README.
+vim.api.nvim_create_user_command("FormatDisable", function(args)
+  if args.bang then
+    vim.b.conform_disable = true
+  else
+    vim.g.conform_disable = true
+  end
+end, { bang = true, desc = "Turn off format-on-save (! for this buffer only)" })
+
+vim.api.nvim_create_user_command("FormatEnable", function()
+  vim.b.conform_disable = false
+  vim.g.conform_disable = false
+end, { desc = "Turn format-on-save back on" })
+
+vim.keymap.set({ "n", "x" }, "<leader>cf", function()
+  conform.format({ async = true, lsp_format = "fallback" })
+end, { desc = "Format buffer or selection" })
+
+-- Makes `gq` -- the built-in format operator, normally a text wrapper -- run
+-- conform over the motion instead, falling back to the default behaviour for
+-- any filetype with no formatter configured.
+vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
 
 -- ── tiny-inline-diagnostic.nvim ──────────────────────────────────────────
 -- Renders diagnostics inline: boxed, severity-coloured, wrapped rather than
@@ -1652,8 +1861,8 @@ local mason_tools = {
   "shellcheck",
   "hadolint",
   "yamllint",
-  -- formatters
-  "prettierd",
+  -- formatters, run by conform.nvim above
+  "prettier",
   "shfmt",
 }
 
@@ -1783,6 +1992,7 @@ require("which-key").setup({
 -- Leaf keys pick up their label from the `desc` on each vim.keymap.set call.
 require("which-key").add({
   { "<leader>a", group = "herdr-sidekick" },
+  { "<leader>c", group = "code" },
   { "<leader>f", group = "find" },
   { "<leader>o", group = "obsidian" },
 })
