@@ -31,11 +31,40 @@ title = "Open project"
 contexts = ["workspace"]
 command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint open-project"]
 
+# The same picker again, with Enter changed to mean "create the typed name here"
+# rather than "open what the query matched". Its own action because that is not a
+# thing a key inside Open project could express: typing "ap" where ~/dev/apple
+# exists matches, and fzf opens matches -- so the intent has to be declared
+# before the picker starts, not signalled during it.
+[[actions]]
+id = "new-project"
+title = "New project"
+contexts = ["workspace"]
+command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint new-project"]
+
 [[actions]]
 id = "new-worktree"
 title = "Open worktree"
 contexts = ["workspace"]
 command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint new-worktree"]
+
+# The same picker as open-project, with a header advertising the paste-a-URL
+# gesture -- so "clone" is discoverable from the palette rather than being
+# folklore. It is one script and one code path: the directory being browsed is
+# the clone destination, which is also what makes the shared
+# workspace-create/layout tail reusable without a second entry point.
+#
+# "Clone git repo" rather than "Clone repo" so that typing `git clone` finds it.
+# vjeantet.palette matches with nucleo (src/ui/tui.rs, Pattern::parse), which
+# splits a query on whitespace into independent atoms -- every atom has to match
+# somewhere in the label, but their order relative to each other does not. Under
+# a single in-order fuzzy match `git clone` would find nothing here, since no
+# "clone" follows the "git".
+[[actions]]
+id = "clone-repo"
+title = "Clone git repo"
+contexts = ["workspace"]
+command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint clone-repo"]
 
 [[actions]]
 id = "clone-pr"
@@ -58,12 +87,31 @@ height = "50%"
 command = ["bash", "open-project.sh"]
 
 [[panes]]
+id = "new-project"
+title = "New project"
+placement = "popup"
+width = "60%"
+height = "50%"
+command = ["bash", "open-project.sh", "--new"]
+
+[[panes]]
 id = "new-worktree"
 title = "Open worktree"
 placement = "popup"
 width = "60%"
 height = "50%"
 command = ["bash", "new-worktree.sh"]
+
+# Same geometry as open-project, because it is the same picker: the clone itself
+# does not run here. Pasting a URL opens a full-size tab in the current
+# workspace and this popup closes -- see the two-phase note in open-project.sh.
+[[panes]]
+id = "clone-repo"
+title = "Clone git repo"
+placement = "popup"
+width = "60%"
+height = "50%"
+command = ["bash", "open-project.sh", "--clone"]
 
 [[panes]]
 id = "clone-pr"
