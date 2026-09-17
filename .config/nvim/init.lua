@@ -1679,6 +1679,65 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Folding, off the same parsers. `za` toggles the fold under the cursor, which
+-- is the only fold command this is here to serve -- see `:h fold-commands` for
+-- the rest (zo/zc open and close one, zR/zM open and close everything, zj/zk
+-- jump between them).
+--
+-- foldlevelstart = 99 is the setting that makes this bearable: without it
+-- foldlevel starts at 0 and every file opens with everything already collapsed,
+-- which is a startling way to be introduced to folding. 99 means "deeper than
+-- anything real", so files open fully expanded and a fold only ever closes
+-- because it was asked to.
+--
+-- Set globally rather than per-filetype. vim.treesitter.foldexpr() returns 0
+-- for a buffer with no parser, so a plain text file simply has no folds --
+-- measured at 38ms to open and draw a 20,000-line .txt, with no folds and no
+-- error, which is why this needs no guard. Window-local options are also
+-- genuinely awkward to set from a FileType autocmd, since one buffer can be
+-- shown in several windows and can be opened in a new one later.
+--
+-- foldcolumn is deliberately left at 0. It would show where the folds are, but
+-- this signcolumn is already carrying gitsigns, diagnostics and the lightbulb,
+-- and a toggle-under-the-cursor workflow does not need to see them in advance.
+-- `:setlocal foldcolumn=2` for a buffer where it helps.
+--
+-- foldtext = "" is Neovim 0.10's addition, and it replaces the stock
+-- `foldtext()` output -- `+---  5 lines: export interface AppOptions`, a
+-- summary line with its own filler and no syntax colouring. Empty disables
+-- foldtext entirely and, in the option's own words, the line "is displayed
+-- normally with highlighting and no line wrapping" -- so a folded interface
+-- reads as its real first line, treesitter colours intact, which is the line
+-- you were looking at before folding it.
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevelstart = 99
+vim.opt.foldtext = ""
+
+-- <Space> toggles the fold under the cursor. Free here because 'mapleader' is
+-- never set, so leader is the default backslash and Space is claimed by
+-- nothing; its stock job -- move right one character -- is what `l` already
+-- does. Being an unmodified key it also survives the terminal chain, unlike
+-- anything involving a modifier plus a special key.
+--
+-- Worth knowing if leader is ever reconsidered: Space is by far the most common
+-- choice for it, and this takes that option off the table without a reshuffle.
+--
+-- Guarded rather than a bare `za` mapping, which is the whole reason this is a
+-- function. `za` on a line that is not inside a fold does not no-op, it raises
+-- E490: No fold found -- fine for a deliberate z-prefixed command, a beep on
+-- every stray press of a key this frequently used. foldlevel() is 0 exactly
+-- when there is nothing to toggle, so that is the test.
+--
+-- Silent when there is no fold rather than falling through to the stock
+-- rightward motion: a key that means "fold" and occasionally moves the cursor
+-- instead would be worse than one that occasionally does nothing.
+vim.keymap.set("n", "<Space>", function()
+  if vim.fn.foldlevel(vim.fn.line(".")) > 0 then
+    vim.cmd("normal! za")
+  end
+end, { desc = "Toggle fold under cursor" })
+
 -- ── LSP ──────────────────────────────────────────────────────────────────
 -- nvim-lspconfig is used purely as data: it ships an lsp/ directory of ~414
 -- server definitions (command, filetypes, root markers) which Neovim's own
