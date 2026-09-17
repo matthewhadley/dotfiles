@@ -23,16 +23,30 @@ layouts:
           - title: lazygit
             command: lazygit
             persist: false
-      - title: hunk
+      # Named for what it shows rather than the tool that shows it, because
+      # both this tab and `branch` below run hunk -- so the tool name stopped
+      # distinguishing them the moment there were two.
+      #
+      # "unstaged" is not strictly the whole truth: the pane also lists
+      # untracked files, which git counts separately and which are not unstaged
+      # *changes* at all. Accepted, because hunk labels those itself -- `?` in
+      # the file list, "(untracked)" on the entry -- so the precision is
+      # already there one level down, while the contrast with `branch` is only
+      # available in the tab name. `working` would have been exact about scope
+      # and vaguer about that contrast.
+      - title: unstaged
         panes:
-          - title: hunk
+          - title: unstaged
             command: hunk diff --watch
 
-      # Complementary to the hunk tab above, not a replacement for it:
+      # Complementary to the unstaged tab above, not a replacement for it:
       #
-      #   hunk    the working tree -- what is not committed yet
-      #   branch  merge-base..HEAD -- what this branch adds over its base
+      #   unstaged  edited but not staged, plus untracked
+      #   branch    merge-base..HEAD -- what this branch adds over its base
       #
+      # Nothing shows staged-but-uncommitted work; `hunk diff --staged` has no
+      # tab. Stage something and it leaves the first view without arriving in
+      # the second until it is committed.
       # The second is what a worktree is usually for, and it is the one that
       # is awkward to type: `git diff main` compares the two tips, so anything
       # that lands on main after you branch shows up inverted as your deletion.
@@ -61,7 +75,7 @@ layouts:
   #   nvim, lazygit  nothing to do. `dotfiles nv` cds to $HOME in a subshell
   #                  of its own, and `dotfiles lazygit` passes --git-dir and
   #                  --work-tree, so both are cwd-independent already.
-  #   hunk, zsh      `cd ~` first. The wrapper deliberately omits -C "$HOME"
+  #   unstaged, zsh  `cd ~` first. The wrapper deliberately omits -C "$HOME"
   #                  so pathspecs resolve against the caller -- which is what
   #                  makes `cd ~/.config/ghostty && dotfiles add config` work,
   #                  and what would otherwise send these two looking under
@@ -90,9 +104,9 @@ layouts:
           - title: lazygit
             command: dotfiles lazygit
             persist: false
-      - title: hunk
+      - title: unstaged
         panes:
-          - title: hunk
+          - title: unstaged
             # Splices to `hunk diff --exclude-untracked --watch`. The exclude
             # is load-bearing: $HOME holds half a million untracked files and
             # hunk's `git ls-files --others` ignores status.showUntrackedFiles.
