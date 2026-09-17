@@ -116,10 +116,16 @@ source_json=$(herdr worktree list --cwd "$PWD" --json 2>/dev/null)
 repo_root=$(jq -r '.result.source.repo_root // empty' <<<"$source_json")
 [[ -n $repo_root ]] || die "could not resolve the repository root for $PWD"
 
+# The awkward ${arr[@]+"${arr[@]}"} rather than a plain "${label_args[@]}":
+# under `set -u`, bash 3.2 treats expanding an empty array as an unbound
+# variable and aborts. This pane runs whatever `bash` the herdr server's PATH
+# resolves, and /bin/bash on macOS is still 3.2, so the homebrew bash that an
+# interactive shell finds is not guaranteed here. Only reachable when worktrunk
+# returns no branch, which is why it went unnoticed.
 label_args=()
 [[ -n $branch ]] && label_args=(--label "$branch")
 herdr worktree open --cwd "$repo_root" --path "$wtpath" \
-  "${label_args[@]}" --focus --json >/dev/null \
+  ${label_args[@]+"${label_args[@]}"} --focus --json >/dev/null \
   || die "herdr worktree open failed for $wtpath"
 
 after=$(herdr workspace list | jq -r '.result.workspaces[] | select(.focused) | .workspace_id')
