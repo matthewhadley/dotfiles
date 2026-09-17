@@ -39,16 +39,24 @@ layouts:
           - title: unstaged
             command: hunk diff --watch
 
-      # Complementary to the unstaged tab above, not a replacement for it:
+      # hunk's --staged is an alternative to the working-tree view, not an
+      # addition to it -- the same split git makes between `git diff` and
+      # `git diff --staged`. So anything added to the index vanishes from the
+      # tab above, and without this one it would be invisible until committed.
+      - title: staged
+        panes:
+          - title: staged
+            command: hunk diff --staged --watch
+
+      # The three states, left to right, which is why the tabs sit in this
+      # order:
       #
       #   unstaged  edited but not staged, plus untracked
+      #   staged    added to the index, not committed
       #   branch    merge-base..HEAD -- what this branch adds over its base
       #
-      # Nothing shows staged-but-uncommitted work; `hunk diff --staged` has no
-      # tab. Stage something and it leaves the first view without arriving in
-      # the second until it is committed.
-      # The second is what a worktree is usually for, and it is the one that
-      # is awkward to type: `git diff main` compares the two tips, so anything
+      # The last is what a worktree is usually for, and the one that is awkward
+      # to type: `git diff main` compares the two tips, so anything
       # that lands on main after you branch shows up inverted as your deletion.
       # hunk-branch-diff (~/.local/bin) finds the base from origin/HEAD and
       # hands hunk `<base>...HEAD`. Refs rather than resolved hashes, so a
@@ -111,6 +119,19 @@ layouts:
             # is load-bearing: $HOME holds half a million untracked files and
             # hunk's `git ls-files --others` ignores status.showUntrackedFiles.
             command: cd ~ && dotfiles hunk --watch
+
+      # Same pairing as the standard layout. No branch tab here: this workspace
+      # stands on the orphan bare-repo branch, which has no merge base with
+      # origin/main, so there is no range for one to show.
+      #
+      # The wrapper already expects this form -- it treats a leading flag as a
+      # `diff` subcommand, so `dotfiles hunk --staged` reaches hunk as
+      # `hunk diff --exclude-untracked --staged`. The exclude is redundant for
+      # staged content, which is tracked by definition, but harmless.
+      - title: staged
+        panes:
+          - title: staged
+            command: cd ~ && dotfiles hunk --staged --watch
 
 # Fallback for any repo below with no workspaces: entry of its own. Only
 # fires for a genuinely NEW linked worktree (never the repo's main checkout,
