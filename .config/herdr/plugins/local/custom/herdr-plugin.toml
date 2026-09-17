@@ -43,6 +43,12 @@ title = "Clone PR"
 contexts = ["workspace"]
 command = ["bash", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin custom --entrypoint clone-pr"]
 
+[[actions]]
+id = "browse-pr"
+title = "Browse PR"
+contexts = ["workspace"]
+command = ["bash", "browse-pr.sh"]
+
 [[panes]]
 id = "open-project"
 title = "Open project"
