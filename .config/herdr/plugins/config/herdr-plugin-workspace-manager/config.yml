@@ -36,11 +36,13 @@ layouts:
       # The second is what a worktree is usually for, and it is the one that
       # is awkward to type: `git diff main` compares the two tips, so anything
       # that lands on main after you branch shows up inverted as your deletion.
-      # hunk-branch-diff (~/.local/bin) resolves origin/HEAD and the merge base
-      # and passes both revisions explicitly. On a checkout with nothing to
-      # show -- the base branch itself, or the orphan bare-repo branch, which
-      # has no merge base at all -- it says so and falls back to the working
-      # tree, so the tab is never dead.
+      # hunk-branch-diff (~/.local/bin) finds the base from origin/HEAD and
+      # hands hunk `<base>...HEAD`. Refs rather than resolved hashes, so a
+      # rebase onto a base that has moved does not strand the pane at the old
+      # branch point. On the base branch the range is empty and the tab shows
+      # nothing until there is a commit; where the range cannot exist at all --
+      # no origin/HEAD, or the orphan bare-repo branch, which has no merge base
+      # -- it says so and shows the working tree instead.
       - title: branch
         panes:
           - title: branch

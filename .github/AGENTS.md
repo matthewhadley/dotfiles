@@ -92,13 +92,14 @@ assuming `main`.
 | tool | command |
 | --- | --- |
 | pager (delta) | `git diff origin/main...` |
-| hunk | `hunk diff "$(git merge-base origin/main HEAD)" HEAD` |
+| hunk | `hunk diff origin/main...HEAD` |
 | tuicr | `tuicr -r origin/main..HEAD` |
 | a real PR | `tuicr pr <N>` — the forge's own diff |
 
-hunk takes two concrete revisions rather than a range, which is why the merge
-base is resolved first. `~/.local/bin/hunk-branch-diff` does all of that and
-runs in the `branch` tab of the standard herdr layout.
+hunk honours the dots the same way git does: `hunk diff main` and
+`hunk diff main..HEAD` both report the base's own new files as your deletions,
+`hunk diff main...HEAD` does not. `~/.local/bin/hunk-branch-diff` finds the
+base and runs in the `branch` tab of the standard herdr layout.
 
 **lazygit's diffing mode (`W`) is two-dot.** `DiffHelper.DiffArgs()` passes two
 plain refs with no `...`, so in a worktree that has been open a while it will

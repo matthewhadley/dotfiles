@@ -18,8 +18,8 @@
 #
 # Three-dot is shorthand for "diff against the merge base", which is where the
 # branch actually diverged and what the forge shows on a pull request. hunk
-# takes two concrete revisions rather than a range, so the merge base is
-# resolved here and passed explicitly.
+# honours the dots the same way git does, so the range is handed to it whole
+# rather than resolved here -- see the note above the exec.
 #
 # Note the same distinction does NOT apply to commit ranges: `git log A..B` and
 # tuicr's `-r A..B` already mean "reachable from B, not from A", so two dots is
@@ -52,12 +52,20 @@ if [ -z "$mb" ]; then
   exec hunk diff --watch
 fi
 
-# On the base branch itself there is nothing to review -- the range is empty,
-# and an empty pane is less useful than the working tree. This is the normal
-# state of a main checkout, so it is not a warning.
-if [ "$mb" = "$(git rev-parse HEAD)" ]; then
-  echo "hunk-branch-diff: no commits beyond $base; showing the working tree"
-  exec hunk diff --watch
-fi
-
-exec hunk diff "$mb" HEAD --watch
+# Three dots, and refs rather than the merge base this script just resolved.
+#
+# hunk honours the dots the way git does -- verified on a branch whose base had
+# moved: `hunk diff main` and `hunk diff main..HEAD` both report the base's own
+# new file as a deletion, `hunk diff main...HEAD` does not. So the range can be
+# handed over symbolically instead of resolving it here.
+#
+# That matters because the pane outlives the command. `--watch` re-reads, but
+# arguments are fixed at launch, so a resolved SHA freezes the comparison at
+# whatever the branch point was when the tab opened. Rebase onto a moved base --
+# routine while a PR is open -- and the pane goes on diffing from the old point:
+# observed showing 37 commits and +1189/-211 for a branch that was one commit
+# ahead. Passing refs lets every reload resolve them afresh.
+#
+# The merge base is still computed above, but only to decide between this and
+# the fallbacks; it is not what gets compared.
+exec hunk diff "$base...HEAD" --watch
