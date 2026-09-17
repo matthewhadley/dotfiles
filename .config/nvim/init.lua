@@ -1571,11 +1571,48 @@ vim.pack.add({
 
 -- Parsers compile on demand, so this is a no-op once they exist. Left async
 -- deliberately: :wait() here would block startup for minutes on a fresh machine.
-require("nvim-treesitter").install({
-  "bash", "css", "diff", "dockerfile", "gitcommit", "html",
-  "javascript", "json", "lua", "markdown", "markdown_inline",
-  "query", "regex", "toml", "tsx", "typescript", "vim", "vimdoc", "yaml",
-})
+--
+-- The missing set is worked out here and then forced, because install() cannot
+-- be trusted to work it out itself. install.lua's skip test is
+--
+--   if not force and vim.list_contains(config.get_installed(), lang)
+--
+-- and get_installed() with no argument returns parsers *and queries* merged --
+-- config.lua reads both install dirs unless told which one. nvim-treesitter
+-- ships queries for every language it supports, so on a machine with no parsers
+-- at all every entry below still looks already-installed, and the call returns
+-- success having built nothing.
+--
+-- Measured before this fix: get_installed() reported 22 languages,
+-- get_installed("parsers") reported 0, and site/parser was empty. So this list
+-- had never built a thing, and everything outside Neovim's seven bundled
+-- parsers was on regex syntax rather than treesitter -- including the
+-- TypeScript this config spends most of its LSP section on.
+--
+-- Hence both halves. The filter is what keeps this a no-op once the parsers
+-- exist: `force` alone would bypass the broken check and then recompile all
+-- nineteen on every startup. Asking get_installed("parsers") explicitly is the
+-- question the skip test meant to ask in the first place.
+do
+  local wanted = {
+    "bash", "css", "diff", "dockerfile", "gitcommit", "html",
+    "javascript", "json", "lua", "markdown", "markdown_inline",
+    "query", "regex", "toml", "tsx", "typescript", "vim", "vimdoc", "yaml",
+  }
+
+  local have = {}
+  for _, lang in ipairs(require("nvim-treesitter.config").get_installed("parsers")) do
+    have[lang] = true
+  end
+
+  local missing = vim.tbl_filter(function(lang)
+    return not have[lang]
+  end, wanted)
+
+  if #missing > 0 then
+    require("nvim-treesitter").install(missing, { force = true })
+  end
+end
 
 -- Markdown code fences: undo the query's concealment of the ``` lines.
 --
