@@ -1577,6 +1577,60 @@ require("nvim-treesitter").install({
   "query", "regex", "toml", "tsx", "typescript", "vim", "vimdoc", "yaml",
 })
 
+-- Markdown code fences: undo the query's concealment of the ``` lines.
+--
+-- Neovim 0.11 started concealing fenced_code_block_delimiter with
+-- `conceal_lines`, which unlike plain `conceal` removes the whole line from the
+-- display rather than hiding its characters. Combined with conceallevel = 2 --
+-- set on markdown further down, for obsidian.nvim's own rendering -- the ```
+-- vanishes as soon as the cursor leaves the line, so a block being typed
+-- collapses underneath you and its extent stops being visible at all. The
+-- cursor line itself is exempt, which is what makes it read as a glitch rather
+-- than a setting: the fence is there while you type it and gone once you move.
+--
+-- Both directives go, not just conceal_lines. Dropping that one alone leaves
+-- `conceal ""` behind, which renders the fence as an empty line -- a mystery
+-- gap, worse than either extreme.
+--
+-- Patched in memory rather than by shipping a replacement query file: query
+-- files do not merge unless the later one opens with a `;; extends` modeline,
+-- so a copy of our own under ~/.config/nvim/queries would replace the whole
+-- thing and then have to be kept in step with upstream by hand. This is the
+-- same shape as the plenary patch near the top of this file -- read what is
+-- actually on the runtimepath, rewrite the two lines, and assert the count so
+-- that an upstream change is noticed rather than silently doing nothing.
+--
+-- The file this reads is nvim-treesitter's own copy under site/queries, not
+-- $VIMRUNTIME's: the plugin ships the same query, and with no `;; extends` on
+-- it that copy replaces the bundled one outright. get_files reports whichever
+-- is genuinely in effect, so this follows it without having to care.
+--
+-- conceallevel is deliberately left alone. Turning it off for markdown would
+-- fix the fences and take obsidian.nvim's link and checkbox rendering with
+-- them; this touches only the one query that was hiding whole lines.
+do
+  local sources = {}
+  for _, file in ipairs(vim.treesitter.query.get_files("markdown", "highlights")) do
+    sources[#sources + 1] = table.concat(vim.fn.readfile(file), "\n")
+  end
+
+  local count = 0
+  local patched = table.concat(sources, "\n")
+    :gsub('%s*%(#set! conceal ""%)\n%s*%(#set! conceal_lines ""%)', function()
+      count = count + 1
+      return ""
+    end)
+
+  -- Zero allows for upstream dropping this of its own accord; any count other
+  -- than the two fence patterns means the query has moved and this needs a look
+  -- rather than a silent no-op.
+  assert(count == 0 or count == 2, "markdown fence conceal query changed; review this patch")
+
+  if count > 0 then
+    vim.treesitter.query.set("markdown", "highlights", patched)
+  end
+end
+
 -- On the main branch nothing is enabled automatically -- highlighting is
 -- Neovim's own feature and needs starting per buffer. Guarded with pcall rather
 -- than a filetype list so it self-maintains: any filetype with a parser lights
@@ -1927,8 +1981,36 @@ require("nvim-lightbulb").setup({
   priority = 25,
   number = { enabled = false },
 
-  filter = function(_, action)
-    return not action.disabled
+  -- Two jobs. `disabled` is the ts_ls case described above.
+  --
+  -- The client check is a workaround for a bug in obsidian.nvim, not a
+  -- preference. obsidian-ls answers textDocument/codeAction from the *note*
+  -- rather than the position: its handler reads params.textDocument.uri and
+  -- nothing else -- no range, no context -- and returns all eighteen of its
+  -- actions ("Add file property", "Merge current note into another note") at
+  -- every line of a vault note. So the lamp was lit on every line of prose.
+  --
+  -- action_kinds above cannot reach it. That becomes context.only on the
+  -- request, which works by asking the server to filter, and this handler
+  -- never reads params.context. There is nothing to match on in the responses
+  -- either: the actions carry no `kind` at all, the source having a literal
+  -- `-- TODO: kind` where the field belongs.
+  --
+  -- Checked upstream before working around it rather than after: v3.16.7 is
+  -- the newest release -- there is no 3.17.0 or 4.x despite what the changelog
+  -- notes referenced above imply -- and `main` still carries that TODO. No
+  -- version to move to.
+  --
+  -- This narrows the marker only, same as the rest of this block. \ca still
+  -- offers the obsidian actions, which is right: they are real and useful,
+  -- just not per-line, so they are worth asking for and not worth a lamp on
+  -- every line.
+  --
+  -- nvim-lightbulb also has `ignore.actions_without_kind`, which would catch
+  -- this and any other server with the same defect. Not used: it would also
+  -- drop legitimate kind-less actions from servers that are behaving.
+  filter = function(client_name, action)
+    return client_name ~= "obsidian-ls" and not action.disabled
   end,
 })
 
