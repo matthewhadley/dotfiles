@@ -220,6 +220,13 @@ _dotfiles_lazygit() {
   lazygit --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"
 }
 
+_dotfiles_serie() {
+  # Serie's git subprocesses inherit the repo paths. Keep its working
+  # directory at the work tree root without moving the caller's shell.
+  ( cd -- "$HOME" \
+    && GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" serie "$@" )
+}
+
 _dotfiles_brew() {
   # `brew bundle` has no post-install hook, and formulae that need one-time
   # setup after installing (catchup's `install-skill` commands, say) have
@@ -385,6 +392,7 @@ dotfiles git bare repo management at ~/.dotfiles
                  `hunk show HEAD~1`, `hunk diff -- .config/ghostty`)
   lazygit        open the repo in lazygit, which needs the git-dir/work-tree
                  pair spelled out -- it refuses a bare repo on its own
+  serie          open the commit graph in Serie; extra arguments pass through
   logs           the `git logs` alias without the redundant " by <author>"
   resolve        open the conflicted files of a merge or rebase in diffview
   scopes         list the commit scopes the hook allows; scan/rebuild/add/rm/set
@@ -426,6 +434,10 @@ case "$1" in
   lazygit)
     shift
     _dotfiles_lazygit "$@"
+    ;;
+  serie)
+    shift
+    _dotfiles_serie "$@"
     ;;
   resolve)
     shift
