@@ -948,6 +948,22 @@ vim.keymap.set("n", "<leader>fb", builtin.buffers,    { desc = "Telescope: open 
 vim.keymap.set("n", "<leader>fh", builtin.help_tags,  { desc = "Telescope: help tags" })
 vim.keymap.set("n", "<leader>fr", builtin.resume,     { desc = "Telescope: resume last picker" })
 
+-- Every mapping in the editor, fuzzy-matched on key *and* description -- the
+-- answer to "I know what I want to do, I cannot remember what I bound it to".
+-- <CR> on a result runs it.
+--
+-- Outside the <leader>f group on purpose, despite being a telescope picker.
+-- That group answers "where is this thing in the project"; this one answers
+-- "what can I press", which is a question you ask when you have already lost
+-- the thread -- so it should not itself require remembering a two-key prefix
+-- inside a group whose other members are all about files.
+--
+-- Worth what it costs because this config annotates nearly everything: of 141
+-- normal-mode mappings, 128 carry a `desc`, and the desc is what the fuzzy
+-- match runs against. In a config without them the picker lists raw rhs and is
+-- close to useless.
+vim.keymap.set("n", "<leader>p", builtin.keymaps, { desc = "Telescope: search keymaps" })
+
 -- A separate key rather than replacing <leader>ff: the two answer different
 -- questions -- "what is in this project" versus "what have I been working on".
 -- Unqualified, it ranks every file you have ever opened; `:Telescope frecency
