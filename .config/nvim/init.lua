@@ -443,7 +443,8 @@ local function dotfiles_stage(path)
 end
 
 -- The window id of a neo-tree window open in the current tabpage, if any --
--- so <leader>n from an edit pane can still drive the tree's new-file dialog.
+-- so <leader>n from an edit pane can still drive the tree's new-file dialog,
+-- and <C-e> below can find the tree to jump to.
 local function visible_neotree_win()
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
     if pcall(vim.api.nvim_buf_get_var, vim.api.nvim_win_get_buf(win), "neo_tree_source") then
@@ -451,6 +452,52 @@ local function visible_neotree_win()
     end
   end
 end
+
+-- <C-e> jumps between the edit buffer and the tree, in whichever direction you
+-- are not currently facing. This is the job Cmd+Ctrl+arrow used to do before it
+-- was removed for beeping; a plain Ctrl+letter is one ASCII control byte, so
+-- unlike any arrow chord it crosses Ghostty -> Herdr -> nvim untouched and needs
+-- no forwarding rewrite at either layer.
+--
+-- Distinct from <leader>e, which opens and closes the tree. This only moves
+-- focus -- though it will open the tree if none is up, since "take me to the
+-- tree" is a reasonable reading of the key when there isn't one.
+--
+-- Costs Vim's own <C-e>, scroll down one line. <C-d> and the mouse wheel cover
+-- that, and a sidebar jump is reached far more often than a one-line scroll.
+--
+-- Normal mode only, matching <C-h>/<C-j>/<C-k>/<C-l> above. In insert mode
+-- <C-e> inserts the character below the cursor, which is worth keeping, and a
+-- window jump from insert mode is not something to do by accident.
+vim.keymap.set("n", "<C-e>", function()
+  local tree = visible_neotree_win()
+
+  -- In the tree already: go back where the cursor came from. wincmd p is the
+  -- right primitive -- it returns to the *previously accessed* window, so the
+  -- pair behaves like a toggle even with several splits open.
+  if vim.bo.filetype == "neo-tree" then
+    vim.cmd("wincmd p")
+
+    -- Still in a tree afterwards means there was no previous window to go back
+    -- to -- opened straight into it, or the other split has since closed. Any
+    -- non-tree window in the tabpage beats staying put.
+    if vim.bo.filetype == "neo-tree" then
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "neo-tree" then
+          vim.api.nvim_set_current_win(win)
+          return
+        end
+      end
+    end
+    return
+  end
+
+  if tree then
+    vim.api.nvim_set_current_win(tree)
+  else
+    vim.cmd("Neotree focus")
+  end
+end, { desc = "Jump between editor and neo-tree" })
 
 -- Open a freshly created file in a real edit window and drop into insert
 -- mode. `prefer_win` (the window <leader>n was pressed in) is used when it is
