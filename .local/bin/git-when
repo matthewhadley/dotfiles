@@ -1,0 +1,149 @@
+#!/bin/bash
+# git when -- find when a term appeared, went away, or changed.
+#
+# git runs any `git-<name>` on PATH as `git <name>`, so this is `git when`.
+# `dotfiles when` works too, because `dotfiles` hands unknown commands to git
+# and git passes the repo paths through to this script.
+#
+# Not called `git pickaxe`, though pickaxe is what the underlying feature is
+# called: `git pickaxe` is a built-in synonym for `git blame`, and a built-in
+# always wins over a git-<name> on PATH.
+#
+#   git when [--all] [--plain] [VERB] TERM [PATH...]
+#
+#   TERM             a regex; commits with a changed line matching it (git -G)
+#   changed TERM     commits where the number of occurrences of TERM changed
+#   added   TERM     ...and it went up, in some file  (a fixed string, not a regex)
+#   removed TERM     ...and it went down, in some file
+#
+# git's own -S ("changed") cannot say which way the count moved, and it misses a
+# commit that adds one occurrence and removes another in the same file. -G does
+# not, which is why it is the default: it is the broader net. added and removed
+# are -S plus a pass over each commit's diff, counting occurrences per file --
+# the same per-file count -S itself compares, so they are always subsets of
+# `changed`. A commit that moves a term between files is both.
+#
+# A first word is only a verb if a search term follows it, so `git when added`
+# searches for the word "added".
+#
+# In a terminal the result opens in forgit's picker, when it is installed. --plain
+# prints one line per commit instead, which is also what a pipe gets.
+set -u
+
+usage() {
+  cat <<'EOF'
+usage: git when [--all] [--plain] [changed|added|removed|matching] TERM [PATH...]
+
+  TERM             commits with a changed line matching the regex TERM (default)
+  changed TERM     commits where the number of occurrences of TERM changed
+  added   TERM     ...and it went up, in some file
+  removed TERM     ...and it went down, in some file
+
+  --all            search every ref, not just HEAD's history
+  --plain          one line per commit, no picker
+EOF
+}
+
+all=""
+plain=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --all) all="--all"; shift ;;
+    --plain) plain=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    --) shift; break ;;
+    -*) echo "git when: unknown option: $1" >&2; usage >&2; exit 2 ;;
+    *) break ;;
+  esac
+done
+
+verb=matching
+if [ $# -ge 2 ]; then
+  case "$1" in
+    changed|added|removed|matching) verb=$1; shift ;;
+  esac
+fi
+
+if [ $# -eq 0 ] || [ -z "$1" ]; then
+  usage >&2
+  exit 2
+fi
+term=$1
+shift
+[ "${1:-}" = "--" ] && shift
+# The remaining arguments are paths.
+
+log_args=()
+[ -n "$all" ] && log_args+=("$all")
+
+case "$verb" in
+  matching) filter=(-G"$term") ;;
+  *) filter=(-S"$term") ;;
+esac
+
+# The commits, newest first. For changed and matching that is git's own answer;
+# added and removed then keep those whose diff moves the count in that direction.
+shas=""
+if [ "$verb" = added ] || [ "$verb" = removed ]; then
+  shas=$(git log ${log_args[@]+"${log_args[@]}"} "${filter[@]}" \
+      --format=%x01%H -p -U0 --no-color --no-ext-diff --no-textconv \
+      -- "$@" |
+    awk -v term="$term" -v want="$verb" '
+      # Non-overlapping occurrences of term in s, as git counts them.
+      function occ(s,   n, i) {
+        n = 0
+        while ((i = index(s, term)) > 0) { n++; s = substr(s, i + length(term)) }
+        return n
+      }
+      # A file is finished: fold its net change into the commit.
+      function endfile() {
+        if (infile) { if (net > 0) up = 1; if (net < 0) down = 1 }
+        infile = 0; net = 0
+      }
+      function endcommit() {
+        endfile()
+        if (sha != "" && ((want == "added" && up) || (want == "removed" && down)))
+          print sha
+        up = 0; down = 0
+      }
+      /^\001/ { endcommit(); sha = substr($0, 2); inhdr = 0; next }
+      /^diff --git / { endfile(); infile = 1; inhdr = 1; next }
+      # Until the first hunk, "+++ " and "--- " are file names, not content.
+      inhdr && /^@@ / { inhdr = 0; next }
+      inhdr { next }
+      /^\+/ { net += occ(substr($0, 2)); next }
+      /^-/  { net -= occ(substr($0, 2)); next }
+      END { endcommit() }
+    ')
+  if [ -z "$shas" ]; then
+    echo "git when: \"$term\" was never ${verb}" >&2
+    exit 1
+  fi
+fi
+
+# One line per commit: hash, date, refs, subject. The date is the committer date
+# as YYYY-MM-DD, which is what "when" is asking; a relative age like "13 days
+# ago" reads well for recent commits and badly for old ones.
+#
+# The hash has to stay first. forgit recovers a commit from a picked line by
+# taking the first run of hex digits, and a date's "2026" is a run of hex digits.
+fmt='%C(auto)%h %C(dim)%cs%C(auto)%d%C(reset) %s'
+
+if [ -z "$plain" ] && [ -t 1 ] && command -v git-forgit >/dev/null 2>&1; then
+  # Graph off: a filtered `git log --graph` prints "..." gap rows, and selecting
+  # one gives "fatal: bad revision ''".
+  export FORGIT_LOG_GRAPH_ENABLE=false
+  export FORGIT_GLO_FORMAT="$fmt"
+  if [ -n "$shas" ]; then
+    # --no-walk, or each sha would drag in all of its ancestors.
+    # shellcheck disable=SC2086
+    exec git forgit log --no-walk=sorted $shas -- "$@"
+  fi
+  exec git forgit log ${log_args[@]+"${log_args[@]}"} "${filter[@]}" -- "$@"
+fi
+
+if [ -n "$shas" ]; then
+  # shellcheck disable=SC2086
+  exec git log --no-walk=sorted --format="$fmt" $shas -- "$@"
+fi
+exec git log ${log_args[@]+"${log_args[@]}"} "${filter[@]}" --format="$fmt" -- "$@"
