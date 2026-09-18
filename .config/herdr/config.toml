@@ -124,6 +124,33 @@ pane_gaps = true
 tab_bar_position = "top"
 status_indicators = "dots"
 
+# Default is [["state_icon", "machine", "workspace", "tab"], ["agent"]]. The
+# added row is the last prompt typed at the pane, reported as pane metadata by
+# the custom plugin's agent-prompts.sh -- see that file for where the text comes
+# from, and why the shipped suggestion of terminal_title_stripped in this slot
+# does not do the job (Claude titles a session after its first prompt and never
+# revises it).
+#
+# rows_by_agent replaces the whole set for a matching agent, so each kind that
+# should show a prompt needs listing here. claude and codex are the two the
+# script can read a prompt log for; anything else keeps the default rows rather
+# than gaining an empty one.
+#
+# dim rather than a colour: this row is the longest thing in the sidebar and
+# should read as a caption under the workspace line, not compete with the state
+# dot. Unlike the ahead/behind hexes below, dim follows the theme.
+[ui.sidebar.agents.rows_by_agent]
+claude = [
+  ["state_icon", "machine", "workspace", "tab"],
+  [{ token = "$last_prompt", dim = true }],
+  ["agent"],
+]
+codex = [
+  ["state_icon", "machine", "workspace", "tab"],
+  [{ token = "$last_prompt", dim = true }],
+  ["agent"],
+]
+
 # Default is [["state_icon", "workspace"], ["branch", "git_status"]]. The extra
 # tokens are workspace metadata reported by the custom plugin's
 # dotfiles-status.sh. The branch this Space shows is the landing worktree's own

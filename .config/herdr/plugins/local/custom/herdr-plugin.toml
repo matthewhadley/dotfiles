@@ -18,6 +18,29 @@ command = ["bash", "dotfiles-status.sh"]
 on = "workspace.focused"
 command = ["bash", "dotfiles-status.sh"]
 
+# Keep each agent row's $last_prompt token current. Driven by agent state rather
+# than by a prompt event, because there is no prompt event -- the closest herdr
+# publishes is pane.agent_status_changed, and going idle -> working is what
+# submitting a prompt looks like from the outside. The script reads the affected
+# pane only, which the event names in its payload.
+#
+# Startup repopulates every pane: token metadata is not restored after a server
+# restart, so without this the rows come back blank and stay blank until each
+# agent next changes state.
+[[startup]]
+command = ["bash", "agent-prompts.sh"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["bash", "agent-prompts.sh"]
+
+# Manual refresh, mostly for when the event has been missed or the mapping is
+# being changed. Covers every pane rather than one.
+[[actions]]
+id = "agent-prompts"
+title = "Refresh agent prompts"
+command = ["bash", "agent-prompts.sh"]
+
 # Manual refresh, for when a commit or push should show up without waiting for
 # the next workspace switch.
 [[actions]]
