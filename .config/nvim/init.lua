@@ -124,16 +124,25 @@ for _, key in ipairs({ "x", "X", "d", "D", "c", "C", "s", "S" }) do
 end
 
 -- Window navigation: <C-h/j/k/l>. Plain Ctrl+letter is a single ASCII control
--- byte, so it survives Ghostty -> Herdr -> nvim. Both Cmd+Shift+arrow and
--- Ctrl+arrow were tried first and neither reaches nvim at all (verified with
--- Ctrl-V literal-insert: nothing arrives) -- the multiplexer eats modified
--- special keys.
+-- byte, so it survives Ghostty -> Herdr -> nvim.
 -- Insert mode is deliberately NOT mapped: <C-h> is byte 0x08, the same as
 -- Backspace in many terminals, so mapping it there would break backspace.
 -- Universal fallbacks that always work: <C-w>hjkl, or <C-w> then an arrow.
 for lhs, dir in pairs({ ["<C-h>"] = "h", ["<C-j>"] = "j", ["<C-k>"] = "k", ["<C-l>"] = "l" }) do
   vim.keymap.set({ "n", "x" }, lhs, "<C-w>" .. dir, { desc = "Window: move " .. dir })
 end
+
+-- Cmd+Ctrl+Left/Right was bound here too, forwarded by Ghostty as F7/F8, as an
+-- arrow-key alias for the two horizontal moves above -- "jump between the edit
+-- buffer and the neo-tree sidebar". Removed along with that forward: the motion
+-- worked, but macOS beeped on every press, and what was ringing the bell was
+-- never identified. Not hammerspoon (mouse-only eventtap), and nothing is
+-- registered for Cmd+Ctrl+arrow in com.apple.symbolichotkeys.
+--
+-- <C-h>/<C-l> above already do it, so nothing was lost. Worth remembering if
+-- an arrow chord is ever wanted for this: Cmd+Shift+arrow is spent on Herdr
+-- pane focus, plain Ctrl+arrow on the buffer tabs further down, and Option+arrow
+-- is free here but is word-motion in every shell prompt in the other panes.
 
 -- Mouse drag-select copies to the system clipboard, matching what Ghostty and
 -- Herdr do on their own. Needed because mouse=a makes nvim capture the drag,

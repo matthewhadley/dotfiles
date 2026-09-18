@@ -59,6 +59,30 @@ palette = 15=#ffffff
 # Neovim search/replace: forward Cmd+Shift+F as F12 through Herdr.
 keybind = super+shift+f=text:\x1b[24~
 
+# Neovim buffer tabs: forward Ctrl+Left/Right as F9/F10 through Herdr.
+# Ctrl+arrow cannot be forwarded as itself -- a modified arrow needs CSI-u to
+# carry the modifier and Herdr drops those, so nvim sees nothing. F9/F10 are
+# plain `\e[20~`/`\e[21~`, the same unmodified-F-key shape as F11/F12 below,
+# which is the part of the range Herdr is known to forward. Verified working.
+#
+# The chord itself also had to be freed: Ctrl+Left/Right are macOS's "Move
+# left/right a space" (symbolic hotkeys 79 and 81), so WindowServer consumed
+# them before Ghostty ever saw the event. Both are now disabled in
+# com.apple.symbolichotkeys; re-enabling either silently breaks these two.
+keybind = ctrl+arrow_left=text:\x1b[20~
+keybind = ctrl+arrow_right=text:\x1b[21~
+
+# Cmd+Ctrl+Left/Right was forwarded here as F7/F8, for nvim window motion
+# between the edit buffer and the neo-tree sidebar. Removed: the motion worked,
+# but macOS beeped on every press regardless -- so something above Ghostty is
+# also claiming the chord and finding nothing to do with it. Not hammerspoon,
+# which taps only mouse events, and nothing is registered for Cmd+Ctrl+arrow in
+# com.apple.symbolichotkeys, so what rings the bell was never pinned down.
+#
+# No replacement forward. <C-h>/<C-l> in nvim already move between those two
+# windows and survive the chain as single control bytes, needing no rewrite
+# here at all.
+
 # Neovim project search/replace: forward Cmd+Shift+R as F11 through Herdr.
 #
 # Was F13 originally. Confirmed via a scratch nvim pane and `herdr pane
