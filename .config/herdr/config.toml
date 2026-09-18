@@ -147,7 +147,107 @@ rows = [
   ],
 ]
 
+# Built-in themes, read out of the binary rather than the docs, which list
+# fewer: catppuccin, catppuccin-latte, terminal, tokyo-night, tokyo-night-day,
+# dracula, nord, gruvbox, gruvbox-light, one-dark, one-light, solarized,
+# solarized-light, kanagawa, kanagawa-lotus, rose-pine, rose-pine-dawn, vesper.
+# `terminal` inherits the host terminal's palette instead of imposing one.
+#
+# A [theme.custom] table overrides individual tokens on top of whichever base
+# `name` selects; [theme.custom.light] and [theme.custom.dark] layer on that
+# when auto_switch is true. Values take hex, a colour name, rgb(r,g,b), or
+# "reset" to fall through to the terminal.
+#
+# The token set is the ModeThemeColors struct, nineteen of them, and it is not
+# documented anywhere -- the shipped template shows seven. Guessing names is a
+# poor way to find them (half of these use catppuccin's palette vocabulary, and
+# there is no cyan, orange or border); `herdr config check` is the oracle, since
+# it reports an unknown key by name and ignores it rather than failing.
+#
+#   accent  panel_bg  sidebar_bg  active_row_bg  selection_bg
+#   surface0  surface1  surface_dim  overlay0  overlay1
+#   text  subtext0
+#   mauve  green  yellow  red  blue  teal  peach
+#
+# Which token paints what, established by setting each to a distinct garish
+# colour and reloading -- there is no other way to find out:
+#
+#   accent         active tab background; the `menu` dot
+#   surface0       inactive tab backgrounds
+#   overlay1       the `+` new-tab button; "spaces" and "agents" headers
+#   active_row_bg  selected row background, spaces and agents both
+#   subtext0       unselected row labels
+#   overlay0       sub-labels (branch, agent name), the state bullets,
+#                  and the "priority" header
+#   text           the selected row's primary label
+#   surface_dim    the sidebar/pane divider, and the horizontal rule above
+#                  "agents" -- one token draws both
+#   panel_bg       the strip behind the tabs, and the pane background
+#
+# Tab labels stayed dark against both the orange accent and the magenta
+# surface0, so they look auto-contrasted rather than driven by text/subtext0 --
+# one observation, not proof, but it suggests tab label colour is not settable.
+#
+# Not observed: selection_bg, which needs a live text selection, and surface1,
+# which appeared nowhere in this layout at all.
+#
+# "reset" is only useful for a token that is genuinely a background. It means
+# "fall through to the terminal", and for a glyph that resolves to the
+# terminal's default *foreground* -- so surface_dim = "reset" made the dividers
+# pale grey and more obvious, not less. Hiding a rule takes an explicit
+# background hex, the same trick WinSeparator needs in ~/.config/nvim/init.lua.
+# Two rounds were spent learning that.
+#
+# Note the ahead/behind hexes above are not part of this and do not follow the
+# theme -- see the comment on [ui.sidebar.spaces].
 [theme]
-name = "gruvbox"
+name = "terminal"
 auto_switch = false
 
+# `terminal` as the base, so everything not listed below inherits Ghostty's own
+# palette rather than a scheme's. Gruvbox was the base while these values were
+# chosen, which is why so much is overridden: its warm browns fought a cool
+# terminal at every turn.
+#
+# The values are deliberately neutral greys rather than themed colour. Neovim's
+# bufferline sits directly beneath this tab bar, and it is entirely monochrome
+# cool teal -- measured: selected #152528, visible #132224, inactive #0f1b1e,
+# strip #0b1416, with the selected buffer marked by bold light text rather than
+# any fill. Two rows of dark teal chips a line apart are hard to tell apart, so
+# herdr separates itself by *desaturation*: pure neutrals (R = G = B) against
+# bufferline's tinted darks. It also leaves every remaining colour token free to
+# mean status rather than decoration.
+[theme.custom]
+# Gruvbox aqua-green for finished notification dots.
+blue = "#8EC07C"
+
+# Gruvbox aqua-green for done agents.
+teal = "#8EC07C"
+
+# Gruvbox red for blocked/waiting agents.
+red = "#FB4934"
+
+# The tab strip vanishes into the terminal, leaving only the chips. A real
+# background, so "reset" is the right tool and it follows Ghostty automatically.
+panel_bg = "reset"
+
+# Ghostty's background spelled out, which hides the sidebar/pane divider and the
+# rule above "agents". Not "reset" -- see the note above on why that backfires
+# for a glyph.
+surface_dim = "#151C23"
+
+# Active tab, and inactive tabs. The big lightness gap is what marks the active
+# one, since the strip behind them is now invisible and there is no other cue.
+accent = "#c8c8c8"
+surface0 = "#303030"
+
+# Four points per channel above Ghostty's #151C23, then halved to two: enough to
+# sense a panel edge, not enough to read as a different colour. Keeps the
+# blue-black hue -- a neutral grey here was tried first and looked wrong
+# precisely because the pane beside it is tinted.
+sidebar_bg = "#171E25"
+
+# Matches surface0, so a selected sidebar row and an inactive tab are the same
+# material. Neutral rather than blue-tinted, which ties it to the tabs at the
+# cost of not quite matching the sidebar around it.
+active_row_bg = "#303030"
