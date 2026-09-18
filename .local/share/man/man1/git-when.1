@@ -1,0 +1,59 @@
+.TH GIT-WHEN 1 "September 2026" "git when" "Git Manual"
+.SH NAME
+git-when \- find when a term appeared, went away, or changed
+.SH SYNOPSIS
+.B git when
+.RI [ --all ]
+.RI [ --plain ]
+.RI [ changed | added | removed | matching ]
+.I TERM
+.RI [ PATH ...]
+.SH DESCRIPTION
+.B git when
+searches commit history for changes involving
+.IR TERM .
+With no verb, it finds commits containing a changed line that matches the
+regular expression
+.IR TERM .
+.TP
+.BI changed " TERM"
+Find commits where the number of occurrences of the fixed string
+.I TERM
+changed.
+.TP
+.BI added " TERM"
+Find commits where the number of occurrences of the fixed string
+.I TERM
+increased in at least one file.
+.TP
+.BI removed " TERM"
+Find commits where the number of occurrences of the fixed string
+.I TERM
+decreased in at least one file.
+.TP
+.BI matching " TERM"
+Explicit form of the default regular-expression search.
+.SH OPTIONS
+.TP
+.B --all
+Search every ref instead of only the history reachable from HEAD.
+.TP
+.B --plain
+Print one line per commit instead of opening the interactive picker.
+.TP
+.BR -h , " --help"
+Show help.
+.TP
+.B --
+End option parsing. Remaining arguments limit the search to those paths.
+.SH EXAMPLES
+.TP
+.B git when 'old_name'
+Find commits with changed lines matching
+.BR old_name .
+.TP
+.B git when added 'new_name' -- src/
+Find commits that added occurrences of
+.B new_name
+under
+.BR src/ .

@@ -78,9 +78,15 @@ usage: git when [--all] [--plain] [changed|added|removed|matching] TERM [PATH...
   changed TERM     commits where the number of occurrences of TERM changed
   added   TERM     ...and it went up, in some file
   removed TERM     ...and it went down, in some file
+  matching TERM    explicit form of the default regex search
 
   --all            search every ref, not just HEAD's history
   --plain          one line per commit, no picker
+  -h, --help       show this help
+
+examples:
+  git when 'old_name'
+  git when added 'new_name' -- src/
 EOF
 }
 

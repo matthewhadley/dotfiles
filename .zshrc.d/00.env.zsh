@@ -21,6 +21,11 @@ export COPYFILE_DISABLE=true
 export EDITOR=nvim
 export VISUAL=nvim
 
+# Git handles `git <command> --help` itself by opening git-<command>(1), before
+# an external command gets a chance to parse --help. Keep personal manual pages
+# on the search path so commands in ~/.local/bin can provide that documentation.
+export MANPATH="$HOME/.local/share/man${MANPATH:+:$MANPATH}"
+
 # lazygit resolves its config dir through adrg/xdg: ~/.config on Linux, but
 # ~/Library/Application Support on macOS. The config is tracked at the Linux
 # path so one file serves both, and this points macOS at it.
