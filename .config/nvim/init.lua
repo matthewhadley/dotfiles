@@ -1466,6 +1466,17 @@ for i = 1, 9 do
 end
 vim.keymap.set("n", "]b", "<cmd>BufferLineCycleNext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "[b", "<cmd>BufferLineCyclePrev<CR>", { desc = "Previous buffer" })
+-- Same two, on Ctrl+Left/Right. The arrows cannot arrive as arrows through
+-- Ghostty -> Herdr: a modified special key needs CSI-u to carry the modifier
+-- and Herdr drops those. So ~/.config/ghostty/config rewrites the chord to F9
+-- and F10, in the same unmodified-F-key shape as the F11/F12 forwards there.
+-- <C-Left>/<C-Right> are bound too, for an nvim running outside that chain.
+for _, key in ipairs({ "<C-Right>", "<F10>" }) do
+  vim.keymap.set("n", key, "<cmd>BufferLineCycleNext<CR>", { desc = "Next buffer" })
+end
+for _, key in ipairs({ "<C-Left>", "<F9>" }) do
+  vim.keymap.set("n", key, "<cmd>BufferLineCyclePrev<CR>", { desc = "Previous buffer" })
+end
 -- Same helper the tab × uses, so both routes behave identically.
 vim.keymap.set("n", "<leader>x", function()
   close_buffer_keep_window()
