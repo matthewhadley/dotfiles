@@ -227,6 +227,38 @@ _dotfiles_serie() {
     && GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" serie "$@" )
 }
 
+_dotfiles_forgit() {
+  # forgit ships as an executable called `git-forgit`, which git runs as the
+  # subcommand `git forgit`. So this is that, with the repo paths set -- the
+  # same pair _dotfiles_hunk exports, and the cwd is left alone for the same
+  # reason: pathspecs still resolve against wherever the caller is standing.
+  # Bare `dotfiles forgit` prints forgit's own list of commands.
+  #
+  # Untracked files are not a hazard here, unlike hunk: forgit reads changes
+  # through `git status` and `git diff`, which honour status.showUntrackedFiles,
+  # so it stays tracked-only. The flip side is that `forgit add` cannot stage a
+  # brand-new file -- that still takes `dotfiles add <path>`.
+  #
+  # The graph is switched off for a filtered log -- -S, -G, or a `--` pathspec
+  # on `log`. A filter that skips commits makes `git log --graph` print bare
+  # "..." rows, fzf treats those as selectable, and selecting one gives "fatal:
+  # bad revision ''". Unfiltered, there are no gaps and the graph stays.
+  if ! command -v git-forgit >/dev/null 2>&1; then
+    echo "dotfiles: forgit is not installed (brew install forgit)" >&2
+    return 1
+  fi
+  local arg
+  if [[ $1 == log ]]; then
+    for arg in "${@:2}"; do
+      if [[ $arg == (-S*|-G*|--) ]]; then
+        local -x FORGIT_LOG_GRAPH_ENABLE=false
+        break
+      fi
+    done
+  fi
+  GIT_DIR="$HOME/.dotfiles" GIT_WORK_TREE="$HOME" git forgit "$@"
+}
+
 _dotfiles_brew() {
   # `brew bundle` has no post-install hook, and formulae that need one-time
   # setup after installing (catchup's `install-skill` commands, say) have
@@ -393,6 +425,9 @@ dotfiles git bare repo management at ~/.dotfiles
   lazygit        open the repo in lazygit, which needs the git-dir/work-tree
                  pair spelled out -- it refuses a bare repo on its own
   serie          open the commit graph in Serie; extra arguments pass through
+  forgit         run a forgit picker on the repo -- `forgit log`, `forgit add`,
+                 `forgit diff`; extra arguments pass through, and bare `forgit`
+                 lists the commands
   logs           the `git logs` alias without the redundant " by <author>"
   resolve        open the conflicted files of a merge or rebase in diffview
   scopes         list the commit scopes the hook allows; scan/rebuild/add/rm/set
@@ -438,6 +473,10 @@ case "$1" in
   serie)
     shift
     _dotfiles_serie "$@"
+    ;;
+  forgit)
+    shift
+    _dotfiles_forgit "$@"
     ;;
   resolve)
     shift

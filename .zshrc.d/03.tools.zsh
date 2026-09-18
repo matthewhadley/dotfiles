@@ -17,3 +17,21 @@ export FZF_CTRL_T_OPTS="--layout=default"
 if command -v fzf >/dev/null; then
   source <(fzf --zsh)
 fi
+
+# forgit -- fzf pickers for the git commands that take a file, commit or branch
+# argument: add, log, diff, checkout, rebase, stash and so on, each with a
+# preview pane. Shell functions plus aliases, sourced rather than eval'd, so it
+# lives here beside fzf, which it needs.
+#
+# Its previews go through `git config core.pager`, i.e. delta, so they pick up
+# the terafox feature from ~/.gitconfig like everything else.
+#
+# forgit defines its aliases unconditionally, replacing whatever is there. Three
+# of its defaults are already taken in 02.aliases.zsh -- ga (`git add -A`), gd
+# (`git diff`) and glo (`git pull origin`) -- so those three are renamed via the
+# forgit_* variables the plugin reads, and the plain versions keep working. The
+# other 26 aliases keep forgit's own names. Must be exported before sourcing.
+if [[ -r ${HOMEBREW_PREFIX:-/opt/homebrew}/share/forgit/forgit.plugin.zsh ]]; then
+  export forgit_add=gfa forgit_log=gfl forgit_diff=gfd
+  source "${HOMEBREW_PREFIX:-/opt/homebrew}/share/forgit/forgit.plugin.zsh"
+fi

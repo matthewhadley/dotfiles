@@ -32,6 +32,11 @@ brew "zsh-completions"
 brew "bat"
 
 brew "dnsmasq"
+
+# Sourced by .zshrc.d/03.tools.zsh, which skips it quietly when this is not
+# installed. Needs fzf, declared further down.
+brew "forgit"
+
 brew "gh"
 brew "git"
 brew "git-delta"
