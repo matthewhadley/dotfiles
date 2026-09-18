@@ -1212,9 +1212,13 @@ require("lualine").setup({
     -- what was wanted, the glyph was not.
     icons_enabled = false,
     globalstatus = true,   -- one bar for the whole editor, not one per window
-    disabled_filetypes = {
-      statusline = { "neo-tree" },
-    },
+    -- No disabled_filetypes for neo-tree: with globalstatus there is one bar
+    -- for the whole editor, and lualine draws it from whichever window has
+    -- focus. Disabling it for "neo-tree" blanked that single bar entirely
+    -- whenever focus was in the tree -- including right after startup, when
+    -- neo-tree opens focused and no file is selected yet. The "neo-tree"
+    -- extension below still gives that window its own look; this option
+    -- only ever fought it.
   },
   sections = {
     lualine_a = { "mode" },
