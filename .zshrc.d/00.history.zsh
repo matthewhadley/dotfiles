@@ -107,3 +107,80 @@ rgh() {
   # "found something", as it did before the pipeline existed.
   return $pipestatus[1]
 }
+
+# Ctrl+Shift+R: the same every-pane history as rgh, but fuzzy and interactive,
+# with the chosen line placed on the command line rather than printed.
+#
+# Ctrl+R is left alone. fzf binds it to fzf-history-widget, which runs `fc -rl 1`
+# against zsh's in-memory list -- this pane's $HISTFILE as loaded at startup plus
+# what has been typed since, and nothing else, since share_history is off. That
+# narrowness is the point of the per-pane HISTFILE above, so it keeps its key.
+#
+# The chord arrives as F7, not as itself: Shift is not encoded in a C0 control
+# byte, so Ctrl+Shift+R and Ctrl+R are both 0x12 and indistinguishable here.
+# ~/.config/ghostty/config rewrites it to \e[18~ upstream. Consequence worth
+# knowing: this key is Ghostty-only, so it does nothing over ssh or in another
+# terminal, where Ctrl+R still works.
+#
+# `fc -AI` first, same as rgh, so commands from this session are findable
+# immediately rather than at shell exit.
+#
+# Entries are parsed rather than grepped. EXTENDED_HISTORY writes
+# ": <epoch>:<elapsed>;<command>", so the epoch gives a true global ordering
+# across files -- concatenating them in filename or mtime order would interleave
+# panes wrongly. Sorted newest-first, then deduplicated, so the surviving copy of
+# a repeated command is its most recent use.
+#
+# Same limitation as rgh, for the same reason: a multi-line command is stored
+# with its continuation lines carrying no record prefix, so only the first line
+# is offered. Anchoring on that prefix is what keeps a semicolon inside a jq
+# filter from being mistaken for the record separator.
+#
+# --no-sort keeps that recency order when the query is empty; fzf would
+# otherwise impose its own. --scheme=history tunes the scoring for command
+# lines. The current buffer seeds --query, matching what fzf's own Ctrl+R does.
+#
+# No --reverse, so fzf's default layout applies: the prompt sits at the bottom
+# and the list grows upward from it. That pairs with the newest-first ordering
+# above to put the most recent command immediately above the prompt, where the
+# cursor already is -- and it matches where Ctrl+R puts its prompt, so the two
+# keys do not move the box around between them.
+_fzf_all_history() {
+  emulate -L zsh
+  fc -AI 2>/dev/null || true
+
+  local selected
+  selected=$(
+    # LC_ALL=C throughout: ~/.history.d holds at least one line of invalid
+    # UTF-8, and macOS awk aborts the record with "towc: multibyte conversion
+    # failure" when it meets one -- a warning that would land on the prompt on
+    # every press. Byte semantics sidestep the decode entirely; nothing here
+    # case-folds or counts characters, so there is nothing to lose by it, and
+    # fzf does its own UTF-8 handling downstream.
+    LC_ALL=C cat -- ${HOME}/.history.d/*(.N) 2>/dev/null \
+      | LC_ALL=C awk '
+          /^: [0-9]+:[0-9]*;/ {
+            ts = substr($0, 3)
+            sub(/:.*/, "", ts)
+            cmd = substr($0, index($0, ";") + 1)
+            if (cmd != "") printf "%s\t%s\n", ts, cmd
+          }
+        ' \
+      | LC_ALL=C sort -rn -k1,1 \
+      | LC_ALL=C cut -f2- \
+      | LC_ALL=C awk '!seen[$0]++' \
+      | fzf --scheme=history --no-sort --height=60% \
+            --prompt='all history > ' --query="$BUFFER"
+  )
+
+  if [[ -n $selected ]]; then
+    BUFFER=$selected
+    CURSOR=$#BUFFER
+  fi
+
+  # Redraw unconditionally: fzf has painted over the prompt whether or not
+  # anything was chosen, so an escape out of it needs the line back too.
+  zle reset-prompt
+}
+zle -N _fzf_all_history
+bindkey '\e[18~' _fzf_all_history

@@ -83,6 +83,24 @@ keybind = ctrl+arrow_right=text:\x1b[21~
 # windows and survive the chain as single control bytes, needing no rewrite
 # here at all.
 
+# zsh all-history fuzzy search: forward Ctrl+Shift+R as F7.
+#
+# The rewrite is not an optimisation, it is the only way the chord can exist.
+# Shift is not encoded in a C0 control byte, so Ctrl+Shift+R and Ctrl+R are
+# both 0x12 and zsh cannot tell them apart; distinguishing them needs CSI-u,
+# which Herdr drops. Ghostty is the one layer that still sees the real chord,
+# so it has to translate here or not at all.
+#
+# F7 rather than a free Ctrl+letter because there is no free Ctrl+letter: every
+# one from A-Z is bound in zsh's emacs keymap except ^C, ^Z and ^X, the first
+# two being terminal signals and the third a prefix. F7 is available because
+# the Cmd+Ctrl+Left forward directly above gave it up.
+#
+# Ctrl+R keeps its own meaning -- fzf over this pane's history. This is the
+# same search across every pane's file in ~/.history.d. See 00.history.zsh,
+# which binds \e[18~ to the widget.
+keybind = ctrl+shift+r=text:\x1b[18~
+
 # Neovim project search/replace: forward Cmd+Shift+R as F11 through Herdr.
 #
 # Was F13 originally. Confirmed via a scratch nvim pane and `herdr pane
