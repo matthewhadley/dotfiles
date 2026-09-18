@@ -1,0 +1,29 @@
+# terafox, to match the Neovim colourscheme (nightfox.nvim's terafox variant).
+# Values come from nightfox's palette/terafox.lua, plus the yellow search
+# highlight that init.lua's theme_tweaks() applies on top of it.
+
+# general
+background = '#152528'            # bg1, Neovim's Normal background
+border_fg = '#2d4f56'             # bg4, the scheme's border colour
+text_fg = '#e6eaea'               # fg1
+dimmed_text_fg = '#6d7f8b'        # comment
+# input
+input_text_fg = '#a1cdd8'         # cyan
+result_count_fg = '#fda47f'       # yellow (terafox's peach)
+# results
+result_name_fg = '#73a3b7'        # blue.bright, as functions
+result_line_number_fg = '#ff8349' # orange, as numbers
+result_value_fg = '#cbd9d8'       # fg2
+selection_fg = '#eaeeee'          # fg0
+selection_bg = '#254147'          # bg3, the cursorline
+match_fg = '#FFE066'              # the search yellow from theme_tweaks()
+# preview
+preview_title_fg = '#b97490'      # magenta.bright
+# modes
+channel_mode_fg = '#0f1c1e'       # bg0
+channel_mode_bg = '#b97490'       # magenta.bright
+remote_control_mode_fg = '#0f1c1e'
+remote_control_mode_bg = '#7aa4a1' # green
+action_picker_mode_fg = '#0f1c1e'
+action_picker_mode_bg = '#73a3b7' # blue.bright
+send_to_channel_mode_fg = '#a1cdd8'

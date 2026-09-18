@@ -54,6 +54,9 @@ brew "worktrunk"
 # outright.
 brew "fzf"
 
+# The `files` and `text` channels shell out to fd and bat, both declared above.
+brew "television"
+
 # herdr-plugin-workspace-manager ships no prebuilt binary: its bin/ entrypoint
 # is a shim that lazily `cargo build --release`s itself on first real
 # invocation (and again after any source change), failing hard with "cargo

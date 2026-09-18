@@ -1,0 +1,40 @@
+# Local copy of television's built-in 'git-repos' channel, changed in two ways:
+#
+#   * the search root is ~/dev instead of ~, which also makes upstream's Library
+#     and Application Support excludes unnecessary;
+#   * .pio and node_modules are excluded, since they hold vendored dependency
+#     checkouts (PlatformIO libdeps, npm git dependencies) rather than projects.
+#
+# Re-sync with upstream after a tv upgrade if the channel changes.
+
+[metadata]
+name = "git-repos"
+requirements = ["fd", "git"]
+description = """
+A channel to select from git repositories on your local machine.
+
+This channel uses `fd` to find directories that contain a `.git` subdirectory, and then allows you to preview the git log of the selected repository.
+"""
+
+[source]
+# this is a macos version of the command. While perfectly usable on linux, you may want to tweak it a bit.
+command = "fd -g .git -HL -t d -d 10 --prune ~/dev -E .pio -E node_modules --exec dirname '{}'"
+display = "{split:/:-1}"
+
+[preview]
+command = "cd '{}'; git log -n 200 --pretty=medium --all --graph --color"
+
+[keybindings]
+enter = "actions:cd"
+ctrl-e = "actions:edit"
+
+[actions.cd]
+description = "Open a new shell in the selected repository"
+command = "cd {} && $SHELL"
+mode = "execute"
+
+[actions.edit]
+description = "Open the repository in editor"
+command = "${EDITOR:-vim} {}"
+shell = "bash"
+mode = "execute"

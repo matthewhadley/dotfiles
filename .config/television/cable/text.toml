@@ -1,0 +1,32 @@
+# Local copy of television's built-in 'text' channel. The only change is that the
+# preview's BAT_THEME = "ansi" override is removed, so bat uses ~/.config/bat/config
+# (terafox) instead of the terminal's ANSI palette. Re-sync with upstream after a
+# tv upgrade if the channel changes.
+[metadata]
+name = "text"
+description = "A channel to find and select text from files"
+requirements = ["rg", "bat"]
+
+[source]
+command = [
+  { name = "Default", run = "rg . --no-heading --line-number --colors 'match:fg:white' --colors 'path:fg:blue' --color=always" },
+  { name = "Hidden",  run = "rg . --no-heading --line-number --hidden --colors 'match:fg:white' --colors 'path:fg:blue' --color=always" },
+]
+ansi = true
+output = "{strip_ansi|split:\\::..2}"
+
+[preview]
+command = "bat -n --color=always '{strip_ansi|split:\\::0}'"
+offset = '{strip_ansi|split:\::1}'
+
+[ui]
+preview_panel = { header = '{strip_ansi|split:\::..2}' }
+
+[keybindings]
+enter = "actions:edit"
+
+[actions.edit]
+description = "Open file in editor at line"
+command = "${EDITOR:-vim} '+{strip_ansi|split:\\::1}' '{strip_ansi|split:\\::0}'"
+shell = "bash"
+mode = "execute"
