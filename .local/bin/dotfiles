@@ -162,24 +162,14 @@ _dotfiles_check() {
 }
 
 _dotfiles_logs() {
-  # The global `git logs` alias (~/.gitconfig) ends every line with " by %an".
-  # In this repo that is always the same person, so drop it -- but only here;
-  # the alias stays as-is for every other repo. Format is otherwise identical to
-  # the alias. Plain `dotfiles log` is still unmodified `git log`; this is the
-  # shorthand. Extra args pass through, and --oneline/--pretty/--format step it
-  # aside.
-  local arg
-  for arg in "$@"; do
-    case $arg in
-      --oneline|--pretty|--pretty=*|--format|--format=*)
-        _dotfiles_git_home log "$@"
-        return
-        ;;
-    esac
-  done
-  _dotfiles_git_home log \
-    --pretty='format:%C(yellow bold)%h%Creset - %s %C(white)%cr%Creset' \
-    "$@"
+  # The global `git logs` alias (~/.gitconfig), run against this repo. It used
+  # to carry its own copy of the format, minus the alias's " by <author>" -- one
+  # author here, so the name was noise -- but the alias no longer prints an
+  # author, so there is nothing left to differ and no second format to keep in
+  # step. Plain `dotfiles log` is still unmodified `git log`; this is the
+  # shorthand. Extra args pass through, and a later --oneline/--pretty/--format
+  # overrides the alias's own, as it would for `git logs`.
+  _dotfiles_git_home logs "$@"
 }
 
 _dotfiles_hunk() {
@@ -428,7 +418,7 @@ dotfiles git bare repo management at ~/.dotfiles
   forgit         run a forgit picker on the repo -- `forgit log`, `forgit add`,
                  `forgit diff`; extra arguments pass through, and bare `forgit`
                  lists the commands
-  logs           the `git logs` alias without the redundant " by <author>"
+  logs           the `git logs` alias, run against this repo
   resolve        open the conflicted files of a merge or rebase in diffview
   scopes         list the commit scopes the hook allows; scan/rebuild/add/rm/set
                  rebuild replaces configured scopes with those in HEAD's history
