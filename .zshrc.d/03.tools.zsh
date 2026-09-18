@@ -6,6 +6,14 @@
 # subdirectory), plus the `**<TAB>` fuzzy completion trigger. `fzf --zsh`
 # replaced the old ~/.fzf.zsh install script in fzf 0.48, so brew's
 # $(brew --prefix)/opt/fzf/install is no longer needed.
+#
+# CTRL-T's widget passes --reverse, which puts the prompt at the top; CTRL-R's
+# does not, so its prompt sits at the bottom with the list growing upward. The
+# two keys should not move the box around between them, so --layout=default here
+# cancels the --reverse. It works because fzf appends FZF_CTRL_T_OPTS after the
+# widget's own options and the last --layout wins.
+export FZF_CTRL_T_OPTS="--layout=default"
+
 if command -v fzf >/dev/null; then
   source <(fzf --zsh)
 fi
