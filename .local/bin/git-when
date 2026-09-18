@@ -30,6 +30,46 @@
 # prints one line per commit instead, which is also what a pipe gets.
 set -u
 
+# Internal: `git-when --highlight` is a filter, run by forgit's previews after
+# delta. It paints the search term #202020 on #FFE066 -- the yellow of a search
+# hit in Neovim (the Search group in theme_tweaks, init.lua) and of `rgh` in
+# ~/.zshrc.d/00.history.zsh, copied as a hex for the same reason that one is:
+# nothing here can read the Lua. The term is read from the environment so it
+# never has to be quoted into forgit's pager string.
+#
+# A background cannot simply be switched off again afterwards -- that would wipe
+# delta's green or red tint from the rest of an added or removed line. So the
+# filter follows the colour codes as they go by, and after each match resets and
+# re-applies whatever was in effect, leaving the line as delta drew it.
+#
+# Only text is searched, never the escape sequences between it, or a term like
+# "2" would match inside a colour code and corrupt it. The cost is that a term
+# split across two colours -- syntax highlighting breaking it mid-word -- is not
+# marked.
+if [ "${1:-}" = --highlight ]; then
+  exec perl -pe '
+    BEGIN {
+      $t = $ENV{GIT_WHEN_TERM};
+      $t = quotemeta $t if $ENV{GIT_WHEN_FIXED};
+      $re = eval { qr/$t/ };
+      $on = "\e[0m\e[38;2;32;32;32m\e[48;2;255;224;102m";
+    }
+    if ($re) {
+      my $state = "";
+      $_ = join "", map {
+        if (/^\e\[([0-9;]*)m$/) {
+          my $p = $1;
+          if    ($p eq "" || $p eq "0") { $state = "" }
+          elsif ($p =~ /^0;/)           { $state = $_ }
+          else                          { $state .= $_ }
+          $_;
+        }
+        elsif (/^\e\[/) { $_ }
+        else { s/($re)/$on$1\e[0m$state/gr }
+      } split /(\e\[[0-9;?]*[A-Za-z])/;
+    }'
+fi
+
 usage() {
   cat <<'EOF'
 usage: git when [--all] [--plain] [changed|added|removed|matching] TERM [PATH...]
@@ -134,6 +174,19 @@ if [ -z "$plain" ] && [ -t 1 ] && command -v git-forgit >/dev/null 2>&1; then
   # one gives "fatal: bad revision ''".
   export FORGIT_LOG_GRAPH_ENABLE=false
   export FORGIT_GLO_FORMAT="$fmt"
+
+  # Highlight the term in the previews. forgit pipes a commit's diff through
+  # FORGIT_SHOW_PAGER (the log preview) and FORGIT_DIFF_PAGER (the per-file
+  # previews under Enter). Both default to core.pager, i.e. delta; keep that and
+  # add the filter after it. Everything except `matching` searched a fixed
+  # string, so only that one treats the term as a regex.
+  self=$(command -v "$0" || printf '%s' "$0")
+  core_pager=$(git config core.pager || true)
+  export GIT_WHEN_TERM="$term"
+  [ "$verb" = matching ] || export GIT_WHEN_FIXED=1
+  hl_pager="${core_pager:-cat} | $(printf '%q' "$self") --highlight"
+  export FORGIT_SHOW_PAGER="$hl_pager" FORGIT_DIFF_PAGER="$hl_pager"
+
   if [ -n "$shas" ]; then
     # --no-walk, or each sha would drag in all of its ancestors.
     # shellcheck disable=SC2086
